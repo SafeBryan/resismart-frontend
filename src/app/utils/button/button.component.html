@@ -1,0 +1,11 @@
+<button
+  class="btn"
+  [ngClass]="[variant, fullWidth ? 'full' : '', pill ? 'pill' : '']"
+  type="button"
+  (click)="clicked.emit($event)"
+>
+  <app-icon *ngIf="iconLeft" [name]="iconLeft!" size="18" class="mr"></app-icon>
+  <span>{{ label }}</span>
+  <app-icon *ngIf="iconRight" [name]="iconRight!" size="18" class="ml"></app-icon>
+</button>
+

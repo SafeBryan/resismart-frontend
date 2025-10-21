@@ -1,0 +1,16 @@
+<label class="field">
+  <span class="label" *ngIf="label">{{ label }}</span>
+  <div class="control" [class.withIcon]="icon" [class.underline]="variant === 'underline'">
+    <app-icon *ngIf="icon" [name]="icon!" size="18" class="icon-left"></app-icon>
+    <input
+      [type]="type"
+      class="input"
+      [placeholder]="placeholder"
+      [(ngModel)]="model"
+      [disabled]="disabled"
+      (ngModelChange)="modelChange.emit($event)"
+      [class.ph-upper]="placeholderUppercase"
+    />
+  </div>
+</label>
+

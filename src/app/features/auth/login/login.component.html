@@ -1,0 +1,40 @@
+<div class="page">
+  <div class="bg m3"></div>
+  <div class="bg m2"></div>
+  <div class="bg m1"></div>
+
+  <div class="phone">
+    <div class="sky">
+      <h2>¡BIENVENIDO DE NUEVO!</h2>
+    </div>
+    <div class="content">
+      <form class="form" (submit)="$event.preventDefault()">
+        <app-input-text
+          placeholder="USUARIO"
+          icon="user"
+          variant="underline"
+          [placeholderUppercase]="true"
+          [(model)]="email"
+        ></app-input-text>
+
+        <app-input-password
+          placeholder="CONTRASEÑA"
+          variant="underline"
+          [placeholderUppercase]="true"
+          [(model)]="password"
+        ></app-input-password>
+
+        <div class="cta">
+          <app-button
+            label="INICIAR SESIÓN"
+            variant="sky"
+            [pill]="true"
+            [fullWidth]="true"
+            (clicked)="goHome()"
+          ></app-button>
+        </div>
+      </form>
+      <p class="muted">¿AÚN NO TIENES CUENTA?</p>
+    </div>
+  </div>
+</div>
