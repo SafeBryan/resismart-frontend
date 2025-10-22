@@ -3,38 +3,50 @@
   <div class="bg m2"></div>
   <div class="bg m1"></div>
 
-  <div class="phone">
-    <div class="sky">
-      <h2>¡BIENVENIDO DE NUEVO!</h2>
+  <div class="login">
+    <div class="brand">
+      <div class="brand-logo" aria-hidden="true">
+        <img src="/assets/logo.png" alt="ResiSmart" />
+      </div>
+      <h1 class="brand-title">ResiSmart</h1>
+      <p class="brand-subtitle">Sistema de gestión de condominios</p>
     </div>
-    <div class="content">
-      <form class="form" (submit)="$event.preventDefault()">
-        <app-input-text
-          placeholder="USUARIO"
-          icon="user"
-          variant="underline"
-          [placeholderUppercase]="true"
-          [(model)]="email"
-        ></app-input-text>
 
-        <app-input-password
-          placeholder="CONTRASEÑA"
-          variant="underline"
-          [placeholderUppercase]="true"
+    <div class="panel">
+      <p class="panel-subtitle">Ingresa tus credenciales para acceder</p>
+      <h2 class="panel-title">Iniciar Sesión</h2>
+
+      <form class="form" (submit)="$event.preventDefault()">
+        <label class="input-label">Correo electrónico</label>
+        <app-input
+          placeholder="tu@email.com"
+          icon="user"
+          type="email"
+          [(model)]="email"
+        ></app-input>
+
+        <label class="input-label">Contraseña</label>
+        <app-input
+          placeholder="Tu contraseña"
+          icon="lock"
+          type="password"
           [(model)]="password"
-        ></app-input-password>
+        ></app-input>
 
         <div class="cta">
           <app-button
-            label="INICIAR SESIÓN"
+            label="Iniciar Sesión"
             variant="sky"
-            [pill]="true"
             [fullWidth]="true"
             (clicked)="goHome()"
           ></app-button>
         </div>
       </form>
-      <p class="muted">¿AÚN NO TIENES CUENTA?</p>
+
+      <div class="panel-links">
+        <a class="link" href="#" (click)="$event.preventDefault()">¿Olvidaste tu contraseña?</a>
+        <a class="link" href="#" (click)="$event.preventDefault()">¿No tienes cuenta? Regístrate</a>
+      </div>
     </div>
   </div>
 </div>

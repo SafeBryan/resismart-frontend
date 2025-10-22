@@ -1,0 +1,7 @@
+<mat-form-field class="w100" [appearance]="variant === 'underline' ? 'fill' : 'outline'">
+  <mat-icon *ngIf="icon" matPrefix>{{ iconMatName }}</mat-icon>
+  <input matInput [type]="inputType" [placeholder]="placeholder" [(ngModel)]="model" [disabled]="disabled" (ngModelChange)="modelChange.emit($event)" />
+  <button *ngIf="type === 'password' && togglePassword" mat-icon-button matSuffix type="button" (click)="visible = !visible" [attr.aria-label]="visible ? 'Ocultar' : 'Mostrar'">
+    <mat-icon>{{ visible ? 'visibility_off' : 'visibility' }}</mat-icon>
+  </button>
+</mat-form-field>

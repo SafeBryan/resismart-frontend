@@ -3,14 +3,32 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { UtilsModule } from '../../utils/utils.module';
+import { ResidentesComponent } from './pages/residentes/residentes.component';
+import { ContratosComponent } from './pages/contratos/contratos.component';
+import { PagosComponent } from './pages/pagos/pagos.component';
+import { ComprobantesComponent } from './pages/comprobantes/comprobantes.component';
+import { AvisosComponent } from './pages/avisos/avisos.component';
+import { ConfiguracionComponent } from './pages/configuracion/configuracion.component';
 
 @NgModule({
   imports: [
     CommonModule,
     UtilsModule,
     DashboardComponent,
+    ResidentesComponent,
+    ContratosComponent,
+    PagosComponent,
+    ComprobantesComponent,
+    AvisosComponent,
+    ConfiguracionComponent,
     RouterModule.forChild([
       { path: '', component: DashboardComponent },
+      { path: 'residentes', component: ResidentesComponent },
+      { path: 'contratos', component: ContratosComponent },
+      { path: 'pagos', component: PagosComponent },
+      { path: 'comprobantes', component: ComprobantesComponent },
+      { path: 'avisos', component: AvisosComponent },
+      { path: 'configuracion', component: ConfiguracionComponent },
     ]),
   ],
   exports: [RouterModule]

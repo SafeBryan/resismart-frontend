@@ -1,16 +1,9 @@
-.btn { 
-  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-  border: none; border-radius: 8px; padding: .75rem 1rem; cursor: pointer;
-  font-size: 14px; font-weight: 600; transition: background .2s, opacity .2s;
-}
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; }
 .btn.full { width: 100%; }
-.btn.primary { background: #2563eb; color: #fff; }
-.btn.primary:hover { background: #1d4ed8; }
-.btn.sky { background: linear-gradient(180deg, #7cc3ff, #4ea3f8); color: #fff; }
+.btn.pill { border-radius: 9999px !important; }
+.btn.sky { color: #fff !important; background: linear-gradient(180deg, #8fd1ff, #6ab8fb) !important; }
 .btn.sky:hover { filter: brightness(.98); }
 .btn.secondary { background: #f3f4f6; color: #111827; }
 .btn.secondary:hover { background: #e5e7eb; }
-.btn.pill { border-radius: 9999px; padding: .8rem 1.25rem; }
 .mr { margin-right: .25rem; }
 .ml { margin-left: .25rem; }
-

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { UtilsModule } from '../../../../utils/utils.module';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -9,9 +10,10 @@ import { UtilsModule } from '../../../../utils/utils.module';
   styleUrl: './home.component.css'
 })
 export class HomeComponent {
-  constructor(private router: Router) {}
+  constructor(private router: Router, private auth: AuthService) {}
 
   logout() {
+    this.auth.logout();
     this.router.navigateByUrl('/login');
   }
 }

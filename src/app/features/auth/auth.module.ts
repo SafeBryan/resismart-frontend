@@ -3,16 +3,14 @@ import { CommonModule } from '@angular/common';
 import { LoginComponent } from './login/login.component';
 import { RouterModule } from '@angular/router';
 import { ButtonComponent } from '../../utils/button/button.component';
-import { InputTextComponent } from '../../utils/input-text/input-text.component';
-import { InputPasswordComponent } from '../../utils/input-password/input-password.component';
+import { InputComponent } from '../../utils/input/input.component';
 
 @NgModule({
   imports: [
     CommonModule,
     // Standalone UI utils
     ButtonComponent,
-    InputTextComponent,
-    InputPasswordComponent,
+    InputComponent,
     LoginComponent,
     RouterModule.forChild([
       { path: '', component: LoginComponent },

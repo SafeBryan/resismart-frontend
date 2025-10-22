@@ -3,11 +3,21 @@
 .m3 { height: clamp(320px, 70dvh, 720px); background: linear-gradient(180deg, #e7f6ff, #cfeeff); z-index: 0; clip-path: polygon(0 65%, 10% 52%, 20% 60%, 30% 44%, 40% 57%, 50% 42%, 60% 55%, 70% 40%, 80% 56%, 90% 46%, 100% 62%, 100% 100%, 0 100%); }
 .m2 { height: clamp(300px, 62dvh, 680px); background: linear-gradient(180deg, #9dd6ff, #86ccff); z-index: 1; clip-path: polygon(0 63%, 8% 50%, 18% 56%, 28% 42%, 38% 55%, 48% 40%, 58% 53%, 68% 38%, 78% 54%, 88% 46%, 100% 60%, 100% 100%, 0 100%); }
 .m1 { height: clamp(280px, 56dvh, 640px); background: linear-gradient(180deg, #56aff6, #3ea0f3); z-index: 2; clip-path: polygon(0 61%, 7% 48%, 17% 54%, 27% 40%, 37% 53%, 47% 38%, 57% 50%, 67% 42%, 77% 52%, 87% 46%, 100% 58%, 100% 100%, 0 100%); }
-.phone { z-index: 3; position: relative; }
-.phone { width: 100%; max-width: 380px; background: #fff; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,.08); overflow: hidden; border: 1px solid #eef2f7; }
-.sky { height: 160px; background: linear-gradient(180deg, #8fd1ff, #6ab8fb); border-bottom-left-radius: 50% 18%; border-bottom-right-radius: 50% 18%; display: grid; place-items: end center; padding-bottom: 18px; position: relative; z-index: 1; }
-.sky h2 { margin: 0; color: #0b5cab; letter-spacing: .12em; font-weight: 800; font-size: 14px; text-transform: uppercase; }
-.content { padding: 18px 20px 24px; }
-.form { display: grid; gap: 18px; margin-top: 6px; }
+
+/* Layout login */
+.login { z-index: 3; width: 100%; max-width: 520px; margin: 0 auto; display: grid; gap: 18px; }
+.brand { text-align: center; display: grid; gap: 8px; justify-items: center; align-items: center; }
+.brand-logo { width: clamp(56px, 12vw, 80px); height: clamp(56px, 12vw, 80px); margin: 0 auto; border-radius: 999px; border: 2px solid #93c5fd; display: grid; place-items: center; color: #3567a6; background: linear-gradient(180deg, #e6f3ff, #d8eaff); font-weight: 800; overflow: hidden; aspect-ratio: 1 / 1; }
+.brand-logo img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; object-position: center center; display: block; }
+.brand-title { margin: 0; font-size: 28px; font-weight: 800; color: #1f2937; }
+.brand-subtitle { margin: 0; color: #6b7280; font-size: 14px; }
+
+.panel { border: 2px solid #bdd7fb; border-radius: 12px; background: #fff; padding: 18px 16px 20px; box-shadow: 0 2px 10px rgba(0,0,0,.03); }
+.panel-subtitle { text-align: center; margin: 4px 0 0; color: #6b7280; font-size: 13px; }
+.panel-title { text-align: center; margin: 2px 0 14px; color: #1f2937; font-size: 18px; font-weight: 800; }
+.form { display: grid; gap: 12px; }
+.input-label { font-size: 13px; color: #374151; font-weight: 600; }
 .cta { margin-top: 8px; }
-.muted { text-align: center; color: #6b7280; font-size: 12px; margin-top: 16px; text-transform: uppercase; letter-spacing: .06em; }
+.panel-links { margin-top: 10px; display: grid; gap: 6px; justify-items: center; }
+.link { color: #6b7280; font-size: 12px; text-decoration: none; }
+.link:hover { text-decoration: underline; }

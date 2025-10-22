@@ -1,10 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-icon',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatIconModule],
   templateUrl: './icon.component.html',
   styleUrl: './icon.component.css',
 })
@@ -13,7 +14,14 @@ export class IconComponent {
   @Input() size: number | string = 20;
   @Input() color?: string;
 
-  get sizePx(): number {
-    return typeof this.size === 'string' ? parseInt(this.size, 10) || 20 : this.size;
+  get matName(): string {
+    switch (this.name) {
+      case 'user': return 'person';
+      case 'lock': return 'lock';
+      case 'logout': return 'logout';
+      case 'eye': return 'visibility';
+      case 'eye-off': return 'visibility_off';
+      default: return 'help';
+    }
   }
 }

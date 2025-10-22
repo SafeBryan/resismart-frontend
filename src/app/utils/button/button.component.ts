@@ -1,11 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { IconComponent } from '../icon';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-button',
   standalone: true,
-  imports: [NgClass, IconComponent],
+  imports: [NgClass, IconComponent, MatButtonModule],
   templateUrl: './button.component.html',
   styleUrl: './button.component.css',
 })

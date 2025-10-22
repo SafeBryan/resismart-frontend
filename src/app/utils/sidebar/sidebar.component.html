@@ -1,0 +1,29 @@
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-logo"><img src="/assets/logo.png" alt="ResiSmart" /></div>
+    <div class="brand-text">
+      <div class="brand-title">ResiSmart</div>
+      <div class="brand-sub">Admin</div>
+    </div>
+  </div>
+
+  <div class="user" *ngIf="(user$ | async) as st">
+    <div class="avatar">{{ (st.profile?.nombres || '?').slice(0,1) }}</div>
+    <div class="info">
+      <div class="name">{{ st.profile?.nombres }} {{ st.profile?.apellidos }}</div>
+      <div class="email">{{ st.profile?.email }}</div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a *ngFor="let item of nav" class="nav-link" [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+      <span>{{ item.label }}</span>
+    </a>
+  </nav>
+
+  <button class="logout" mat-stroked-button (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    Cerrar Sesión
+  </button>
+</aside>

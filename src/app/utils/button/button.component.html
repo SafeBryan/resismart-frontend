@@ -1,4 +1,6 @@
 <button
+  mat-raised-button
+  [color]="variant === 'primary' ? 'primary' : undefined"
   class="btn"
   [ngClass]="[variant, fullWidth ? 'full' : '', pill ? 'pill' : '']"
   type="button"
@@ -8,4 +10,3 @@
   <span>{{ label }}</span>
   <app-icon *ngIf="iconRight" [name]="iconRight!" size="18" class="ml"></app-icon>
 </button>
-
