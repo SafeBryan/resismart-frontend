@@ -1,7 +1,193 @@
 <div class="layout">
   <app-sidebar></app-sidebar>
   <main class="content">
-    <h2>Página Residentes</h2>
+    <div class="header">
+      <div>
+        <h1>Gestión de Residentes</h1>
+        <p>Administra la información de todos los residentes</p>
+      </div>
+      <button mat-raised-button color="primary" (click)="openAdd()">+ Agregar Residente</button>
+    </div>
+
+    <div class="filters">
+      <mat-form-field appearance="outline" class="search">
+        <mat-label>Buscar…</mat-label>
+        <input matInput placeholder="Nombre, correo, cédula, teléfono" (input)="onSearch($any($event.target).value)" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="estado">
+        <mat-label>Estado</mat-label>
+        <mat-select [value]="estado()" (valueChange)="onEstadoChange($event)">
+          <mat-option value="todos">Todos los estados</mat-option>
+          <mat-option value="activos">Activos</mat-option>
+          <mat-option value="inactivos">Inactivos</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <section class="card">
+      <div class="card-title">
+        <h3>Lista de Residentes ({{ total() }})</h3>
+        <small>Información detallada de todos los residentes registrados</small>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Residente</th>
+              <th>Contacto</th>
+              <th>Ubicación</th>
+              <th>Estado</th>
+              <th>Fecha Ingreso</th>
+              <th class="actions">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of pageData()">
+              <td>
+                <div class="cell-main">
+                  <div class="title">{{ item.usuario?.nombres }} {{ item.usuario?.apellidos }}</div>
+                  <div class="muted">Cédula: {{ item.cedula || '—' }}</div>
+                </div>
+              </td>
+              <td>
+                <div class="cell-main">
+                  <div class="title">{{ item.usuario?.correo || '—' }}</div>
+                  <div class="muted">{{ item.telefono || '—' }}</div>
+                </div>
+              </td>
+              <td>{{ item.unidad?.numero || '—' }}</td>
+              <td>
+                <span class="badge" [class.ok]="item.usuario?.estado" [class.bad]="!item.usuario?.estado">
+                  {{ item.usuario?.estado ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>—</td>
+              <td class="actions">
+                <button mat-stroked-button color="accent" (click)="openEdit(item)">
+                  <mat-icon fontIcon="edit"></mat-icon>
+                  Editar
+                </button>
+                <button mat-stroked-button color="warn" (click)="delete(item)">
+                  <mat-icon fontIcon="delete"></mat-icon>
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="!loading() && pageData().length === 0">
+              <td colspan="6" class="empty">Sin resultados</td>
+            </tr>
+            <tr *ngIf="loading()">
+              <td colspan="6" class="empty">Cargando…</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <mat-paginator
+        [length]="total()"
+        [pageIndex]="pageIndex()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="[5,10,20]"
+        (page)="onPage($event)"
+      />
+    </section>
+
+    <section class="stats">
+      <div class="stat">
+        <div class="value">{{ totalResidentes() }}</div>
+        <div class="label">Total Residentes</div>
+      </div>
+      <div class="stat">
+        <div class="value">{{ activos() }}</div>
+        <div class="label">Contratos Activos</div>
+      </div>
+      <div class="stat">
+        <div class="value">{{ pagosAlDia() }}</div>
+        <div class="label">Pagos al Día</div>
+      </div>
+      <div class="stat">
+        <div class="value">{{ enMora() }}</div>
+        <div class="label">En Mora</div>
+      </div>
+    </section>
+
+    <!-- Add Modal -->
+    <div class="modal" *ngIf="showAdd()">
+      <div class="modal-content">
+        <h3>Agregar Residente</h3>
+        <form [formGroup]="addForm" (ngSubmit)="submitAdd()" class="form-grid">
+          <div class="form-title">Datos personales</div>
+          <mat-form-field appearance="outline"><mat-label>Nombre</mat-label><input matInput formControlName="nombre" required />
+            <mat-error *ngIf="addForm.get('nombre')?.hasError('required')">Requerido</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Apellido</mat-label><input matInput formControlName="apellido" required />
+            <mat-error *ngIf="addForm.get('apellido')?.hasError('required')">Requerido</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Email</mat-label><input matInput formControlName="email" required type="email" />
+            <mat-error *ngIf="addForm.get('email')?.hasError('required')">Requerido</mat-error>
+            <mat-error *ngIf="addForm.get('email')?.hasError('email')">Email inválido</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Teléfono</mat-label><input matInput formControlName="telefono" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Cédula</mat-label><input matInput formControlName="cedula" required />
+            <mat-error *ngIf="addForm.get('cedula')?.hasError('required')">Requerido</mat-error>
+          </mat-form-field>
+
+          <div class="form-title">Ubicación</div>
+          <mat-form-field appearance="outline">
+            <mat-label>Condominio</mat-label>
+            <mat-select [value]="selectedCondominioAdd()" (valueChange)="onSelectCondominioAdd($event)">
+              <mat-option *ngFor="let c of condominios()" [value]="c.id">{{ c.nombre }}</mat-option>
+            </mat-select>
+            <mat-hint>Primero selecciona el condominio</mat-hint>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Unidad</mat-label>
+            <mat-select formControlName="idUnidad" [disabled]="!selectedCondominioAdd()">
+              <mat-option *ngFor="let u of unidadesOpciones()" [value]="u.id">{{ u.numero }}</mat-option>
+            </mat-select>
+            <mat-hint>Luego selecciona la unidad</mat-hint>
+          </mat-form-field>
+          <div class="modal-actions">
+            <button mat-stroked-button type="button" (click)="cancelAdd()">Cancelar</button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="addForm.invalid || loading()">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" *ngIf="showEdit()">
+      <div class="modal-content">
+        <h3>Editar Residente</h3>
+        <form [formGroup]="editForm" (ngSubmit)="submitEdit()" class="form-grid">
+          <div class="form-title">Datos personales</div>
+          <mat-form-field appearance="outline"><mat-label>Nombre</mat-label><input matInput formControlName="nombre" required /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Apellido</mat-label><input matInput formControlName="apellido" required /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Email</mat-label><input matInput formControlName="email" required type="email" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Teléfono</mat-label><input matInput formControlName="telefono" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Cédula</mat-label><input matInput formControlName="cedula" required /></mat-form-field>
+
+          <div class="form-title">Ubicación</div>
+          <mat-form-field appearance="outline">
+            <mat-label>Condominio</mat-label>
+            <mat-select [value]="selectedCondominioEdit()" (valueChange)="onSelectCondominioEdit($event)">
+              <mat-option *ngFor="let c of condominios()" [value]="c.id">{{ c.nombre }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Unidad</mat-label>
+            <mat-select formControlName="idUnidad" [disabled]="!selectedCondominioEdit()">
+              <mat-option *ngFor="let u of unidadesOpciones()" [value]="u.id">{{ u.numero }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <div class="modal-actions">
+            <button mat-stroked-button type="button" (click)="cancelEdit()">Cancelar</button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="editForm.invalid || loading()">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </main>
 </div>
-

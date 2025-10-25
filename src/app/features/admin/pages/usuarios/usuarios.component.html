@@ -1,0 +1,162 @@
+<div class="layout">
+  <app-sidebar></app-sidebar>
+  <main class="content">
+    <div class="header">
+      <div>
+        <h1>Gestión de Usuarios</h1>
+        <p>Administra cuentas de acceso del sistema</p>
+      </div>
+      <button mat-raised-button color="primary" (click)="openAdd()">
+        <mat-icon fontIcon="person_add"></mat-icon>
+        Agregar Usuario
+      </button>
+    </div>
+
+    <div class="filters">
+      <mat-form-field appearance="outline" class="search">
+        <mat-label>Buscar…</mat-label>
+        <input matInput placeholder="Nombre, usuario o correo" (input)="onSearch($any($event.target).value)" />
+      </mat-form-field>
+      <ng-container *ngIf="!isOwner()">
+        <mat-form-field appearance="outline">
+          <mat-label>Rol</mat-label>
+          <mat-select [value]="rolFilter()" (valueChange)="onRole($event)">
+            <mat-option value="todos">Todos</mat-option>
+            <mat-option value="ADMIN">ADMIN</mat-option>
+            <mat-option value="DUEÑO">DUEÑO</mat-option>
+            <mat-option value="RESIDENTE">RESIDENTE</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </ng-container>
+      <mat-form-field appearance="outline">
+        <mat-label>Estado</mat-label>
+        <mat-select [value]="estadoFilter()" (valueChange)="onEstado($event)">
+          <mat-option value="todos">Todos</mat-option>
+          <mat-option value="activos">Activos</mat-option>
+          <mat-option value="inactivos">Inactivos</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <section class="card">
+      <div class="card-title">
+        <h3>Lista de Usuarios ({{ total() }})</h3>
+        <small>Información de acceso y contacto</small>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th>Teléfono</th>
+              <th class="actions">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of pageData()">
+              <td>
+                <div class="cell-main">
+                  <div class="title">{{ u.nombres }} {{ u.apellidos }}</div>
+                  <div class="muted">{{ u.username || '—' }}</div>
+                </div>
+              </td>
+              <td>{{ u.correo || '—' }}</td>
+              <td><span class="badge role">{{ u.rol }}</span></td>
+              <td><span class="badge" [class.ok]="u.estado" [class.bad]="!u.estado">{{ u.estado ? 'Activo' : 'Inactivo' }}</span></td>
+              <td>{{ u.telefono || '—' }}</td>
+              <td class="actions">
+                <button mat-stroked-button color="accent" (click)="openEdit(u)"><mat-icon fontIcon="edit"></mat-icon> Editar</button>
+                <button mat-stroked-button color="warn" (click)="delete(u)"><mat-icon fontIcon="delete"></mat-icon> Eliminar</button>
+              </td>
+            </tr>
+            <tr *ngIf="!loading() && pageData().length === 0">
+              <td colspan="6" class="empty">Sin resultados</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <mat-paginator [length]="total()" [pageIndex]="pageIndex()" [pageSize]="pageSize()" [pageSizeOptions]="[5,10,20]" (page)="onPage($event)" />
+    </section>
+
+    <!-- Add Modal -->
+    <div class="modal" *ngIf="showAdd()">
+      <div class="modal-content">
+        <h3>Agregar Usuario</h3>
+        <form [formGroup]="addForm" (ngSubmit)="submitAdd()" class="form-grid">
+          <div class="form-title">Datos del usuario</div>
+          <mat-form-field appearance="outline"><mat-label>Nombre</mat-label><input matInput formControlName="nombre" required /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Apellido</mat-label><input matInput formControlName="apellido" required /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Correo</mat-label><input matInput type="email" formControlName="email" required /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Teléfono</mat-label><input matInput formControlName="telefono" /></mat-form-field>
+          <ng-container *ngIf="!isOwner(); else ownerRolAdd">
+            <mat-form-field appearance="outline">
+              <mat-label>Rol</mat-label>
+              <mat-select formControlName="rol" required>
+                <mat-option value="ADMIN">ADMIN</mat-option>
+                <mat-option value="DUEÑO">DUEÑO</mat-option>
+                <mat-option value="RESIDENTE">RESIDENTE</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </ng-container>
+          <ng-template #ownerRolAdd>
+            <mat-form-field appearance="outline">
+              <mat-label>Rol</mat-label>
+              <input matInput value="RESIDENTE" disabled />
+            </mat-form-field>
+          </ng-template>
+          <mat-form-field appearance="outline"><mat-label>Contraseña</mat-label><input matInput type="password" formControlName="password" required /></mat-form-field>
+          <div class="modal-actions">
+            <button type="button" mat-stroked-button (click)="showAdd.set(false)">Cancelar</button>
+            <button type="submit" mat-raised-button color="primary" [disabled]="addForm.invalid || loading()">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" *ngIf="showEdit()">
+      <div class="modal-content">
+        <h3>Editar Usuario</h3>
+        <form [formGroup]="editForm" (ngSubmit)="submitEdit()" class="form-grid">
+          <div class="form-title">Datos del usuario</div>
+          <mat-form-field appearance="outline"><mat-label>Nombre</mat-label><input matInput formControlName="nombre" required /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Apellido</mat-label><input matInput formControlName="apellido" required /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Correo</mat-label><input matInput type="email" formControlName="email" required /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Teléfono</mat-label><input matInput formControlName="telefono" /></mat-form-field>
+          <ng-container *ngIf="!isOwner(); else ownerRolEdit">
+            <mat-form-field appearance="outline">
+              <mat-label>Rol</mat-label>
+              <mat-select formControlName="rol" required>
+                <mat-option value="ADMIN">ADMIN</mat-option>
+                <mat-option value="DUEÑO">DUEÑO</mat-option>
+                <mat-option value="RESIDENTE">RESIDENTE</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </ng-container>
+          <ng-template #ownerRolEdit>
+            <mat-form-field appearance="outline">
+              <mat-label>Rol</mat-label>
+              <input matInput value="RESIDENTE" disabled />
+            </mat-form-field>
+          </ng-template>
+          <mat-form-field appearance="outline">
+            <mat-label>Estado</mat-label>
+            <mat-select formControlName="estado">
+              <mat-option [value]="true">Activo</mat-option>
+              <mat-option [value]="false">Inactivo</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <div class="modal-actions">
+            <button type="button" mat-stroked-button (click)="showEdit.set(false)">Cancelar</button>
+            <button type="submit" mat-raised-button color="primary" [disabled]="editForm.invalid || loading()">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>

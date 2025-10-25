@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+﻿import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { UtilsModule } from '../../../utils/utils.module';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
+import { isAdmin, isOwner, isResident } from '../../../core/utils/role.util';
 
 @Component({
   selector: 'app-login',
@@ -30,23 +31,23 @@ export class LoginComponent {
         if (environment.debug) console.log('[Login] OK');
         const id = this.auth.snapshot.idUsuario;
         const role = this.auth.getRole();
-        // Admin/Owner pueden consultar por ID; residentes no (evitar 403 → logout del interceptor)
+        // Admin/Owner pueden consultar por ID; residentes no (evitar 403 â†’ logout del interceptor)
         const r = (role ?? '').toString().toUpperCase();
-        const isOwner = r === 'DUEÑO' || r === 'DUENO' || r === 'OWNER';
-        const isAdmin = r === 'ADMIN' || r === 'ADMINISTRADOR';
-        const isResident = r === 'RESIDENTE' || r === 'RESIDENT' || r === 'TENANT';
-        if (id && (isAdmin || isOwner)) {
+        const owner = isOwner(role);
+        const admin = isAdmin(role);
+        const resident = isResident(role);
+        // Admin: puede leer /Usuarios/{id}. Dueño y Residente: usa whoami para evitar 403.
+        if (id && admin) {
           this.auth.fetchUserById(id).subscribe({ next: () => { if (environment.debug) console.log('[Login] Perfil cargado'); } });
         } else {
-          // Para residentes u otros, valida con whoami para poblar perfil sin 403
           this.auth.validateToken(true).subscribe();
         }
         if (environment.debug) console.log('[Login] rol recibido:', role);
         if (environment.debug) console.log('[Login] Rol normalizado:', r);
-        if (environment.debug) console.log('[Login] rol normalizado', { r, isOwner, isAdmin, isResident });
-        if (isAdmin || isOwner) {
+        if (environment.debug) console.log('[Login] rol normalizado', { r, owner, admin, resident });
+        if (admin || owner) {
           this.router.navigateByUrl('/dashboard');
-        } else if (isResident) {
+        } else if (resident) {
           this.router.navigateByUrl('/home');
         } else {
           // Fallback seguro para evitar loops si el rol es desconocido
@@ -60,3 +61,6 @@ export class LoginComponent {
     });
   }
 }
+
+
+

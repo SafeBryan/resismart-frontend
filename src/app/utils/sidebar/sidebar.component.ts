@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -23,11 +23,13 @@ export class SidebarComponent {
   nav: NavItem[] = [
     { label: 'Dashboard', path: '/dashboard', icon: 'dashboard' },
     { label: 'Residentes', path: '/dashboard/residentes', icon: 'groups' },
+    { label: 'Usuarios', path: '/dashboard/usuarios', icon: 'manage_accounts' },
+    { label: 'Condominios', path: '/dashboard/condominios', icon: 'holiday_village' },
     { label: 'Contratos', path: '/dashboard/contratos', icon: 'assignment' },
-    { label: 'Órdenes de Pago', path: '/dashboard/pagos', icon: 'receipt_long' },
+    { label: 'Ordenes de Pago', path: '/dashboard/pagos', icon: 'receipt_long' },
     { label: 'Comprobantes', path: '/dashboard/comprobantes', icon: 'receipt' },
     { label: 'Avisos', path: '/dashboard/avisos', icon: 'campaign' },
-    { label: 'Configuración', path: '/dashboard/configuracion', icon: 'settings' },
+    { label: 'Configuracion', path: '/dashboard/configuracion', icon: 'settings' },
   ];
 
   logout() {

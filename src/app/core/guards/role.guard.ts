@@ -3,20 +3,18 @@ import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { environment } from '../../../environments/environment';
 import { map } from 'rxjs/operators';
+import { normalizeRole, RoleNorm } from '../utils/role.util';
 
-export const roleGuard: CanMatchFn = (route: Route, segments: UrlSegment[]) => {
+export const roleGuard: CanMatchFn = (route: Route, _segments: UrlSegment[]) => {
   const auth = inject(AuthService);
   const router = inject(Router);
   const allowed: string[] = (route.data as any)?.['roles'] ?? [];
   const roleRaw = auth.getRole();
-  const normalize = (v: string | null | undefined): 'ADMIN' | 'OWNER' | 'RESIDENTE' | 'UNKNOWN' => {
-    const r = (v ?? '').toString().toUpperCase();
-    if (r === 'ADMIN' || r === 'ADMINISTRADOR') return 'ADMIN';
-    if (r === 'DUEÑO' || r === 'DUENO' || r === 'OWNER') return 'OWNER';
-    if (r === 'RESIDENTE' || r === 'RESIDENT' || r === 'TENANT') return 'RESIDENTE';
-    return 'UNKNOWN';
-  };
-  const allowedNorm = new Set(allowed.map((r) => normalize(r as any)));
+  const allowedNorm = new Set<RoleNorm>(allowed.map((r) => normalizeRole(r as any)));
+
+  // Equivalencia: ADMIN y OWNER se tratan como el mismo nivel de acceso
+  if (allowedNorm.has('ADMIN')) allowedNorm.add('OWNER');
+  if (allowedNorm.has('OWNER')) allowedNorm.add('ADMIN');
 
   // Verifica el token contra el backend en cada cambio de ruta (forzado)
   return auth.validateToken(true).pipe(
@@ -26,7 +24,7 @@ export const roleGuard: CanMatchFn = (route: Route, segments: UrlSegment[]) => {
         return router.createUrlTree(['/login']);
       }
 
-      const role = normalize(auth.getRole());
+      const role = normalizeRole(auth.getRole());
       if (environment.debug) {
         console.log('[RoleGuard] allowed=', Array.from(allowedNorm).join(','), 'roleRaw=', roleRaw, 'role=', role);
       }
