@@ -1,0 +1,9 @@
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; }
+.btn.full { width: 100%; }
+.btn.pill { border-radius: 9999px !important; }
+.btn.sky { color: #fff !important; background: linear-gradient(180deg, #8fd1ff, #6ab8fb) !important; }
+.btn.sky:hover { filter: brightness(.98); }
+.btn.secondary { background: #f3f4f6; color: #111827; }
+.btn.secondary:hover { background: #e5e7eb; }
+.mr { margin-right: .25rem; }
+.ml { margin-left: .25rem; }

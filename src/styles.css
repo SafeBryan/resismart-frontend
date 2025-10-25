@@ -1,1 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* Sidebar logout button contrast fix (Material inner label elements) */
+/* Outlined (stroked) button inside the blue sidebar */
+aside.sidebar .mat-mdc-outlined-button,
+aside.sidebar .mat-mdc-stroked-button { border-color: rgba(255,255,255,.7) !important; color: #ffffff !important; }
+aside.sidebar .mat-mdc-outlined-button .mdc-button__label,
+aside.sidebar .mat-mdc-stroked-button .mdc-button__label { color: #ffffff !important; }
+aside.sidebar .mat-mdc-outlined-button .mat-icon,
+aside.sidebar .mat-mdc-stroked-button .mat-icon { color: #ffffff !important; }

@@ -1,0 +1,41 @@
+/* Layout and shared styles aligned with Residentes page */
+.layout{display:grid;grid-template-columns:260px 1fr;min-height:100dvh}
+@media(max-width:1024px){.layout{grid-template-columns:1fr}.layout .sidebar{width:100%!important}}
+.content{padding:18px 22px;background:#f9fbfe}
+
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.header h1{margin:0;font-size:26px}
+.header p{margin:4px 0 0;color:#6b7280}
+.header .actions{display:flex;gap:10px;flex-wrap:wrap}
+
+.card{background:#fff;border:1px solid #dbe3ef;border-radius:14px;padding:12px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
+.filters{display:flex;gap:12px;align-items:center;margin:10px 0 10px}
+.details{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:8px 0 14px}
+.detail{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:10px}
+.detail span{display:block;color:#6b7280;font-size:12px}
+.detail b{font-size:14px}
+
+.units-header{display:flex;align-items:center;justify-content:space-between;margin:6px 0 10px}
+.table-wrapper{overflow:auto}
+.table{width:100%;border-collapse:separate;border-spacing:0}
+.table th,.table td{padding:10px 12px;border-bottom:1px solid #eef2f7;text-align:left}
+.table thead th{font-weight:600;color:#6b7280}
+.table .actions{white-space:nowrap;text-align:right}
+.empty{text-align:center;color:#6b7280;padding:18px}
+.empty.large{padding:28px}
+
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#e5e7eb;color:#374151;font-size:12px}
+.badge.ok{background:#DCFCE7;color:#166534}
+.badge.bad{background:#FFE4E6;color:#991B1B}
+
+.mat-mdc-paginator{border-top:1px solid #eef2f7;border-radius:0 0 14px 14px}
+.mat-mdc-paginator .mat-mdc-form-field-subscript-wrapper{display:none}
+.mat-mdc-paginator .mat-mdc-select-value{font-weight:600}
+
+/* Modals */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal-content{width:min(720px,92vw);background:#fff;border-radius:14px;padding:16px;border:1px solid #dbe3ef;box-shadow:0 10px 30px rgba(2,6,23,.2)}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+.modal-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
+.form-title{grid-column:1/-1;color:#0f172a;font-weight:600;margin:4px 0}
