@@ -1,27 +1,149 @@
 <div class="layout">
-  <app-sidebar></app-sidebar>
+  <app-sidebar class="sidebar"></app-sidebar>
+
   <main class="content">
-    <header class="header">
-      <h1>Dashboard Administrativo</h1>
-      <p class="muted">Resumen general del sistema ResiSmart</p>
-      <div class="actions">
-        <app-button label="Ver Reportes" variant="secondary"></app-button>
-        <app-button label="Acción Rápida" variant="primary"></app-button>
-      </div>
-    </header>
+    <div class="content-inner">
+      <!-- NUEVO CONTENEDOR -->
+      <header class="header">
+        <h1>Dashboard Administrativo</h1>
+        <p class="muted">Resumen general del sistema ResiSmart</p>
 
-    <section class="grid kpis">
-      <div class="box"><div class="title">Total Condominios</div><div class="value">12</div></div>
-      <div class="box"><div class="title">Total Residentes</div><div class="value">248</div></div>
-      <div class="box"><div class="title">Contratos Activos</div><div class="value">235</div></div>
-      <div class="box"><div class="title">Pagos Pendientes</div><div class="value">18</div></div>
-    </section>
+        <div class="actions">
+          <app-button label="Ver Reportes" variant="secondary"></app-button>
+          <app-button
+            label="Refrescar"
+            variant="secondary"
+            (click)="refrescar()"
+          ></app-button>
+          <app-button label="Acción Rápida" variant="primary"></app-button>
+        </div>
 
-    <section class="grid panels">
-      <div class="panel"><div class="title">Estado de Pagos Mensuales</div></div>
-      <div class="panel"><div class="title">Ingresos Mensuales</div></div>
-      <div class="panel"><div class="title">Actividad Reciente</div></div>
-      <div class="panel"><div class="title">Acciones Rápidas</div></div>
-    </section>
+        <div *ngIf="loading()" class="muted loading-hint">
+          Cargando datos...
+        </div>
+      </header>
+
+      <!-- KPIs (con colores) -->
+      <section class="grid kpis">
+        <div class="box kpi info">
+          <div class="title">Total Órdenes</div>
+          <div class="value">{{ kpis().totalOrdenes }}</div>
+        </div>
+        <div class="box kpi warn">
+          <div class="title">Pagos Pendientes</div>
+          <div class="value">{{ kpis().pendientes }}</div>
+        </div>
+        <div class="box kpi success">
+          <div class="title">Pagadas</div>
+          <div class="value">{{ kpis().pagadas }}</div>
+        </div>
+        <div class="box kpi indigo">
+          <div class="title">Con Comprobante</div>
+          <div class="value">{{ kpis().conComprobante }}</div>
+        </div>
+      </section>
+
+      <!-- Panels -->
+      <section class="grid panels">
+        <!-- Estado de Pagos (donut pequeño) -->
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Estado de Pagos</h3>
+            <span class="chip">Resumen</span>
+          </div>
+          <div class="chart-sm">
+            <canvas
+              baseChart
+              [data]="estadosData"
+              [options]="estadosOpts"
+              [type]="'doughnut'"
+            ></canvas>
+          </div>
+          <ul class="stat-list compact">
+            <li>
+              <span>Total</span><strong>{{ kpis().totalOrdenes }}</strong>
+            </li>
+            <li>
+              <span class="pill warn">Pendientes</span
+              ><strong>{{ kpis().pendientes }}</strong>
+            </li>
+            <li>
+              <span class="pill ok">Pagadas</span
+              ><strong>{{ kpis().pagadas }}</strong>
+            </li>
+            <li>
+              <span class="pill danger">Vencidas</span
+              ><strong>{{ kpis().vencidas }}</strong>
+            </li>
+            <li>
+              <span class="pill danger">En Mora</span
+              ><strong>{{ kpis().enMora }}</strong>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Ingresos Mensuales (barra pequeña) -->
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Ingresos Mensuales</h3>
+            <span class="chip muted">Actualizado</span>
+          </div>
+          <div class="chart-md">
+            <canvas
+              baseChart
+              [data]="ingresosData"
+              [options]="ingresosOpts"
+              [type]="'bar'"
+            ></canvas>
+          </div>
+          <p class="muted tiny-note">Calculado desde órdenes pagadas.</p>
+        </div>
+
+        <!-- Actividad Reciente -->
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Actividad Reciente</h3>
+            <span class="chip muted" *ngIf="actividades()?.length">
+              {{ actividades().length }} eventos
+            </span>
+          </div>
+
+          <ng-container *ngIf="actividades()?.length; else noActividad">
+            <ul class="recent-list">
+              <li
+                *ngFor="let a of actividades(); trackBy: trackByActividad"
+                class="recent-item"
+              >
+                <div class="row">
+                  <span class="pill">{{ a.accion || "EVENTO" }}</span>
+                  <strong>#DOC {{ a.documentoId }}</strong>
+                  <span class="muted user">{{ a.usuario || "sistema" }}</span>
+                </div>
+                <div class="row muted tiny">
+                  {{ a.fecha | date : "short" }}
+                </div>
+              </li>
+            </ul>
+          </ng-container>
+
+          <ng-template #noActividad>
+            <p class="muted">Sin actividad reciente.</p>
+          </ng-template>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="panel">
+          <div class="panel-head"><h3>Acciones Rápidas</h3></div>
+          <div class="quick-actions">
+            <app-button label="Generar Orden" variant="secondary"></app-button>
+            <app-button
+              label="Subir Comprobante"
+              variant="secondary"
+            ></app-button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <!-- /content-inner -->
   </main>
 </div>
