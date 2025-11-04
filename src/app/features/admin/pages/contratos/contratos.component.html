@@ -1,7 +1,203 @@
 <div class="layout">
   <app-sidebar></app-sidebar>
+
   <main class="content">
-    <h2>Página Contratos</h2>
+    <!-- HEADER -->
+    <div class="header">
+      <div>
+        <h1>Gestión de Contratos</h1>
+        <p>Administra contratos de arrendamiento y su vigencia</p>
+      </div>
+
+      <button mat-raised-button color="primary" (click)="abrirDetalle()">
+        <mat-icon fontIcon="add"></mat-icon>
+        Nuevo Contrato
+      </button>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filters">
+      <mat-form-field appearance="outline" class="search">
+        <mat-label>Buscar…</mat-label>
+        <input
+          matInput
+          placeholder="Residente, unidad, fecha o monto"
+          (input)="onBuscarChange($any($event.target).value)"
+        />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="estado">
+        <mat-label>Estado</mat-label>
+        <mat-select (valueChange)="onEstadoChange($event)">
+          <mat-option *ngFor="let e of estados" [value]="e.value">
+            {{ e.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-stroked-button (click)="refrescar()">
+        <mat-icon fontIcon="refresh"></mat-icon>
+        Refrescar
+      </button>
+    </div>
+
+    <!-- CARD + TABLA -->
+    <section class="card" *ngIf="!loading(); else cargando">
+      <div class="card-title">
+        <h3>Lista de Contratos ({{ totalFiltrados() }})</h3>
+        <small>Información detallada de contratos y su estado</small>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Residente</th>
+              <th>Unidad</th>
+              <th>Fechas</th>
+              <th>Monto</th>
+              <th>Estado</th>
+              <th>Renovación</th>
+              <th class="actions">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let c of filtrados(); trackBy: trackById">
+              <td>
+                <div class="cell-main">
+                  <div class="title">ID Residente: {{ c.idResidente }}</div>
+                  <div class="muted">Contrato #{{ c.id }}</div>
+                </div>
+              </td>
+
+              <td>
+                <div class="cell-main">
+                  <div class="title">Unidad {{ c.idUnidad }}</div>
+                  <div class="muted">—</div>
+                </div>
+              </td>
+
+              <td>
+                <div class="fechas">
+                  <div>
+                    Inicio: <strong>{{ c.fechaInicio }}</strong>
+                  </div>
+                  <div *ngIf="c.fechaFin">
+                    Fin: <strong>{{ c.fechaFin }}</strong>
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <strong>${{ c.monto | number : "1.2-2" }}</strong>
+              </td>
+
+              <td>
+                <span
+                  class="badge estado"
+                  [class.pendiente]="c.estado === 'PENDIENTE'"
+                  [class.activo]="c.estado === 'ACTIVO'"
+                  [class.rescindido]="c.estado === 'RESCINDIDO'"
+                  [class.finalizado]="c.estado === 'FINALIZADO'"
+                >
+                  {{ c.estado }}
+                </span>
+              </td>
+
+              <td>
+                <button
+                  *ngIf="c.estado === 'ACTIVO'"
+                  mat-stroked-button
+                  color="primary"
+                  (click)="confirmarRenovar(c)"
+                >
+                  <mat-icon fontIcon="event"></mat-icon>
+                  Renovar
+                </button>
+              </td>
+
+              <td class="actions">
+                <button
+                  mat-stroked-button
+                  color="accent"
+                  (click)="abrirDetalleExistente(c)"
+                >
+                  <mat-icon fontIcon="visibility"></mat-icon>
+                  Ver
+                </button>
+
+                <button
+                  *ngIf="c.estado === 'ACTIVO'"
+                  mat-stroked-button
+                  color="warn"
+                  (click)="confirmarRescindir(c)"
+                >
+                  <mat-icon fontIcon="block"></mat-icon>
+                  Rescindir
+                </button>
+
+                <button
+                  class="danger"
+                  mat-stroked-button
+                  (click)="confirmarEliminar(c)"
+                >
+                  <mat-icon fontIcon="delete"></mat-icon>
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="!filtrados().length">
+              <td colspan="7" class="empty">Sin resultados</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- LOADER -->
+    <ng-template #cargando>
+      <div class="loader">
+        <mat-icon fontIcon="hourglass_empty"></mat-icon>
+        Cargando contratos…
+      </div>
+    </ng-template>
+
+    <!-- ERROR -->
+    <div *ngIf="errorMsg()" class="error">
+      <mat-icon fontIcon="error_outline"></mat-icon>
+      {{ errorMsg() }}
+    </div>
+
+    <!-- KPIs -->
+    <section class="stats">
+      <div class="stat">
+        <h4>{{ stats().total }}</h4>
+        <p>Total Contratos</p>
+      </div>
+      <div class="stat">
+        <h4>{{ stats().activos }}</h4>
+        <p>Contratos Activos</p>
+      </div>
+      <div class="stat">
+        <h4>{{ stats().proximosAVencer }}</h4>
+        <p>Próximos a Vencer</p>
+      </div>
+      <div class="stat">
+        <h4>${{ stats().ingresosMensuales | number : "1.2-2" }}</h4>
+        <p>Ingresos Mensuales</p>
+      </div>
+    </section>
+
+    <!-- DIALOG CONTRATO -->
+    <app-contrato-dialog
+      [visible]="dialogVisible()"
+      [mode]="dialogMode()"
+      [contrato]="dialogContrato()"
+      (close)="onDialogClose()"
+      (saved)="onDialogSaved($event)"
+    >
+    </app-contrato-dialog>
   </main>
 </div>
-
