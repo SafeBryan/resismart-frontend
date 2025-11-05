@@ -51,6 +51,19 @@
   flex-wrap: wrap;
 }
 
+.alert {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 13px;
+}
+
+.alert.error {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
 .filters {
   display: flex;
   gap: 10px;
@@ -84,6 +97,12 @@
 .avisos-grid {
   display: grid;
   gap: 18px;
+}
+
+.muted.loading,
+.muted.empty {
+  text-align: center;
+  padding: 12px 0;
 }
 
 .aviso-card {
@@ -177,6 +196,12 @@
   color: #92400e;
 }
 
+.pill.categoria.documento {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+  color: #5b21b6;
+}
+
 .pill.estado {
   background: #f9fafb;
   border-color: #e5e7eb;
@@ -199,6 +224,24 @@
   background: #e5e7eb;
   border-color: #d1d5db;
   color: #4b5563;
+}
+
+.pill.estado.recordatorio {
+  background: #fef3c7;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.pill.estado.pago {
+  background: #dcfce7;
+  border-color: #bbf7d0;
+  color: #047857;
+}
+
+.pill.estado.info {
+  background: #e0f2fe;
+  border-color: #bae6fd;
+  color: #0369a1;
 }
 
 @media (max-width: 1200px) {

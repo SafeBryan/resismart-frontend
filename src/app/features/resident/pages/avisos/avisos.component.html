@@ -1,4 +1,4 @@
-<div class="layout">
+﻿<div class="layout">
   <app-sidebar class="sidebar" [nav]="residentNav" subtitle="Residente"></app-sidebar>
 
   <main class="content">
@@ -7,11 +7,11 @@
         <div>
           <h1>Avisos y comunicados</h1>
           <p class="muted">
-            Consulta los últimos avisos importantes del condominio. Filtra por categoría para encontrar lo que necesitas.
+            Consulta los ultimos avisos importantes del condominio. Filtra por categoria para encontrar lo que necesitas.
           </p>
         </div>
         <div class="head-actions">
-          <app-button label="Marcar todo como leído" variant="secondary"></app-button>
+          <app-button label="Marcar todo como leido" variant="secondary"></app-button>
         </div>
       </header>
 
@@ -20,33 +20,46 @@
           type="button"
           *ngFor="let filtro of filtros"
           class="filter-chip"
-          [class.active]="filtroSeleccionado === filtro.value"
+          [class.active]="filtroSeleccionado() === filtro.value"
           (click)="seleccionarFiltro(filtro.value)"
         >
           {{ filtro.label }}
         </button>
       </section>
 
+      <div class="alert error" *ngIf="error()">{{ error() }}</div>
+
       <section class="avisos-grid">
-        <article class="aviso-card" *ngFor="let aviso of avisosFiltrados">
-          <header>
-            <div>
-              <span class="pill categoria" [ngClass]="categoriaClass(aviso.categoria)">{{ aviso.categoria }}</span>
-              <span class="pill estado" [ngClass]="estadoClass(aviso.estado)">{{ aviso.estado }}</span>
-            </div>
-            <span class="fecha">{{ aviso.fecha }}</span>
-          </header>
-          <h2>{{ aviso.titulo }}</h2>
-          <p class="descripcion">{{ aviso.descripcion }}</p>
-          <footer>
-            <span class="muted">Responsable: {{ aviso.responsable }}</span>
-            <div class="acciones">
-              <app-button label="Ver detalle" variant="secondary"></app-button>
-              <app-button label="Archivar" variant="secondary"></app-button>
-            </div>
-          </footer>
-        </article>
+        <p class="muted loading" *ngIf="loading()">Cargando avisos...</p>
+
+        <ng-container *ngIf="!loading() && avisosFiltrados().length; else sinResultados">
+          <article class="aviso-card" *ngFor="let aviso of avisosFiltrados()">
+            <header>
+              <div>
+                <span class="pill categoria" [ngClass]="[aviso.categoria]">{{ aviso.categoria | titlecase }}</span>
+                <span class="pill estado" [ngClass]="aviso.etiqueta">{{ aviso.etiqueta | titlecase }}</span>
+              </div>
+              <span class="fecha">{{ aviso.fecha }}</span>
+            </header>
+            <h2>{{ aviso.titulo }}</h2>
+            <p class="descripcion">{{ aviso.mensaje }}</p>
+            <footer>
+              <span class="muted">Responsable: {{ aviso.responsable }}</span>
+              <div class="acciones">
+                <app-button label="Ver detalle" variant="secondary"></app-button>
+                <app-button label="Archivar" variant="secondary"></app-button>
+              </div>
+            </footer>
+          </article>
+        </ng-container>
+
+        <ng-template #sinResultados>
+          <p class="muted empty">
+            No hay avisos para la categoria seleccionada.
+          </p>
+        </ng-template>
       </section>
     </div>
   </main>
 </div>
+

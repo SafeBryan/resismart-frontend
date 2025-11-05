@@ -52,6 +52,19 @@
   flex-wrap: wrap;
 }
 
+.alert {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 13px;
+}
+
+.alert.error {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
 .grid {
   display: grid;
   gap: 20px;

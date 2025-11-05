@@ -1,17 +1,17 @@
-<div class="layout">
+﻿<div class="layout">
   <app-sidebar class="sidebar" [nav]="residentNav" subtitle="Residente"></app-sidebar>
 
   <main class="content">
     <div class="content-inner">
       <header class="topbar">
         <div class="welcome" *ngIf="(user$ | async) as user; else anonUser">
-          <p class="greeting">Hola, {{ user.profile?.nombres || 'Residente' }} 👋</p>
-          <span class="muted">Este es tu panel principal con lo más importante del condominio.</span>
+          <p class="greeting">Hola, {{ user.profile?.nombres || 'Residente' }}</p>
+          <span class="muted">Este es tu panel principal con lo mas importante del condominio.</span>
         </div>
         <ng-template #anonUser>
           <div class="welcome">
-            <p class="greeting">Bienvenido a ResiSmart 👋</p>
-            <span class="muted">Consulta tus avisos, eventos y documentos desde aquí.</span>
+            <p class="greeting">Bienvenido a ResiSmart</p>
+            <span class="muted">Consulta tus avisos, eventos y documentos desde aqui.</span>
           </div>
         </ng-template>
 
@@ -19,7 +19,7 @@
           <button type="button" class="avisos-btn" (click)="toggleAvisos($event)">
             <mat-icon>campaign</mat-icon>
             <span>Avisos</span>
-            <span class="badge">{{ avisos.length }}</span>
+            <span class="badge">{{ avisos().length }}</span>
           </button>
           <app-button label="Ver contratos" variant="secondary" [routerLink]="'/home/contratos'"></app-button>
           <app-button label="Subir comprobante" variant="secondary" [routerLink]="'/home/comprobantes'"></app-button>
@@ -28,42 +28,72 @@
         <div class="avisos-dropdown" *ngIf="avisosOpen" (click)="$event.stopPropagation()">
           <header>
             <h3>Avisos recientes</h3>
-            <span class="muted">{{ avisos.length }} pendientes</span>
+            <span class="muted">
+              {{ avisos().length ? (avisos().length + ' registrados') : 'Sin avisos nuevos' }}
+            </span>
           </header>
-          <ul>
-            <li *ngFor="let aviso of avisos" class="aviso-item">
-              <div class="aviso-meta">
-                <span class="pill" [ngClass]="aviso.etiqueta">{{ aviso.etiqueta || 'info' }}</span>
-                <span class="fecha">{{ aviso.fecha }}</span>
-              </div>
-              <h4>{{ aviso.titulo }}</h4>
-              <p>{{ aviso.descripcion }}</p>
-            </li>
-          </ul>
+          <ng-container *ngIf="avisos().length; else noAvisos">
+            <ul>
+              <li *ngFor="let aviso of avisos()" class="aviso-item">
+                <div class="aviso-meta">
+                  <span class="pill" [ngClass]="aviso.etiqueta">{{ aviso.etiqueta }}</span>
+                  <span class="fecha">{{ aviso.fecha }}</span>
+                </div>
+                <h4>{{ aviso.titulo }}</h4>
+                <p>{{ aviso.mensaje }}</p>
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #noAvisos>
+            <p class="muted empty">No hay avisos por ahora.</p>
+          </ng-template>
           <footer>
             <app-button label="Ir a avisos" variant="secondary" [routerLink]="'/home/avisos'"></app-button>
           </footer>
         </div>
       </header>
 
+      <div class="alert error" *ngIf="error()">{{ error() }}</div>
+
       <section class="grid main">
-        <article class="card user-card" *ngIf="(user$ | async) as user">
+        <article class="card user-card" *ngIf="context() as ctx; else loadingCard">
           <div class="card-head">
             <h2>Datos del usuario</h2>
-            <span class="status">Departamento B-402</span>
+            <span class="status" *ngIf="ctx.residente?.unidad?.numero as unidad">
+              Unidad {{ unidad }}
+            </span>
           </div>
           <ul class="details">
             <li>
               <span>Nombre completo</span>
-              <strong>{{ user.profile?.nombres }} {{ user.profile?.apellidos }}</strong>
+              <strong>
+                {{
+                  ctx.residente?.usuario?.nombres
+                    || ctx.usuario?.nombres
+                    || (user$ | async)?.profile?.nombres
+                    || 'N/D'
+                }}
+                {{
+                  ctx.residente?.usuario?.apellidos
+                    || ctx.usuario?.apellidos
+                    || (user$ | async)?.profile?.apellidos
+                    || ''
+                }}
+              </strong>
             </li>
             <li>
               <span>Correo de contacto</span>
-              <strong>{{ user.profile?.email || 'Actualizar desde Mis Datos' }}</strong>
+              <strong>
+                {{
+                  ctx.residente?.usuario?.correo
+                    || (user$ | async)?.profile?.email
+                    || 'Actualiza tus datos desde Mis Datos'
+                }}
+              </strong>
             </li>
             <li>
               <span>Rol dentro de ResiSmart</span>
-              <strong>Residente</strong>
+              <strong>{{ ctx.usuario?.rol || 'Residente' }}</strong>
             </li>
           </ul>
           <div class="card-actions">
@@ -74,24 +104,29 @@
         <article class="card events-card">
           <div class="card-head">
             <h2>Panel de eventos</h2>
-            <span class="muted">Mantente al día con las actividades de tu comunidad</span>
+            <span class="muted">Mantente al dia con las actividades de tu comunidad</span>
           </div>
-          <ul class="event-list">
-            <li *ngFor="let evento of eventos" class="event-item">
-              <div class="when">
-                <span class="day">{{ evento.fecha }}</span>
-                <span class="hour">{{ evento.hora }}</span>
-              </div>
-              <div class="info">
-                <h3>{{ evento.titulo }}</h3>
-                <span class="location">
-                  <mat-icon>place</mat-icon>
-                  {{ evento.lugar }}
-                </span>
-                <p>{{ evento.descripcion }}</p>
-              </div>
-            </li>
-          </ul>
+          <ng-container *ngIf="eventos().length; else noEventos">
+            <ul class="event-list">
+              <li *ngFor="let evento of eventos()" class="event-item">
+                <div class="when">
+                  <span class="day">{{ evento.fecha }}</span>
+                  <span class="hour">{{ evento.hora }}</span>
+                </div>
+                <div class="info">
+                  <h3>{{ evento.titulo }}</h3>
+                  <span class="location" *ngIf="evento.lugar">
+                    <mat-icon>place</mat-icon>
+                    {{ evento.lugar }}
+                  </span>
+                  <p>{{ evento.descripcion }}</p>
+                </div>
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #noEventos>
+            <p class="muted">No hay eventos programados todavia.</p>
+          </ng-template>
         </article>
       </section>
 
@@ -101,43 +136,54 @@
             <h3>Resumen de pagos</h3>
             <span class="muted">Estado de tus cuotas mensuales</span>
           </div>
-          <ul class="stat-list">
-            <li *ngFor="let pago of resumenPagos">
-              <div>
-                <strong>{{ pago.concepto }}</strong>
-                <span class="muted">Estado: {{ pago.estado }}</span>
-              </div>
-              <span class="monto">{{ pago.monto }}</span>
-            </li>
-          </ul>
+          <ng-container *ngIf="resumenPagos().length; else noPagos">
+            <ul class="stat-list">
+              <li *ngFor="let pago of resumenPagos()" [ngClass]="pago.estadoClass">
+                <div>
+                  <strong>{{ pago.concepto }}</strong>
+                  <span class="muted">Estado: {{ pago.estadoLabel }}</span>
+                  <span class="muted" *ngIf="pago.venceLabel">{{ pago.venceLabel }}</span>
+                </div>
+                <span class="monto">{{ pago.monto }}</span>
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #noPagos>
+            <p class="muted">Sin cuotas pendientes registradas.</p>
+          </ng-template>
         </article>
 
         <article class="card quick-card">
           <div class="card-head">
-            <h3>Acciones rápidas</h3>
+            <h3>Acciones rapidas</h3>
             <span class="muted">Gestiona tu condominio sin complicaciones</span>
           </div>
           <div class="quick-actions">
             <app-button label="Descargar estado de cuenta" variant="secondary"></app-button>
             <app-button label="Solicitar soporte" variant="secondary"></app-button>
-            <app-button label="Reservar área común" variant="secondary"></app-button>
+            <app-button label="Reservar area comun" variant="secondary"></app-button>
           </div>
         </article>
 
         <article class="card docs-card">
           <div class="card-head">
             <h3>Documentos recientes</h3>
-            <span class="muted">Últimos movimientos registrados</span>
+            <span class="muted">Ultimos movimientos registrados</span>
           </div>
-          <ul class="docs-list">
-            <li *ngFor="let doc of documentos">
-              <div>
-                <strong>{{ doc.nombre }}</strong>
-                <span class="muted">{{ doc.fecha }}</span>
-              </div>
-              <span class="pill" [ngClass]="formatEstado(doc.estado)">{{ doc.estado }}</span>
-            </li>
-          </ul>
+          <ng-container *ngIf="documentos().length; else noDocs">
+            <ul class="docs-list">
+              <li *ngFor="let doc of documentos()">
+                <div>
+                  <strong>{{ doc.nombre }}</strong>
+                  <span class="muted">{{ doc.fecha }}</span>
+                </div>
+                <span class="pill" [ngClass]="doc.estadoClass">{{ doc.estadoLabel }}</span>
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #noDocs>
+            <p class="muted">Sin documentos recientes para mostrar.</p>
+          </ng-template>
           <div class="card-actions">
             <app-button label="Ver todo" variant="secondary" [routerLink]="'/home/comprobantes'"></app-button>
           </div>
@@ -146,3 +192,25 @@
     </div>
   </main>
 </div>
+
+<ng-template #noEventos>
+  <p class="muted">No hay eventos programados todavia.</p>
+</ng-template>
+
+<ng-template #noPagos>
+  <p class="muted">Sin cuotas pendientes registradas.</p>
+</ng-template>
+
+<ng-template #noDocs>
+  <p class="muted">Sin documentos recientes para mostrar.</p>
+</ng-template>
+
+<ng-template #loadingCard>
+  <article class="card user-card">
+    <div class="card-head">
+      <h2>Datos del usuario</h2>
+    </div>
+    <p class="muted">Cargando informacion...</p>
+  </article>
+</ng-template>
+

@@ -1,65 +1,74 @@
-<div class="layout">
+﻿<div class="layout">
   <app-sidebar class="sidebar" [nav]="residentNav" subtitle="Residente"></app-sidebar>
 
   <main class="content">
     <div class="content-inner">
       <header class="page-head">
         <div>
-          <h1>Gestión de contratos</h1>
+          <h1>Gestion de contratos</h1>
           <p class="muted">
-            Administra tu contrato vigente, consulta vencimientos y mantén tus pagos al día.
+            Administra tu contrato vigente, consulta vencimientos y manten tus pagos al dia.
           </p>
         </div>
         <div class="head-actions">
           <app-button label="Descargar contrato PDF" variant="secondary"></app-button>
-          <app-button label="Solicitar renovación" variant="secondary"></app-button>
+          <app-button label="Solicitar renovacion" variant="secondary"></app-button>
         </div>
       </header>
 
+      <div class="alert error" *ngIf="error()">{{ error() }}</div>
+
       <section class="grid main">
-        <article class="card contrato-actual">
-          <header>
-            <div>
-              <span class="pill estado" [ngClass]="statusClass(contratoActual.estado)">{{ contratoActual.estado }}</span>
-              <h2>{{ contratoActual.nombre }}</h2>
+        <ng-container *ngIf="contratoActual() as contrato; else sinContrato">
+          <article class="card contrato-actual">
+            <header>
+              <div>
+                <span class="pill estado" [ngClass]="contrato.estadoClass">{{ contrato.estado }}</span>
+                <h2>{{ contrato.nombre }}</h2>
+              </div>
+              <span class="muted">Vigencia: {{ contrato.vigencia }}</span>
+            </header>
+            <div class="datos">
+              <div class="dato">
+                <span class="label">Monto mensual</span>
+                <strong>{{ contrato.monto }}</strong>
+              </div>
+              <div class="dato" *ngIf="contrato.proximoPago">
+                <span class="label">Proximo pago</span>
+                <strong>{{ contrato.proximoPago }}</strong>
+              </div>
             </div>
-            <span class="muted">Vigencia: {{ contratoActual.vigencia }}</span>
-          </header>
-          <div class="datos">
-            <div class="dato">
-              <span class="label">Monto mensual</span>
-              <strong>{{ contratoActual.monto }}</strong>
-            </div>
-            <div class="dato">
-              <span class="label">Próximo pago</span>
-              <strong>{{ contratoActual.proximoPago }}</strong>
-            </div>
-          </div>
-          <p class="descripcion">{{ contratoActual.descripcion }}</p>
-          <footer>
-            <app-button label="Ver detalle completo" variant="primary"></app-button>
-            <span class="muted aviso">Recuerda subir tu comprobante dentro de las 24 horas posteriores al pago.</span>
-          </footer>
-        </article>
+            <p class="descripcion">{{ contrato.descripcion }}</p>
+            <footer>
+              <app-button label="Ver detalle completo" variant="primary"></app-button>
+              <span class="muted aviso">Recuerda subir tu comprobante dentro de las 24 horas posteriores al pago.</span>
+            </footer>
+          </article>
+        </ng-container>
 
         <article class="card timeline-card">
           <div class="card-head">
             <h2>Recordatorios de pago</h2>
             <span class="muted">Fechas claves y estado actual</span>
           </div>
-          <ul class="timeline">
-            <li *ngFor="let item of renovaciones" [ngClass]="statusClass(item.estado)">
-              <div class="timeline-marker"></div>
-              <div class="timeline-body">
-                <div class="timeline-header">
-                  <strong>{{ item.titulo }}</strong>
-                  <span class="fecha">{{ item.fecha }}</span>
+          <ng-container *ngIf="recordatorios().length; else sinRecordatorios">
+            <ul class="timeline">
+              <li *ngFor="let item of recordatorios()" [ngClass]="item.estadoClass">
+                <div class="timeline-marker"></div>
+                <div class="timeline-body">
+                  <div class="timeline-header">
+                    <strong>{{ item.titulo }}</strong>
+                    <span class="fecha">{{ item.fecha }}</span>
+                  </div>
+                  <span class="pill estado" [ngClass]="item.estadoClass">{{ item.estado }}</span>
+                  <p>{{ item.detalle }}</p>
                 </div>
-                <span class="pill estado" [ngClass]="statusClass(item.estado)">{{ item.estado }}</span>
-                <p>{{ item.detalle }}</p>
-              </div>
-            </li>
-          </ul>
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #sinRecordatorios>
+            <p class="muted">Sin cuotas registradas todavia.</p>
+          </ng-template>
         </article>
       </section>
 
@@ -69,15 +78,20 @@
             <h2>Documentos asociados</h2>
             <span class="muted">Descarga o revisa tus archivos</span>
           </div>
-          <ul class="docs-list">
-            <li *ngFor="let doc of documentos">
-              <div>
-                <strong>{{ doc.nombre }}</strong>
-                <span class="muted">Tipo: {{ doc.tipo }} · Actualizado {{ doc.fecha }}</span>
-              </div>
-              <app-button [label]="doc.accion" variant="secondary"></app-button>
-            </li>
-          </ul>
+          <ng-container *ngIf="documentos().length; else sinDocumentos">
+            <ul class="docs-list">
+              <li *ngFor="let doc of documentos()">
+                <div>
+                  <strong>{{ doc.nombre }}</strong>
+                  <span class="muted">Tipo: {{ doc.tipo }} - Actualizado {{ doc.fecha }}</span>
+                </div>
+                <app-button [label]="doc.accion" variant="secondary"></app-button>
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #sinDocumentos>
+            <p class="muted">Aun no hay documentos vinculados al contrato.</p>
+          </ng-template>
         </article>
 
         <article class="card tips-card">
@@ -86,25 +100,11 @@
             <span class="muted">Antes de que venza tu contrato</span>
           </div>
           <ul class="tips-list">
-            <li>
-              <mat-icon>check_circle</mat-icon>
+            <li *ngFor="let tip of tips">
+              <mat-icon>{{ tip.icon }}</mat-icon>
               <div>
-                <strong>Verifica tu información</strong>
-                <p>Mantén tus datos personales actualizados en la sección “Mis Datos”.</p>
-              </div>
-            </li>
-            <li>
-              <mat-icon>cloud_upload</mat-icon>
-              <div>
-                <strong>Sube tus comprobantes</strong>
-                <p>Guarda una copia digital de cada pago mensual para evitar contratiempos.</p>
-              </div>
-            </li>
-            <li>
-              <mat-icon>support_agent</mat-icon>
-              <div>
-                <strong>Contacta a administración</strong>
-                <p>Si necesitas renegociar los términos, agenda una cita con soporte.</p>
+                <strong>{{ tip.titulo }}</strong>
+                <p>{{ tip.descripcion }}</p>
               </div>
             </li>
           </ul>
@@ -113,3 +113,11 @@
     </div>
   </main>
 </div>
+
+<ng-template #sinContrato>
+  <article class="card contrato-actual">
+    <h2>Sin contratos registrados</h2>
+    <p class="muted">Por el momento no encontramos contratos asociados a tu cuenta.</p>
+  </article>
+</ng-template>
+

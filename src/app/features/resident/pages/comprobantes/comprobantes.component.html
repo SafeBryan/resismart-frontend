@@ -1,4 +1,4 @@
-<div class="layout">
+﻿<div class="layout">
   <app-sidebar class="sidebar" [nav]="residentNav" subtitle="Residente"></app-sidebar>
 
   <main class="content">
@@ -7,7 +7,7 @@
         <div>
           <h1>Comprobantes y pagos</h1>
           <p class="muted">
-            Registra tus pagos de mantenimiento y adjunta los comprobantes para una revisión rápida.
+            Registra tus pagos de mantenimiento y adjunta los comprobantes para una revision rapida.
           </p>
         </div>
         <div class="head-actions">
@@ -15,17 +15,30 @@
         </div>
       </header>
 
+      <div class="alert error" *ngIf="error()">{{ error() }}</div>
+      <div class="alert success" *ngIf="success()">{{ success() }}</div>
+
       <section class="grid main">
         <article class="card upload-card">
           <div class="card-head">
             <h2>Subir nuevo comprobante</h2>
-            <span class="muted">Formatos permitidos: PDF, JPG o PNG · Máximo recomendado 5 MB</span>
+            <span class="muted">Formatos permitidos: PDF, JPG o PNG - Maximo recomendado 5 MB</span>
           </div>
 
           <div class="form-grid">
-            <app-input placeholder="Número de operación o referencia" [(model)]="form.operacion"></app-input>
+            <app-input placeholder="Numero de operacion o referencia" [(model)]="form.operacion"></app-input>
             <app-input placeholder="Monto pagado" [(model)]="form.monto"></app-input>
-            <app-input placeholder="Descripción opcional" [(model)]="form.descripcion"></app-input>
+            <app-input placeholder="Descripcion opcional" [(model)]="form.descripcion"></app-input>
+          </div>
+
+          <div class="select-row">
+            <label for="ordenId">Asociar a orden de pago</label>
+            <select id="ordenId" [(ngModel)]="selectedOrdenIdModel">
+              <option [ngValue]="null">Sin asociar</option>
+              <option *ngFor="let item of ordenesDisponibles()" [ngValue]="item.id">
+                {{ item.label }}
+              </option>
+            </select>
           </div>
 
           <div class="file-upload">
@@ -34,18 +47,22 @@
               <mat-icon>upload_file</mat-icon>
               <div>
                 <strong>Arrastra tu comprobante o haz clic para seleccionarlo</strong>
-                <p *ngIf="selectedFileName; else placeholder">{{ selectedFileName }}</p>
+                <p *ngIf="selectedFileName(); else placeholder">{{ selectedFileName() }}</p>
                 <ng-template #placeholder>
-                  <p>Incluye información clara del pago para evitar rechazos.</p>
+                  <p>Incluye informacion clara del pago para evitar rechazos.</p>
                 </ng-template>
               </div>
             </label>
           </div>
 
           <div class="card-actions">
-            <app-button label="Guardar comprobante" variant="primary"></app-button>
+            <app-button
+              label="Guardar comprobante"
+              variant="primary"
+              (clicked)="onSubmit()"
+            ></app-button>
             <span class="muted helper">
-              Una vez enviado, administración revisará el documento y te notificará por correo.
+              Una vez enviado, administracion revisara el documento y te notificara por correo.
             </span>
           </div>
         </article>
@@ -55,25 +72,22 @@
             <h2>Resumen del contrato</h2>
             <span class="muted">Datos clave de tu contrato y pagos</span>
           </div>
-          <ul class="info-list">
-            <li>
-              <span>Contrato vigente</span>
-              <strong>Arrendamiento · Torre B - Dpto. 402</strong>
-            </li>
-            <li>
-              <span>Vigencia</span>
-              <strong>01 Ene 2025 - 31 Dic 2025</strong>
-            </li>
-            <li>
-              <span>Próximo pago</span>
-              <strong>10 nov 2025 · $120.00</strong>
-            </li>
-            <li>
-              <span>Responsable</span>
-              <strong>Administración Condominio Aurora</strong>
-            </li>
-          </ul>
-          <div class="alert">
+          <ng-container *ngIf="resumenContrato() as resumen; else sinResumen">
+            <ul class="info-list">
+              <li>
+                <span>Contrato vigente</span>
+                <strong>{{ resumen.titulo }}</strong>
+              </li>
+              <li>
+                <span>Vigencia</span>
+                <strong>{{ resumen.descripcion }}</strong>
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #sinResumen>
+            <p class="muted">Sin informacion de contrato disponible.</p>
+          </ng-template>
+          <div class="alert info">
             <mat-icon>info</mat-icon>
             <p>
               Recuerda subir el comprobante dentro de las 24 horas posteriores al pago para evitar recargos.
@@ -86,26 +100,31 @@
         <article class="card pendientes-card">
           <div class="card-head">
             <h2>Comprobantes registrados</h2>
-            <span class="muted">Estado de tus últimos pagos</span>
+            <span class="muted">Estado de tus ultimos pagos</span>
           </div>
-          <ul class="pendientes-list">
-            <li *ngFor="let item of pendientes">
-              <div class="concepto">
-                <strong>{{ item.concepto }}</strong>
-                <span class="muted">{{ item.periodo }} · Ref: {{ item.referencia }}</span>
-              </div>
-              <div class="estado">
-                <span class="pill" [ngClass]="statusClass(item.estado)">{{ item.estado }}</span>
-                <span class="vence">Vence {{ item.vence }}</span>
-                <strong class="monto">{{ item.monto }}</strong>
-              </div>
-            </li>
-          </ul>
+          <ng-container *ngIf="pendientes().length; else sinPendientes">
+            <ul class="pendientes-list">
+              <li *ngFor="let item of pendientes()" [ngClass]="item.clase">
+                <div class="concepto">
+                  <strong>{{ item.concepto }}</strong>
+                  <span class="muted">{{ item.periodo }}</span>
+                </div>
+                <div class="estado">
+                  <span class="pill" [ngClass]="item.clase">{{ item.estado }}</span>
+                  <span class="vence" *ngIf="item.vence">{{ item.vence }}</span>
+                  <strong class="monto">{{ item.monto }}</strong>
+                </div>
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #sinPendientes>
+            <p class="muted">No hay ordenes registradas todavia.</p>
+          </ng-template>
         </article>
 
         <article class="card pasos-card">
           <div class="card-head">
-            <h2>Guía para subir comprobantes</h2>
+            <h2>Guia para subir comprobantes</h2>
             <span class="muted">Sigue estos pasos para evitar rechazos</span>
           </div>
           <ol class="pasos-list">
