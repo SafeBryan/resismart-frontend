@@ -1,0 +1,121 @@
+<div class="layout">
+  <app-sidebar class="sidebar" [nav]="residentNav" subtitle="Residente"></app-sidebar>
+
+  <main class="content">
+    <div class="content-inner">
+      <header class="page-head">
+        <div>
+          <h1>Comprobantes y pagos</h1>
+          <p class="muted">
+            Registra tus pagos de mantenimiento y adjunta los comprobantes para una revisión rápida.
+          </p>
+        </div>
+        <div class="head-actions">
+          <app-button label="Ver historial completo" variant="secondary"></app-button>
+        </div>
+      </header>
+
+      <section class="grid main">
+        <article class="card upload-card">
+          <div class="card-head">
+            <h2>Subir nuevo comprobante</h2>
+            <span class="muted">Formatos permitidos: PDF, JPG o PNG · Máximo recomendado 5 MB</span>
+          </div>
+
+          <div class="form-grid">
+            <app-input placeholder="Número de operación o referencia" [(model)]="form.operacion"></app-input>
+            <app-input placeholder="Monto pagado" [(model)]="form.monto"></app-input>
+            <app-input placeholder="Descripción opcional" [(model)]="form.descripcion"></app-input>
+          </div>
+
+          <div class="file-upload">
+            <input type="file" id="archivo" class="file-input" (change)="onFileSelected($event)" />
+            <label for="archivo" class="file-drop">
+              <mat-icon>upload_file</mat-icon>
+              <div>
+                <strong>Arrastra tu comprobante o haz clic para seleccionarlo</strong>
+                <p *ngIf="selectedFileName; else placeholder">{{ selectedFileName }}</p>
+                <ng-template #placeholder>
+                  <p>Incluye información clara del pago para evitar rechazos.</p>
+                </ng-template>
+              </div>
+            </label>
+          </div>
+
+          <div class="card-actions">
+            <app-button label="Guardar comprobante" variant="primary"></app-button>
+            <span class="muted helper">
+              Una vez enviado, administración revisará el documento y te notificará por correo.
+            </span>
+          </div>
+        </article>
+
+        <article class="card resumen-card">
+          <div class="card-head">
+            <h2>Resumen del contrato</h2>
+            <span class="muted">Datos clave de tu contrato y pagos</span>
+          </div>
+          <ul class="info-list">
+            <li>
+              <span>Contrato vigente</span>
+              <strong>Arrendamiento · Torre B - Dpto. 402</strong>
+            </li>
+            <li>
+              <span>Vigencia</span>
+              <strong>01 Ene 2025 - 31 Dic 2025</strong>
+            </li>
+            <li>
+              <span>Próximo pago</span>
+              <strong>10 nov 2025 · $120.00</strong>
+            </li>
+            <li>
+              <span>Responsable</span>
+              <strong>Administración Condominio Aurora</strong>
+            </li>
+          </ul>
+          <div class="alert">
+            <mat-icon>info</mat-icon>
+            <p>
+              Recuerda subir el comprobante dentro de las 24 horas posteriores al pago para evitar recargos.
+            </p>
+          </div>
+        </article>
+      </section>
+
+      <section class="grid secondary">
+        <article class="card pendientes-card">
+          <div class="card-head">
+            <h2>Comprobantes registrados</h2>
+            <span class="muted">Estado de tus últimos pagos</span>
+          </div>
+          <ul class="pendientes-list">
+            <li *ngFor="let item of pendientes">
+              <div class="concepto">
+                <strong>{{ item.concepto }}</strong>
+                <span class="muted">{{ item.periodo }} · Ref: {{ item.referencia }}</span>
+              </div>
+              <div class="estado">
+                <span class="pill" [ngClass]="statusClass(item.estado)">{{ item.estado }}</span>
+                <span class="vence">Vence {{ item.vence }}</span>
+                <strong class="monto">{{ item.monto }}</strong>
+              </div>
+            </li>
+          </ul>
+        </article>
+
+        <article class="card pasos-card">
+          <div class="card-head">
+            <h2>Guía para subir comprobantes</h2>
+            <span class="muted">Sigue estos pasos para evitar rechazos</span>
+          </div>
+          <ol class="pasos-list">
+            <li *ngFor="let paso of pasos">
+              <strong>{{ paso.titulo }}</strong>
+              <p>{{ paso.descripcion }}</p>
+            </li>
+          </ol>
+        </article>
+      </section>
+    </div>
+  </main>
+</div>

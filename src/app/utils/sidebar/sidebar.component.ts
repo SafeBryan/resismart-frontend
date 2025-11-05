@@ -1,11 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../core/services/auth.service';
 
-type NavItem = { label: string; path: string; icon?: string };
+export type NavItem = { label: string; path: string; icon?: string };
 
 @Component({
   selector: 'app-sidebar',
@@ -20,7 +20,11 @@ export class SidebarComponent {
 
   user$ = this.auth.auth$;
 
-  nav: NavItem[] = [
+  @Input() title = 'ResiSmart';
+  @Input() subtitle = 'Admin';
+  @Input() nav: NavItem[] | null = null;
+
+  private readonly defaultNav: NavItem[] = [
     { label: 'Dashboard', path: '/dashboard', icon: 'dashboard' },
     { label: 'Residentes', path: '/dashboard/residentes', icon: 'groups' },
     { label: 'Usuarios', path: '/dashboard/usuarios', icon: 'manage_accounts' },
@@ -31,6 +35,10 @@ export class SidebarComponent {
     { label: 'Avisos', path: '/dashboard/avisos', icon: 'campaign' },
     { label: 'Configuracion', path: '/dashboard/configuracion', icon: 'settings' },
   ];
+
+  get navItems(): NavItem[] {
+    return this.nav && this.nav.length ? this.nav : this.defaultNav;
+  }
 
   logout() {
     this.auth.logout();

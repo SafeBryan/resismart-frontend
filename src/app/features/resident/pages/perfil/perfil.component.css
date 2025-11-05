@@ -1,0 +1,280 @@
+:host {
+  display: block;
+  color: #111827;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 252px 1fr;
+  min-height: 100dvh;
+  background: #f8fafc;
+}
+
+.sidebar {
+  border-right: 1px solid #e5e7eb;
+}
+
+.content {
+  background: linear-gradient(160deg, rgba(238, 242, 255, 0.65), #f8fafc 55%, #ffffff 100%);
+  padding: 24px 28px;
+}
+
+.content-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.page-head h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1e1b4b;
+}
+
+.muted {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.head-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.grid {
+  display: grid;
+  gap: 20px;
+}
+
+.main {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.secondary {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+  box-shadow: 0 16px 30px rgba(30, 64, 175, 0.12);
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card-head h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.form-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.preferencias-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.preferencias-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.preferencias-list .info {
+  max-width: 75%;
+}
+
+.preferencias-list strong {
+  display: block;
+  font-size: 14px;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.preferencias-list p {
+  margin: 0;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(79, 70, 229, 0.22);
+}
+
+.toggle .switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(79, 70, 229, 0.35);
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  transition: background 0.15s ease;
+}
+
+.toggle .thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(30, 64, 175, 0.25);
+  transition: transform 0.15s ease;
+}
+
+.toggle.active {
+  background: #4f46e5;
+  color: #ffffff;
+  border-color: #4338ca;
+}
+
+.toggle.active .switch {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.toggle.active .thumb {
+  transform: translateX(16px);
+}
+
+.textarea {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  font-size: 14px;
+  color: #1f2937;
+  resize: vertical;
+  min-height: 140px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.historial-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.historial-list li {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.historial-list .time {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.historial-list strong {
+  font-size: 14px;
+  color: #111827;
+}
+
+.historial-list p {
+  margin: 0;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+@media (max-width: 1200px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .page-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 16px;
+  }
+
+  .preferencias-list li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .preferencias-list .info {
+    max-width: 100%;
+  }
+
+  .toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

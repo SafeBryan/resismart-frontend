@@ -1,0 +1,115 @@
+<div class="layout">
+  <app-sidebar class="sidebar" [nav]="residentNav" subtitle="Residente"></app-sidebar>
+
+  <main class="content">
+    <div class="content-inner">
+      <header class="page-head">
+        <div>
+          <h1>Gestión de contratos</h1>
+          <p class="muted">
+            Administra tu contrato vigente, consulta vencimientos y mantén tus pagos al día.
+          </p>
+        </div>
+        <div class="head-actions">
+          <app-button label="Descargar contrato PDF" variant="secondary"></app-button>
+          <app-button label="Solicitar renovación" variant="secondary"></app-button>
+        </div>
+      </header>
+
+      <section class="grid main">
+        <article class="card contrato-actual">
+          <header>
+            <div>
+              <span class="pill estado" [ngClass]="statusClass(contratoActual.estado)">{{ contratoActual.estado }}</span>
+              <h2>{{ contratoActual.nombre }}</h2>
+            </div>
+            <span class="muted">Vigencia: {{ contratoActual.vigencia }}</span>
+          </header>
+          <div class="datos">
+            <div class="dato">
+              <span class="label">Monto mensual</span>
+              <strong>{{ contratoActual.monto }}</strong>
+            </div>
+            <div class="dato">
+              <span class="label">Próximo pago</span>
+              <strong>{{ contratoActual.proximoPago }}</strong>
+            </div>
+          </div>
+          <p class="descripcion">{{ contratoActual.descripcion }}</p>
+          <footer>
+            <app-button label="Ver detalle completo" variant="primary"></app-button>
+            <span class="muted aviso">Recuerda subir tu comprobante dentro de las 24 horas posteriores al pago.</span>
+          </footer>
+        </article>
+
+        <article class="card timeline-card">
+          <div class="card-head">
+            <h2>Recordatorios de pago</h2>
+            <span class="muted">Fechas claves y estado actual</span>
+          </div>
+          <ul class="timeline">
+            <li *ngFor="let item of renovaciones" [ngClass]="statusClass(item.estado)">
+              <div class="timeline-marker"></div>
+              <div class="timeline-body">
+                <div class="timeline-header">
+                  <strong>{{ item.titulo }}</strong>
+                  <span class="fecha">{{ item.fecha }}</span>
+                </div>
+                <span class="pill estado" [ngClass]="statusClass(item.estado)">{{ item.estado }}</span>
+                <p>{{ item.detalle }}</p>
+              </div>
+            </li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="grid secondary">
+        <article class="card documentos-card">
+          <div class="card-head">
+            <h2>Documentos asociados</h2>
+            <span class="muted">Descarga o revisa tus archivos</span>
+          </div>
+          <ul class="docs-list">
+            <li *ngFor="let doc of documentos">
+              <div>
+                <strong>{{ doc.nombre }}</strong>
+                <span class="muted">Tipo: {{ doc.tipo }} · Actualizado {{ doc.fecha }}</span>
+              </div>
+              <app-button [label]="doc.accion" variant="secondary"></app-button>
+            </li>
+          </ul>
+        </article>
+
+        <article class="card tips-card">
+          <div class="card-head">
+            <h2>Recomendaciones</h2>
+            <span class="muted">Antes de que venza tu contrato</span>
+          </div>
+          <ul class="tips-list">
+            <li>
+              <mat-icon>check_circle</mat-icon>
+              <div>
+                <strong>Verifica tu información</strong>
+                <p>Mantén tus datos personales actualizados en la sección “Mis Datos”.</p>
+              </div>
+            </li>
+            <li>
+              <mat-icon>cloud_upload</mat-icon>
+              <div>
+                <strong>Sube tus comprobantes</strong>
+                <p>Guarda una copia digital de cada pago mensual para evitar contratiempos.</p>
+              </div>
+            </li>
+            <li>
+              <mat-icon>support_agent</mat-icon>
+              <div>
+                <strong>Contacta a administración</strong>
+                <p>Si necesitas renegociar los términos, agenda una cita con soporte.</p>
+              </div>
+            </li>
+          </ul>
+        </article>
+      </section>
+    </div>
+  </main>
+</div>

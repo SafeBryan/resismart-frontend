@@ -1,15 +1,15 @@
 import {
-  BidiModule
-} from "./chunk-BLR2K56D.js";
-import {
   _CdkPrivateStyleLoader,
   _bindEventWithOptions
 } from "./chunk-NC37GZN4.js";
 import {
+  BidiModule
+} from "./chunk-BLR2K56D.js";
+import {
   Platform,
   coerceElement,
   coerceNumberProperty
-} from "./chunk-VYIKEK45.js";
+} from "./chunk-MTJLOFZE.js";
 import {
   DOCUMENT
 } from "./chunk-NPWYXLOL.js";
@@ -3114,9 +3114,6 @@ var MatCommonModule = class _MatCommonModule {
 })();
 
 export {
-  coerceArray,
-  normalizePassiveListenerOptions,
-  _getEventTarget,
   isFakeMousedownFromScreenReader,
   isFakeTouchstartFromScreenReader,
   ENTER,
@@ -3127,8 +3124,11 @@ export {
   RIGHT_ARROW,
   DOWN_ARROW,
   A,
+  _getEventTarget,
+  normalizePassiveListenerOptions,
   FocusMonitor,
   _VisuallyHiddenLoader,
+  coerceArray,
   ObserversModule,
   LiveAnnouncer,
   A11yModule,
@@ -3140,4 +3140,4 @@ export {
   AriaDescriber,
   MatCommonModule
 };
-//# sourceMappingURL=chunk-6IVW6FJP.js.map
+//# sourceMappingURL=chunk-FHDSH2AO.js.map
