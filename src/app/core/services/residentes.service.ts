@@ -1,15 +1,17 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, map, of } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { ResidenteDTO, ResidenteRespuestaDTO } from '../models/residente.model';
+// residentes.service.ts
+import { inject, Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { Observable, catchError, map, of } from "rxjs";
+import { environment } from "../../../environments/environment";
+import { ResidenteDTO, ResidenteRespuestaDTO } from "../models/residente.model";
 
-const API = environment.apiUrl || 'http://localhost:8080';
+const API = environment.apiUrl || "http://localhost:8080";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class ResidentesService {
   private http = inject(HttpClient);
 
+  // CRUD estándar (admin / backoffice)
   list(): Observable<ResidenteRespuestaDTO[]> {
     return this.http.get<ResidenteRespuestaDTO[]>(`${API}/Residentes`);
   }
@@ -31,17 +33,40 @@ export class ResidentesService {
   }
 
   /**
-   * Devuelve la ficha del residente asociado al usuario actual utilizando el endpoint específico.
-   * Si el backend responde con 404/403 se retorna null sin recurrir a list() (evita scopes de admin).
+   * ✅ Opción A (recomendada):
+   * Resuelve al residente por id de usuario usando el nuevo endpoint
+   * GET /Residentes/por-usuario/{idUsuario}
+   *
+   * - Devuelve `null` si el backend responde 404 (no existe el residente).
+   * - Devuelve `null` ante otros errores, sin lanzar.
    */
-  getByUsuarioId(idUsuario: number | string): Observable<ResidenteRespuestaDTO | null> {
-    if (idUsuario === null || idUsuario === undefined || idUsuario === '') {
-      return of(null);
-    }
-    const url = `${API}/Usuarios/whoami`;
-    return this.http.get<ResidenteRespuestaDTO | null>(url).pipe(
-      map((residente) => residente ?? null),
-      catchError(() => of(null))
+  findByUsuario(params: {
+    userId?: number | null;
+    username?: string | null; // se ignora aquí
+  }): Observable<ResidenteRespuestaDTO | null> {
+    const userId = params?.userId ?? null;
+    if (!userId) return of(null);
+
+    // 1) Ruta que sí te funciona por cURL/Swagger:
+    const urlLarga = `${API}/Residentes/Residentes/por-usuario/${userId}`;
+    // 2) Fallback a la corta por si luego unificas:
+    const urlCorta = `${API}/Residentes/por-usuario/${userId}`;
+
+    return this.http.get<ResidenteRespuestaDTO>(urlLarga).pipe(
+      // si la larga responde 404/403/etc, intenta la corta
+      catchError(() => this.http.get<ResidenteRespuestaDTO>(urlCorta)),
+      map((r) => r ?? null),
+      catchError(() => of<ResidenteRespuestaDTO | null>(null))
     );
+  }
+
+  /**
+   * (Deprecado) Se deja la firma antigua para no romper dependencias.
+   * No se usa con la Opción A.
+   */
+  getByUsuarioId(
+    _idUsuario: number | string
+  ): Observable<ResidenteRespuestaDTO | null> {
+    return of(null);
   }
 }

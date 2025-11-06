@@ -1,18 +1,27 @@
 ﻿<div class="layout">
-  <app-sidebar class="sidebar" [nav]="residentNav" subtitle="Residente"></app-sidebar>
+  <app-sidebar
+    class="sidebar"
+    [nav]="residentNav"
+    subtitle="Residente"
+  ></app-sidebar>
 
   <main class="content">
     <div class="content-inner">
       <header class="page-head">
         <div>
-          <h1>Gestion de contratos</h1>
+          <h1>Gestión de contratos</h1>
           <p class="muted">
-            Administra tu contrato vigente, consulta vencimientos y manten tus pagos al dia.
+            Administra tu contrato vigente, consulta vencimientos y mantén tus
+            pagos al día.
           </p>
         </div>
-        <div class="head-actions">
-          <app-button label="Descargar contrato PDF" variant="secondary"></app-button>
-          <app-button label="Solicitar renovacion" variant="secondary"></app-button>
+
+        <div class="head-actions" *ngIf="contratoActual() as contrato">
+          <app-button
+            label="Solicitar renovación"
+            variant="secondary"
+            (click)="onSolicitarRenovacion(contrato.id)"
+          ></app-button>
         </div>
       </header>
 
@@ -23,25 +32,39 @@
           <article class="card contrato-actual">
             <header>
               <div>
-                <span class="pill estado" [ngClass]="contrato.estadoClass">{{ contrato.estado }}</span>
+                <span class="pill estado" [ngClass]="contrato.estadoClass">
+                  {{ contrato.estado }}
+                </span>
                 <h2>{{ contrato.nombre }}</h2>
               </div>
               <span class="muted">Vigencia: {{ contrato.vigencia }}</span>
             </header>
+
             <div class="datos">
               <div class="dato">
                 <span class="label">Monto mensual</span>
                 <strong>{{ contrato.monto }}</strong>
               </div>
+
               <div class="dato" *ngIf="contrato.proximoPago">
-                <span class="label">Proximo pago</span>
+                <span class="label">Próximo pago</span>
                 <strong>{{ contrato.proximoPago }}</strong>
               </div>
             </div>
+
             <p class="descripcion">{{ contrato.descripcion }}</p>
+
             <footer>
-              <app-button label="Ver detalle completo" variant="primary"></app-button>
-              <span class="muted aviso">Recuerda subir tu comprobante dentro de las 24 horas posteriores al pago.</span>
+              <app-button
+                label="Ver detalle completo"
+                variant="primary"
+                (click)="onVerDetalle(contrato.id)"
+              ></app-button>
+
+              <span class="muted aviso">
+                Recuerda subir tu comprobante dentro de las 24 horas posteriores
+                al pago.
+              </span>
             </footer>
           </article>
         </ng-container>
@@ -51,23 +74,32 @@
             <h2>Recordatorios de pago</h2>
             <span class="muted">Fechas claves y estado actual</span>
           </div>
+
           <ng-container *ngIf="recordatorios().length; else sinRecordatorios">
             <ul class="timeline">
-              <li *ngFor="let item of recordatorios()" [ngClass]="item.estadoClass">
+              <li
+                *ngFor="let item of recordatorios()"
+                [ngClass]="item.estadoClass"
+              >
                 <div class="timeline-marker"></div>
+
                 <div class="timeline-body">
                   <div class="timeline-header">
                     <strong>{{ item.titulo }}</strong>
                     <span class="fecha">{{ item.fecha }}</span>
                   </div>
-                  <span class="pill estado" [ngClass]="item.estadoClass">{{ item.estado }}</span>
+
+                  <span class="pill estado" [ngClass]="item.estadoClass">
+                    {{ item.estado }}
+                  </span>
                   <p>{{ item.detalle }}</p>
                 </div>
               </li>
             </ul>
           </ng-container>
+
           <ng-template #sinRecordatorios>
-            <p class="muted">Sin cuotas registradas todavia.</p>
+            <p class="muted">Sin cuotas registradas todavía.</p>
           </ng-template>
         </article>
       </section>
@@ -78,19 +110,28 @@
             <h2>Documentos asociados</h2>
             <span class="muted">Descarga o revisa tus archivos</span>
           </div>
+
           <ng-container *ngIf="documentos().length; else sinDocumentos">
             <ul class="docs-list">
               <li *ngFor="let doc of documentos()">
                 <div>
                   <strong>{{ doc.nombre }}</strong>
-                  <span class="muted">Tipo: {{ doc.tipo }} - Actualizado {{ doc.fecha }}</span>
+                  <span class="muted">
+                    Tipo: {{ doc.tipo }} — Actualizado {{ doc.fecha }}
+                  </span>
                 </div>
-                <app-button [label]="doc.accion" variant="secondary"></app-button>
+
+                <app-button
+                  [label]="doc.accion"
+                  variant="secondary"
+                  (click)="onDescargarDoc(doc.id, doc.nombre)"
+                ></app-button>
               </li>
             </ul>
           </ng-container>
+
           <ng-template #sinDocumentos>
-            <p class="muted">Aun no hay documentos vinculados al contrato.</p>
+            <p class="muted">Aún no hay documentos vinculados al contrato.</p>
           </ng-template>
         </article>
 
@@ -99,6 +140,7 @@
             <h2>Recomendaciones</h2>
             <span class="muted">Antes de que venza tu contrato</span>
           </div>
+
           <ul class="tips-list">
             <li *ngFor="let tip of tips">
               <mat-icon>{{ tip.icon }}</mat-icon>
@@ -114,10 +156,32 @@
   </main>
 </div>
 
+<!-- Template si no hay contrato -->
 <ng-template #sinContrato>
   <article class="card contrato-actual">
     <h2>Sin contratos registrados</h2>
-    <p class="muted">Por el momento no encontramos contratos asociados a tu cuenta.</p>
+    <p class="muted">
+      Por el momento no encontramos contratos asociados a tu cuenta.
+    </p>
   </article>
 </ng-template>
 
+<!-- ✅ MODAL DE DETALLE SUPERPUESTO -->
+<div
+  class="modal-overlay"
+  *ngIf="showDetalle() && detalleId() as cid"
+  (click)="onCerrarDetalle()"
+>
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Detalle completo</h2>
+      <app-button
+        label="Cerrar"
+        variant="secondary"
+        (click)="onCerrarDetalle()"
+      ></app-button>
+    </div>
+
+    <app-contrato-detalle [contratoId]="cid"></app-contrato-detalle>
+  </div>
+</div>

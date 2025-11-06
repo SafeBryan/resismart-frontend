@@ -3116,6 +3116,9 @@ var MatCommonModule = class _MatCommonModule {
 })();
 
 export {
+  coerceArray,
+  normalizePassiveListenerOptions,
+  _getEventTarget,
   isFakeMousedownFromScreenReader,
   isFakeTouchstartFromScreenReader,
   ENTER,
@@ -3126,11 +3129,8 @@ export {
   RIGHT_ARROW,
   DOWN_ARROW,
   A,
-  _getEventTarget,
-  normalizePassiveListenerOptions,
   FocusMonitor,
   _VisuallyHiddenLoader,
-  coerceArray,
   ObserversModule,
   LiveAnnouncer,
   A11yModule,
@@ -3142,4 +3142,4 @@ export {
   AriaDescriber,
   MatCommonModule
 };
-//# sourceMappingURL=chunk-QKJ62TUP.js.map
+//# sourceMappingURL=chunk-VHLBUMOR.js.map

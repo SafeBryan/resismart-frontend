@@ -1,14 +1,15 @@
-import { Injectable, Signal, computed, inject, signal } from '@angular/core';
-import { Observable, catchError, map, of, switchMap } from 'rxjs';
-import { AuthService } from './auth.service';
-import { ResidentesService } from './residentes.service';
-import { ContratoService } from './contrato.service';
-import { ResidentContext } from '../models/resident-context.model';
-import { ResidenteRespuestaDTO } from '../models/residente.model';
-import { ContratoResumen } from '../models/contrato.model';
-import { Usuario } from '../models/usuario.model';
+// resident-context.service.ts
+import { Injectable, Signal, computed, inject, signal } from "@angular/core";
+import { Observable, catchError, map, of, switchMap } from "rxjs";
+import { AuthService } from "./auth.service";
+import { ResidentesService } from "./residentes.service";
+import { ContratoService } from "./contrato.service";
+import { ResidentContext } from "../models/resident-context.model";
+import { ResidenteRespuestaDTO } from "../models/residente.model";
+import { ContratoResumen } from "../models/contrato.model";
+import { Usuario } from "../models/usuario.model";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class ResidentContextService {
   private auth = inject(AuthService);
   private residentes = inject(ResidentesService);
@@ -21,7 +22,9 @@ export class ResidentContextService {
     loading: true,
   });
 
-  readonly context: Signal<ResidentContext> = computed(() => this.contextSignal());
+  readonly context: Signal<ResidentContext> = computed(() =>
+    this.contextSignal()
+  );
 
   constructor() {
     this.bootstrap();
@@ -34,7 +37,11 @@ export class ResidentContextService {
   private bootstrap(force = false): void {
     const fallbackUserId = this.normalizeId(this.auth.snapshot.idUsuario);
 
-    if (!force && !this.contextSignal().loading && this.contextSignal().userId === fallbackUserId) {
+    if (
+      !force &&
+      !this.contextSignal().loading &&
+      this.contextSignal().userId === fallbackUserId
+    ) {
       return;
     }
 
@@ -51,27 +58,43 @@ export class ResidentContextService {
       .pipe(
         catchError(() => of(false)),
         switchMap((valid) => {
-          if (!valid) {
-            return of(this.composeContext({ userId: null }));
-          }
+          if (!valid) return of(this.composeContext({ userId: null }));
 
           const profile = this.auth.snapshot.profile as any;
           const userId = this.resolveUserId(profile, fallbackUserId);
+          const username = (profile?.username ?? profile?.correo ?? "")
+            .toString()
+            .toLowerCase();
 
-          if (!userId) {
+          if (!userId && !username)
             return of(this.composeContext({ userId: null }));
-          }
 
           const usuario = this.extractUsuario(profile);
-          const residenteId = this.resolveResidenteId(profile);
 
-          return this.loadResidente(userId, residenteId).pipe(
-            switchMap((residente) => {
-              const resolvedResidenteId = this.normalizeId(residente?.id_Cliente ?? residenteId);
+          // 🔴 AQUÍ ESTABA EL PROBLEMA:
+          // En Opción A siempre buscamos el residente por idUsuario (nuevo endpoint /Residentes/por-usuario/{idUsuario})
+          return this.residentes.findByUsuario({ userId, username }).pipe(
+            switchMap((residente: ResidenteRespuestaDTO | null) => {
+              // Si no existe residente para ese usuario => contexto sin residente, sin contratos
+              if (!residente) {
+                return of(
+                  this.composeContext({
+                    userId,
+                    usuario,
+                    residente: null,
+                    contratos: [],
+                  })
+                );
+              }
 
-              const contratos$ = resolvedResidenteId
+              const residenteId =
+                this.normalizeId((residente as any)?.id_Cliente) ??
+                this.normalizeId((residente as any)?.idCliente) ??
+                null;
+
+              const contratos$ = residenteId
                 ? this.contratos
-                    .listByResidente(resolvedResidenteId)
+                    .listByResidente(residenteId)
                     .pipe(catchError(() => of<ContratoResumen[]>([])))
                 : of<ContratoResumen[]>([]);
 
@@ -105,26 +128,9 @@ export class ResidentContextService {
       });
   }
 
-  private loadResidente(
-    userId: number | null,
-    residenteId: number | null
-  ): Observable<ResidenteRespuestaDTO | null> {
-    if (residenteId) {
-      return this.residentes.getById(residenteId).pipe(
-        map((residente) => residente ?? null),
-        catchError(() => of<ResidenteRespuestaDTO | null>(null))
-      );
-    }
-
-    if (userId) {
-      return this.residentes.getByUsuarioId(userId).pipe(
-        catchError(() => of<ResidenteRespuestaDTO | null>(null))
-      );
-    }
-
-    return of<ResidenteRespuestaDTO | null>(null);
-  }
-
+  // ======================
+  // Helpers de extracción
+  // ======================
   private resolveUserId(profile: any, fallback: number | null): number | null {
     return (
       this.normalizeId(profile?.id_usuario) ??
@@ -135,35 +141,25 @@ export class ResidentContextService {
     );
   }
 
-  private resolveResidenteId(profile: any): number | null {
-    return (
-      this.normalizeId(profile?.idCliente) ??
-      this.normalizeId(profile?.id_cliente) ??
-      this.normalizeId(profile?.idResidente) ??
-      this.normalizeId(profile?.residenteId) ??
-      this.normalizeId(profile?.residente?.id) ??
-      this.normalizeId(profile?.residente?.idCliente) ??
-      this.normalizeId(profile?.cliente?.id) ??
-      this.normalizeId(profile?.cliente?.idCliente) ??
-      null
-    );
-  }
-
   private extractUsuario(source: any): Usuario | null {
     if (!source) return null;
 
-    const id = this.normalizeId(source?.id_usuario ?? source?.idUsuario ?? source?.id);
+    const id = this.normalizeId(
+      source?.id_usuario ?? source?.idUsuario ?? source?.id
+    );
 
     const usuario: Usuario = {
       id_usuario: id ?? undefined,
-      username: source?.username ?? source?.email ?? source?.correo ?? undefined,
+      username:
+        source?.username ?? source?.email ?? source?.correo ?? undefined,
       rol: (source?.rol ?? source?.role ?? source?.rolUsuario) as any,
       nombres: source?.nombres ?? source?.nombre ?? undefined,
       apellidos: source?.apellidos ?? source?.apellido ?? undefined,
       telefono: source?.telefono ?? source?.phone ?? undefined,
       correo: source?.correo ?? source?.email ?? undefined,
-      estado: typeof source?.estado === 'boolean' ? source.estado : undefined,
-      enabled: typeof source?.enabled === 'boolean' ? source.enabled : undefined,
+      estado: typeof source?.estado === "boolean" ? source.estado : undefined,
+      enabled:
+        typeof source?.enabled === "boolean" ? source.enabled : undefined,
     };
 
     return usuario;
@@ -178,18 +174,20 @@ export class ResidentContextService {
     const contratos = Array.isArray(params?.contratos) ? params.contratos : [];
     const residente = params.residente ?? null;
     const usuario =
-      params.usuario ??
-      this.extractUsuario(residente?.usuario ?? null) ??
-      null;
+      params.usuario ?? this.extractUsuario(residente?.usuario ?? null) ?? null;
 
     const contratoActivo =
-      contratos.find((c) => (c.estado ?? '').toString().toUpperCase() === 'ACTIVO') ??
+      contratos.find(
+        (c) => (c.estado ?? "").toString().toUpperCase() === "ACTIVO"
+      ) ??
       contratos[0] ??
       null;
 
     const condominioIds = this.extractCondominios(residente);
     const unidadId = this.normalizeId(
-      (residente as any)?.unidad?.id ?? (residente as any)?.unidad?.idUnidad ?? null
+      (residente as any)?.unidad?.id ??
+        (residente as any)?.unidad?.idUnidad ??
+        null
     );
 
     return {
@@ -205,12 +203,14 @@ export class ResidentContextService {
   }
 
   private normalizeId(value: unknown): number | null {
-    if (value === null || value === undefined || value === '') return null;
+    if (value === null || value === undefined || value === "") return null;
     const num = Number(value);
     return Number.isFinite(num) ? num : null;
   }
 
-  private extractCondominios(residente: ResidenteRespuestaDTO | null | undefined): number[] {
+  private extractCondominios(
+    residente: ResidenteRespuestaDTO | null | undefined
+  ): number[] {
     if (!residente?.unidad) return [];
     const unit: any = residente.unidad;
     const condominioId =

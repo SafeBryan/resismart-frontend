@@ -4,12 +4,15 @@
 
 export interface ContratoResumen {
   id: number;
-  idUnidad: number;
-  idResidente: number;
-  fechaInicio: string; // ISO-8601 (YYYY-MM-DD)
-  fechaFin?: string; // opcional si aún no termina
+  fechaInicio: string; // ISO (YYYY-MM-DD)
+  fechaFin?: string | null; // puede venir null
   monto: number;
   estado: EstadoContrato;
+  idUnidad: number | null;
+  numeroUnidad?: string | null;
+
+  idResidente: number | null;
+  nombreResidente?: string | null;
 }
 
 export interface ContratoDetalle {
@@ -18,10 +21,16 @@ export interface ContratoDetalle {
   fechaFin?: string;
   monto: number;
   estado: EstadoContrato;
+
+  // Existentes (no se tocan)
   idUnidad: number;
   unidadNumero: string;
   idResidente: number;
   residenteNombre: string; // nombre completo
+
+  // 🔧 NUEVOS CAMPOS (para soportar la nueva respuesta del backend)
+  numeroUnidad?: string | null; // alias de unidadNumero
+  nombreResidente?: string | null; // alias de residenteNombre
 }
 
 export enum EstadoContrato {

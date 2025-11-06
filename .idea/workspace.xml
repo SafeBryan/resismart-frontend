@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="8369c124-7993-4ff4-ab78-4af63031abb8" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_cdk_bidi.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_cdk_bidi.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_cdk_bidi.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_cdk_bidi.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_cdk_scrolling.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_cdk_scrolling.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_cdk_scrolling.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_cdk_scrolling.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_cdk_text-field.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_cdk_text-field.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_cdk_text-field.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_cdk_text-field.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_common.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_common.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_common.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_common.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_common_http.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_common_http.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_common_http.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_common_http.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_core.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_core.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_core.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_core.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_core_rxjs-interop.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_core_rxjs-interop.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_core_rxjs-interop.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_core_rxjs-interop.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_forms.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_forms.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_forms.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_forms.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_button.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_button.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_button.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_button.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_form-field.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_form-field.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_form-field.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_form-field.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_icon.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_icon.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_icon.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_icon.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_input.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_input.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_input.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_input.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_paginator.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_paginator.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_paginator.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_paginator.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_select.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_select.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_select.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_material_select.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_platform-browser.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_platform-browser.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_platform-browser.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_platform-browser.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_platform-browser_animations.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_platform-browser_animations.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_platform-browser_animations.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_platform-browser_animations.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_router.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_router.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_router.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/@angular_router.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/_metadata.json" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/_metadata.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-2O4WY5GE.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-2O4WY5GE.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-2O4WY5GE.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-2O4WY5GE.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-2V6ZJLJU.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-2V6ZJLJU.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-2V6ZJLJU.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-2V6ZJLJU.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-4VA27RZM.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-4VA27RZM.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-4VA27RZM.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-4VA27RZM.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-5XX2XVO7.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-5XX2XVO7.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-5XX2XVO7.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-5XX2XVO7.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-72IDPZLA.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-72IDPZLA.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-72IDPZLA.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-72IDPZLA.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-AMFDKNB2.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-AMFDKNB2.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-AMFDKNB2.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-AMFDKNB2.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-EDHIA7JC.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-EDHIA7JC.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-EDHIA7JC.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-EDHIA7JC.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-EDUHM2SB.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-EDUHM2SB.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-EDUHM2SB.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-EDUHM2SB.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-EKDCXNCT.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-EKDCXNCT.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-EKDCXNCT.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-EKDCXNCT.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-ESV676MD.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-ESV676MD.js.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-FXVXUO3P.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-FXVXUO3P.js.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-GAK4KGN5.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-GAK4KGN5.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-GAK4KGN5.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-GAK4KGN5.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-HJVPV4HI.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-HJVPV4HI.js.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-HP6FTYPA.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-HP6FTYPA.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-HP6FTYPA.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-HP6FTYPA.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-LJPCCOPL.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-LJPCCOPL.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-LJPCCOPL.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-LJPCCOPL.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-LOHAY4QM.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-LOHAY4QM.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-LOHAY4QM.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-LOHAY4QM.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-O22WBTXE.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-O22WBTXE.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-O22WBTXE.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-O22WBTXE.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-ONPURXBN.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-ONPURXBN.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-ONPURXBN.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-ONPURXBN.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-QKJ62TUP.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-QKJ62TUP.js.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-RSDHS3AA.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-RSDHS3AA.js.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-RZEBPPCY.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-RZEBPPCY.js.map" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-VA23XSEL.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-VA23XSEL.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-VA23XSEL.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-VA23XSEL.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-VFV4OWBB.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-VFV4OWBB.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-VFV4OWBB.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-VFV4OWBB.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-ZGB6M564.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-ZGB6M564.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-ZGB6M564.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/chunk-ZGB6M564.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/ng2-charts.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/ng2-charts.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/ng2-charts.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/ng2-charts.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/rxjs.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/rxjs.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/rxjs.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/rxjs.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/rxjs_operators.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/rxjs_operators.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/rxjs_operators.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/rxjs_operators.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/rxjs_webSocket.js" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/rxjs_webSocket.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/rxjs_webSocket.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps/rxjs_webSocket.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps_ssr/_metadata.json" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps_ssr/_metadata.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps_ssr/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/.angular/cache/19.2.16/resismart-frontend/vite/deps_ssr/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/core/services/resident-context.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/core/services/resident-context.service.ts" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 8
+}]]></component>
+  <component name="ProjectId" id="355Ztq4PKumOgv2X2hAeVJjl81b" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultAutoModeForALLUsers.v1": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "feature/usuarioView",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "C:/Users/Bryan/Desktop/Universidad/7mo Semestre/Gestion de Proyectos/resismart/resismart-frontend",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "npm.Angular CLI Server.executor": "Run",
+    "to.speed.mode.migration.done": "true",
+    "ts.external.directory.path": "C:\\Users\\Bryan\\Desktop\\Universidad\\7mo Semestre\\Gestion de Proyectos\\resismart\\resismart-frontend\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager" selected="npm.Angular CLI Server">
+    <configuration name="Angular Application" type="JavascriptDebugType" uri="http://localhost:4200">
+      <method v="2" />
+    </configuration>
+    <configuration name="Angular CLI Server" type="js.build_tools.npm">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="start" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-WS-252.27397.92" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8369c124-7993-4ff4-ab78-4af63031abb8" name="Changes" comment="" />
+      <created>1762402111550</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1762402111550</updated>
+      <workItem from="1762402112852" duration="1023000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
