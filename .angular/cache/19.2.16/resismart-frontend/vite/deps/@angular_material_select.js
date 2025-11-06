@@ -10,10 +10,8 @@ import {
   MatSelectChange,
   MatSelectModule,
   MatSelectTrigger
-} from "./chunk-UODNLN6E.js";
-import "./chunk-OLX4YR7I.js";
-import "./chunk-YKHQOJWO.js";
-import "./chunk-XA7465CO.js";
+} from "./chunk-RSDHS3AA.js";
+import "./chunk-EDUHM2SB.js";
 import {
   MatError,
   MatFormField,
@@ -21,20 +19,23 @@ import {
   MatLabel,
   MatPrefix,
   MatSuffix
-} from "./chunk-YJNMAQ5Z.js";
-import "./chunk-QIGUFILL.js";
+} from "./chunk-RZEBPPCY.js";
+import "./chunk-LJPCCOPL.js";
+import "./chunk-AMFDKNB2.js";
+import "./chunk-HJVPV4HI.js";
+import "./chunk-ESV676MD.js";
+import "./chunk-QKJ62TUP.js";
 import "./chunk-2O4WY5GE.js";
-import "./chunk-6IVW6FJP.js";
-import "./chunk-BLR2K56D.js";
-import "./chunk-NC37GZN4.js";
-import "./chunk-VYIKEK45.js";
-import "./chunk-UAGOGNAG.js";
-import "./chunk-45ZZICWG.js";
-import "./chunk-NPWYXLOL.js";
-import "./chunk-33T6IU7O.js";
-import "./chunk-FFZIAYYX.js";
-import "./chunk-6Q4RANH6.js";
-import "./chunk-CXCX2JKZ.js";
+import "./chunk-O22WBTXE.js";
+import "./chunk-VA23XSEL.js";
+import "./chunk-2V6ZJLJU.js";
+import "./chunk-HP6FTYPA.js";
+import "./chunk-VFV4OWBB.js";
+import "./chunk-ONPURXBN.js";
+import "./chunk-GAK4KGN5.js";
+import "./chunk-EKDCXNCT.js";
+import "./chunk-5XX2XVO7.js";
+import "./chunk-EDHIA7JC.js";
 
 // node_modules/@angular/material/fesm2022/select.mjs
 var matSelectAnimations = {

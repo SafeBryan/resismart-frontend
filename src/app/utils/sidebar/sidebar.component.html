@@ -2,8 +2,8 @@
   <div class="brand">
     <div class="brand-logo"><img src="/assets/logo.png" alt="ResiSmart" /></div>
     <div class="brand-text">
-      <div class="brand-title">ResiSmart</div>
-      <div class="brand-sub">Admin</div>
+      <div class="brand-title">{{ title }}</div>
+      <div class="brand-sub" *ngIf="subtitle as sub">{{ sub }}</div>
     </div>
   </div>
 
@@ -16,7 +16,7 @@
   </div>
 
   <nav class="nav">
-    <a *ngFor="let item of nav" class="nav-link" [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+    <a *ngFor="let item of navItems" class="nav-link" [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
       <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
       <span>{{ item.label }}</span>
     </a>

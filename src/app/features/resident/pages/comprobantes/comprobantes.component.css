@@ -1,0 +1,406 @@
+:host {
+  display: block;
+  color: #111827;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 252px 1fr;
+  min-height: 100dvh;
+  background: #f8fafc;
+}
+
+.sidebar {
+  border-right: 1px solid #e5e7eb;
+}
+
+.content {
+  background: radial-gradient(circle at top right, rgba(238, 242, 255, 0.7), transparent 55%), #f8fafc;
+  padding: 24px 28px;
+}
+
+.content-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+}
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.page-head h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1e1b4b;
+}
+
+.muted {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.head-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.grid {
+  display: grid;
+  gap: 20px;
+}
+
+.main {
+  grid-template-columns: minmax(320px, 1fr) minmax(260px, 1fr);
+}
+
+.secondary {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card-head h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.form-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.file-upload {
+  display: grid;
+  gap: 10px;
+}
+
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.file-drop {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+  border-radius: 16px;
+  border: 2px dashed #c7d2fe;
+  background: rgba(238, 242, 255, 0.5);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.file-drop:hover {
+  border-color: #6366f1;
+  background: rgba(238, 242, 255, 0.8);
+}
+
+.file-drop mat-icon {
+  font-size: 30px;
+  color: #4f46e5;
+}
+
+.file-drop strong {
+  display: block;
+  color: #1f2937;
+}
+
+.file-drop p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.card-actions .helper {
+  font-size: 12px;
+}
+
+.info-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.info-list li {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+.info-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.info-list span {
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.info-list strong {
+  font-size: 15px;
+  color: #111827;
+}
+
+.alert {
+  display: flex;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #eef2ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
+
+.alert mat-icon {
+  color: #4f46e5;
+}
+
+.alert p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.pendientes-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.pendientes-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f9fafb;
+}
+
+.concepto strong {
+  display: block;
+  font-size: 14px;
+  color: #111827;
+}
+
+.estado {
+  display: grid;
+  gap: 4px;
+  text-align: right;
+}
+
+.estado .vence {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.estado .monto {
+  font-weight: 600;
+  color: #111827;
+}
+
+.pasos-list {
+  margin: 0;
+  padding: 0 0 0 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.pasos-list li {
+  padding-left: 4px;
+}
+
+.pasos-list strong {
+  display: block;
+  font-size: 14px;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.pasos-list p {
+  margin: 0;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  color: #3730a3;
+}
+
+.pill.pendiente {
+  background: #fef3c7;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.pill.en-revision {
+  background: #e0f2fe;
+  border-color: #bae6fd;
+  color: #0c4a6e;
+}
+
+.pill.aprobado {
+  background: #dcfce7;
+  border-color: #bbf7d0;
+  color: #047857;
+}
+
+@media (max-width: 1200px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .page-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 16px;
+  }
+
+  .main {
+    grid-template-columns: 1fr;
+  }
+
+  .pendientes-list li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .estado {
+    text-align: left;
+  }
+}
+.alert {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 13px;
+}
+
+.alert.error {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.alert.success {
+  background: #dcfce7;
+  border-color: #bbf7d0;
+  color: #047857;
+}
+
+.alert.info {
+  background: #e0f2fe;
+  border-color: #bae6fd;
+  color: #075985;
+}
+.select-row {
+  display: grid;
+  gap: 6px;
+}
+
+.select-row label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.select-row select {
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  font-size: 13px;
+  color: #111827;
+}
+.pendientes-list li.pendiente {
+  background: #fef3c7;
+  border-color: #fde68a;
+}
+
+.pendientes-list li.pagado {
+  background: #dcfce7;
+  border-color: #bbf7d0;
+}
+
+.pendientes-list li.vencido {
+  background: #fee2e2;
+  border-color: #fecaca;
+}
+
+.pendientes-list li.info {
+  background: #e0f2fe;
+  border-color: #bae6fd;
+}
