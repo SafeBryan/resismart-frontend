@@ -11,6 +11,53 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   .layout > main.content { height: auto; max-height: none; overflow: visible; }
 }
 
+/* Accessible form scaffolding */
+form.accessible-form {
+  display: grid;
+  gap: 18px;
+}
+
+.form-section {
+  border: 1px solid #dbe3ef;
+  border-radius: 14px;
+  padding: 18px;
+  margin: 0;
+  display: grid;
+  gap: 16px;
+  background: rgba(241, 245, 249, 0.55);
+}
+
+.form-section legend {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 16px;
+  padding: 0 6px;
+  margin-left: -6px;
+}
+
+.form-section .section-description {
+  color: #64748b;
+  font-size: 13px;
+  margin: -4px 0 4px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .form-section {
+    padding: 14px;
+  }
+
+  .form-actions {
+    justify-content: stretch;
+  }
+}
+
 /* Sidebar logout button contrast fix (Material inner label elements) */
 /* Outlined (stroked) button inside the blue sidebar */
 aside.sidebar .mat-mdc-outlined-button,

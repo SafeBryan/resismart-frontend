@@ -49,6 +49,15 @@
   gap: 18px;
 }
 
+.card .form-section {
+  border-color: rgba(148, 163, 184, 0.35);
+  background: rgba(241, 245, 255, 0.55);
+}
+
+.card .form-section legend {
+  font-size: 15px;
+}
+
 .card-head {
   display: flex;
   align-items: center;

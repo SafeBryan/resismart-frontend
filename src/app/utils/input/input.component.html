@@ -1,7 +1,26 @@
 <mat-form-field class="w100" [appearance]="variant === 'underline' ? 'fill' : 'outline'">
+  <mat-label *ngIf="label">{{ label }}</mat-label>
   <mat-icon *ngIf="icon" matPrefix>{{ iconMatName }}</mat-icon>
-  <input matInput [type]="inputType" [placeholder]="placeholder" [(ngModel)]="model" [disabled]="disabled" (ngModelChange)="modelChange.emit($event)" />
-  <button *ngIf="type === 'password' && togglePassword" mat-icon-button matSuffix type="button" (click)="visible = !visible" [attr.aria-label]="visible ? 'Ocultar' : 'Mostrar'">
+  <input
+    matInput
+    [id]="controlId"
+    [name]="controlName"
+    [type]="inputType"
+    [placeholder]="placeholder"
+    [disabled]="disabled"
+    [attr.aria-describedby]="hint ? controlId + '-hint' : null"
+    [(ngModel)]="model"
+    (ngModelChange)="modelChange.emit($event)"
+  />
+  <button
+    *ngIf="type === 'password' && togglePassword"
+    mat-icon-button
+    matSuffix
+    type="button"
+    (click)="visible = !visible"
+    [attr.aria-label]="visible ? 'Ocultar' : 'Mostrar'"
+  >
     <mat-icon>{{ visible ? 'visibility_off' : 'visibility' }}</mat-icon>
   </button>
+  <mat-hint *ngIf="hint" [id]="controlId + '-hint'">{{ hint }}</mat-hint>
 </mat-form-field>

@@ -5,55 +5,111 @@
     <div class="content-inner">
       <header class="page-head">
         <div>
-          <h1>Configuraci&oacute;n personal</h1>
-          <p class="muted">Gestiona tu informaci&oacute;n de contacto y tus credenciales de acceso.</p>
+          <h1>Configuración personal</h1>
+          <p class="muted">Gestiona tu información de contacto y tus credenciales de acceso.</p>
         </div>
       </header>
 
       <section class="grid">
-        <form class="card" (ngSubmit)="onSubmitProfile()" autocomplete="off">
+        <form
+          class="card accessible-form"
+          (ngSubmit)="onSubmitProfile()"
+          autocomplete="off"
+          aria-labelledby="admin-profile-heading"
+        >
           <div class="card-head">
             <div>
-              <h2>Datos personales</h2>
-              <span class="muted">Nombre, correo y tel&eacute;fono de contacto</span>
+              <h2 id="admin-profile-heading">Datos personales</h2>
+              <span class="muted" id="admin-profile-desc">Nombre, correo y teléfono de contacto.</span>
             </div>
             <button mat-flat-button color="primary" type="submit" [disabled]="savingProfile()">
               {{ savingProfile() ? 'Guardando...' : 'Guardar datos' }}
             </button>
           </div>
 
-          <div *ngIf="profileFeedback() as feedback" class="alert" [class.error]="feedback.type === 'error'" [class.success]="feedback.type === 'success'">
+          <div
+            *ngIf="profileFeedback() as feedback"
+            class="alert"
+            [class.error]="feedback.type === 'error'"
+            [class.success]="feedback.type === 'success'"
+            role="alert"
+          >
             {{ feedback.text }}
           </div>
 
-          <div class="form-grid">
-            <app-input label="Nombre" placeholder="Nombre" [(model)]="profileForm.nombre"></app-input>
-            <app-input label="Apellido" placeholder="Apellido" [(model)]="profileForm.apellido"></app-input>
-            <app-input label="Correo electr&oacute;nico" placeholder="Correo electr&oacute;nico" [(model)]="profileForm.email"></app-input>
-            <app-input label="Tel&eacute;fono" placeholder="Tel&eacute;fono" [(model)]="profileForm.telefono"></app-input>
-          </div>
+          <fieldset class="form-section">
+            <legend>Información de contacto</legend>
+            <p class="section-description">
+              Estos datos se usan para notificaciones del sistema y comunicación interna.
+            </p>
+            <div class="form-grid">
+              <app-input label="Nombre" placeholder="Nombre" name="nombre" [(model)]="profileForm.nombre"></app-input>
+              <app-input label="Apellido" placeholder="Apellido" name="apellido" [(model)]="profileForm.apellido"></app-input>
+              <app-input
+                label="Correo electrónico"
+                placeholder="Correo electrónico"
+                type="email"
+                name="correo"
+                [(model)]="profileForm.email"
+              ></app-input>
+              <app-input label="Teléfono" placeholder="Teléfono" name="telefono" [(model)]="profileForm.telefono"></app-input>
+            </div>
+          </fieldset>
         </form>
 
-        <form class="card" (ngSubmit)="onSubmitCredentials()" autocomplete="off">
+        <form
+          class="card accessible-form"
+          (ngSubmit)="onSubmitCredentials()"
+          autocomplete="off"
+          aria-labelledby="admin-credentials-heading"
+        >
           <div class="card-head">
             <div>
-              <h2>Credenciales de acceso</h2>
-              <span class="muted">Actualiza tu correo y contrase&ntilde;a de ingreso</span>
+              <h2 id="admin-credentials-heading">Credenciales de acceso</h2>
+              <span class="muted" id="admin-credentials-desc">Actualiza correo y contraseña de ingreso.</span>
             </div>
             <button mat-flat-button color="primary" type="submit" [disabled]="savingCredentials()">
               {{ savingCredentials() ? 'Actualizando...' : 'Guardar credenciales' }}
             </button>
           </div>
 
-          <div *ngIf="credentialsFeedback() as feedback" class="alert" [class.error]="feedback.type === 'error'" [class.success]="feedback.type === 'success'">
+          <div
+            *ngIf="credentialsFeedback() as feedback"
+            class="alert"
+            [class.error]="feedback.type === 'error'"
+            [class.success]="feedback.type === 'success'"
+            role="alert"
+          >
             {{ feedback.text }}
           </div>
 
-          <div class="form-grid">
-            <app-input label="Correo de acceso" placeholder="correo@ejemplo.com" [(model)]="credentialsForm.email"></app-input>
-            <app-input label="Nueva contrase&ntilde;a" type="password" [(model)]="credentialsForm.password"></app-input>
-            <app-input label="Confirmar contrase&ntilde;a" type="password" [(model)]="credentialsForm.confirmPassword"></app-input>
-          </div>
+          <fieldset class="form-section">
+            <legend>Seguridad</legend>
+            <p class="section-description">
+              Usa una contraseña segura con al menos 8 caracteres y combina letras, números y símbolos.
+            </p>
+            <div class="form-grid">
+              <app-input
+                label="Correo de acceso"
+                placeholder="correo@ejemplo.com"
+                type="email"
+                name="cred-correo"
+                [(model)]="credentialsForm.email"
+              ></app-input>
+              <app-input
+                label="Nueva contraseña"
+                type="password"
+                name="cred-password"
+                [(model)]="credentialsForm.password"
+              ></app-input>
+              <app-input
+                label="Confirmar contraseña"
+                type="password"
+                name="cred-confirm"
+                [(model)]="credentialsForm.confirmPassword"
+              ></app-input>
+            </div>
+          </fieldset>
         </form>
       </section>
     </div>

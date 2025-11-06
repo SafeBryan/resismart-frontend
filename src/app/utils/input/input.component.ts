@@ -14,6 +14,8 @@ import { MatButtonModule } from '@angular/material/button';
   styleUrl: './input.component.css',
 })
 export class InputComponent {
+  private static nextId = 0;
+  private readonly internalId = `app-input-${InputComponent.nextId++}`;
   @Input() label?: string;
   @Input() placeholder = '';
   @Input() icon?: 'user' | 'lock' | 'logout' | 'eye' | 'eye-off';
@@ -24,8 +26,19 @@ export class InputComponent {
   @Input() variant: 'outlined' | 'underline' = 'outlined';
   @Input() placeholderUppercase = false;
   @Input() togglePassword = true; // only for type='password'
+  @Input() hint?: string;
+  @Input() inputId?: string;
+  @Input() name?: string;
 
   visible = false;
+
+  get controlId(): string {
+    return this.inputId ?? this.internalId;
+  }
+
+  get controlName(): string {
+    return this.name ?? this.controlId;
+  }
 
   get inputType(): string {
     if (this.type === 'password' && this.togglePassword) {

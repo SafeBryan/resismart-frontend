@@ -36,8 +36,8 @@
         <div class="details">
           <div class="detail"><span>Nombre</span><b>{{ selected()?.nombre }}</b></div>
           <div class="detail"><span>Dirección</span><b>{{ selected()?.direccion }}</b></div>
-          <div class="detail"><span>Teléfono</span><b>{{ selected()?.telefono || '—' }}</b></div>
-          <div class="detail"><span>Correo</span><b>{{ selected()?.correo || '—' }}</b></div>
+          <div class="detail"><span>Teléfono</span><b>{{ selected()?.telefono || '-' }}</b></div>
+          <div class="detail"><span>Correo</span><b>{{ selected()?.correo || '-' }}</b></div>
         </div>
 
         <div class="units-header">
@@ -92,22 +92,43 @@
     <!-- Modal: Agregar Condominio -->
     <div class="modal" *ngIf="showAddCondo()">
       <div class="modal-content">
-        <h3>Agregar Condominio</h3>
-        <form [formGroup]="addCondoForm" (ngSubmit)="submitAddCondo()" class="form-grid">
-          <div class="form-title">Datos del condominio</div>
-          <mat-form-field appearance="outline"><mat-label>Nombre</mat-label><input matInput formControlName="nombre" required /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>Dirección</mat-label><input matInput formControlName="direccion" required /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>Teléfono</mat-label><input matInput formControlName="telefono" /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>Correo</mat-label><input matInput formControlName="correo" /></mat-form-field>
-          <ng-container *ngIf="!isOwner()">
-            <mat-form-field appearance="outline">
-              <mat-label>Dueño</mat-label>
-              <mat-select formControlName="idDueno">
-                <mat-option *ngFor="let u of duenos()" [value]="u.id_usuario">{{ u.nombres }} {{ u.apellidos }} ({{ u.id_usuario }})</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </ng-container>
-          <div class="modal-actions">
+        <h3 id="add-condo-title">Agregar Condominio</h3>
+        <form
+          [formGroup]="addCondoForm"
+          (ngSubmit)="submitAddCondo()"
+          class="accessible-form"
+          aria-labelledby="add-condo-title"
+        >
+          <fieldset class="form-section">
+            <legend>Datos del condominio</legend>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Nombre</mat-label>
+                <input matInput formControlName="nombre" required />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Dirección</mat-label>
+                <input matInput formControlName="direccion" required />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Teléfono</mat-label>
+                <input matInput formControlName="telefono" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Correo</mat-label>
+                <input matInput formControlName="correo" />
+              </mat-form-field>
+              <ng-container *ngIf="!isOwner()">
+                <mat-form-field appearance="outline">
+                  <mat-label>Dueño</mat-label>
+                  <mat-select formControlName="idDueno">
+                    <mat-option *ngFor="let u of duenos()" [value]="u.id_usuario">{{ u.nombres }} {{ u.apellidos }} ({{ u.id_usuario }})</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </ng-container>
+            </div>
+          </fieldset>
+          <div class="form-actions">
             <button mat-stroked-button type="button" (click)="showAddCondo.set(false)">Cancelar</button>
             <button mat-raised-button color="primary" type="submit" [disabled]="addCondoForm.invalid || loading()">Guardar</button>
           </div>
@@ -118,22 +139,43 @@
     <!-- Modal: Editar Condominio -->
     <div class="modal" *ngIf="showEditCondo()">
       <div class="modal-content">
-        <h3>Editar Condominio</h3>
-        <form [formGroup]="editCondoForm" (ngSubmit)="submitEditCondo()" class="form-grid">
-          <div class="form-title">Datos del condominio</div>
-          <mat-form-field appearance="outline"><mat-label>Nombre</mat-label><input matInput formControlName="nombre" required /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>Dirección</mat-label><input matInput formControlName="direccion" required /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>Teléfono</mat-label><input matInput formControlName="telefono" /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>Correo</mat-label><input matInput formControlName="correo" /></mat-form-field>
-          <ng-container *ngIf="!isOwner()">
-            <mat-form-field appearance="outline">
-              <mat-label>Dueño</mat-label>
-              <mat-select formControlName="idDueno">
-                <mat-option *ngFor="let u of duenos()" [value]="u.id_usuario">{{ u.nombres }} {{ u.apellidos }} ({{ u.id_usuario }})</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </ng-container>
-          <div class="modal-actions">
+        <h3 id="edit-condo-title">Editar Condominio</h3>
+        <form
+          [formGroup]="editCondoForm"
+          (ngSubmit)="submitEditCondo()"
+          class="accessible-form"
+          aria-labelledby="edit-condo-title"
+        >
+          <fieldset class="form-section">
+            <legend>Datos del condominio</legend>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Nombre</mat-label>
+                <input matInput formControlName="nombre" required />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Dirección</mat-label>
+                <input matInput formControlName="direccion" required />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Teléfono</mat-label>
+                <input matInput formControlName="telefono" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Correo</mat-label>
+                <input matInput formControlName="correo" />
+              </mat-form-field>
+              <ng-container *ngIf="!isOwner()">
+                <mat-form-field appearance="outline">
+                  <mat-label>Dueño</mat-label>
+                  <mat-select formControlName="idDueno">
+                    <mat-option *ngFor="let u of duenos()" [value]="u.id_usuario">{{ u.nombres }} {{ u.apellidos }} ({{ u.id_usuario }})</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </ng-container>
+            </div>
+          </fieldset>
+          <div class="form-actions">
             <button mat-stroked-button type="button" (click)="showEditCondo.set(false)">Cancelar</button>
             <button mat-raised-button color="primary" type="submit" [disabled]="editCondoForm.invalid || loading()">Guardar</button>
           </div>
@@ -144,19 +186,31 @@
     <!-- Modal: Agregar Unidad -->
     <div class="modal" *ngIf="showAddUnidad()">
       <div class="modal-content">
-        <h3>Agregar Unidad</h3>
-        <form [formGroup]="addUnidadForm" (ngSubmit)="submitAddUnidad()" class="form-grid">
-          <div class="form-title">Datos de la unidad</div>
-          <mat-form-field appearance="outline"><mat-label>Número</mat-label><input matInput formControlName="numero" required /></mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Estado</mat-label>
-            <mat-select formControlName="estado">
-              <mat-option value="OCUPADA">OCUPADA</mat-option>
-              <mat-option value="LIBRE">LIBRE</mat-option>
-              <mat-option value="MANTENIMIENTO">MANTENIMIENTO</mat-option>
-            </mat-select>
-          </mat-form-field>
-          <div class="modal-actions">
+        <h3 id="add-unit-title">Agregar Unidad</h3>
+        <form
+          [formGroup]="addUnidadForm"
+          (ngSubmit)="submitAddUnidad()"
+          class="accessible-form"
+          aria-labelledby="add-unit-title"
+        >
+          <fieldset class="form-section">
+            <legend>Datos de la unidad</legend>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Número</mat-label>
+                <input matInput formControlName="numero" required />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Estado</mat-label>
+                <mat-select formControlName="estado">
+                  <mat-option value="OCUPADA">OCUPADA</mat-option>
+                  <mat-option value="LIBRE">LIBRE</mat-option>
+                  <mat-option value="MANTENIMIENTO">MANTENIMIENTO</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </fieldset>
+          <div class="form-actions">
             <button mat-stroked-button type="button" (click)="showAddUnidad.set(false)">Cancelar</button>
             <button mat-raised-button color="primary" type="submit" [disabled]="addUnidadForm.invalid || loading()">Guardar</button>
           </div>
@@ -167,19 +221,31 @@
     <!-- Modal: Editar Unidad -->
     <div class="modal" *ngIf="showEditUnidad()">
       <div class="modal-content">
-        <h3>Editar Unidad</h3>
-        <form [formGroup]="editUnidadForm" (ngSubmit)="submitEditUnidad()" class="form-grid">
-          <div class="form-title">Datos de la unidad</div>
-          <mat-form-field appearance="outline"><mat-label>Número</mat-label><input matInput formControlName="numero" required /></mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Estado</mat-label>
-            <mat-select formControlName="estado">
-              <mat-option value="OCUPADA">OCUPADA</mat-option>
-              <mat-option value="LIBRE">LIBRE</mat-option>
-              <mat-option value="MANTENIMIENTO">MANTENIMIENTO</mat-option>
-            </mat-select>
-          </mat-form-field>
-          <div class="modal-actions">
+        <h3 id="edit-unit-title">Editar Unidad</h3>
+        <form
+          [formGroup]="editUnidadForm"
+          (ngSubmit)="submitEditUnidad()"
+          class="accessible-form"
+          aria-labelledby="edit-unit-title"
+        >
+          <fieldset class="form-section">
+            <legend>Datos de la unidad</legend>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Número</mat-label>
+                <input matInput formControlName="numero" required />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Estado</mat-label>
+                <mat-select formControlName="estado">
+                  <mat-option value="OCUPADA">OCUPADA</mat-option>
+                  <mat-option value="LIBRE">LIBRE</mat-option>
+                  <mat-option value="MANTENIMIENTO">MANTENIMIENTO</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </fieldset>
+          <div class="form-actions">
             <button mat-stroked-button type="button" (click)="showEditUnidad.set(false)">Cancelar</button>
             <button mat-raised-button color="primary" type="submit" [disabled]="editUnidadForm.invalid || loading()">Guardar</button>
           </div>
