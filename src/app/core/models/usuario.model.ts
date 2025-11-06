@@ -1,4 +1,4 @@
-export type Rol = 'ADMIN' | 'RESIDENTE' | 'DUEÑO';
+export type Rol = 'ADMIN' | 'RESIDENTE' | 'DUE\u00D1O';
 
 export interface Usuario {
   id_usuario?: number;
@@ -8,6 +8,7 @@ export interface Usuario {
   apellidos?: string;
   telefono?: string;
   correo?: string;
+  email?: string;
   estado?: boolean;
   enabled?: boolean;
 }
@@ -31,3 +32,15 @@ export interface UsuarioEditarRequest {
   id_Usuario?: number;
 }
 
+export interface UsuarioPerfilRequest {
+  nombre?: string;
+  apellido?: string;
+  email?: string;
+  telefono?: string;
+}
+
+export interface UsuarioCredencialesClienteRequest {
+  idUsuario: number;
+  email?: string;
+  password?: string;
+}

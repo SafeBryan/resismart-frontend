@@ -3,6 +3,14 @@
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
+.layout { align-items: start; min-height: 100vh; height: 100vh; max-height: 100vh; overflow: hidden; }
+.layout > main.content { height: 100vh; max-height: 100vh; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; box-sizing: border-box; }
+
+@media (max-width: 1024px) {
+  .layout { height: auto; max-height: none; min-height: 100%; overflow: visible; }
+  .layout > main.content { height: auto; max-height: none; overflow: visible; }
+}
+
 /* Sidebar logout button contrast fix (Material inner label elements) */
 /* Outlined (stroked) button inside the blue sidebar */
 aside.sidebar .mat-mdc-outlined-button,

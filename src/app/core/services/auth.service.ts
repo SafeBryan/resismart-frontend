@@ -68,6 +68,21 @@ export class AuthService {
     return this.snapshot.role;
   }
 
+  refreshProfile(): Observable<UserProfile> {
+    const url = `${API_URL}/Usuarios/whoami`;
+    return this.http.get<UserProfile>(url).pipe(
+      tap((profile) => this.mergeProfile(profile))
+    );
+  }
+
+  mergeProfile(profile: Partial<UserProfile> | Record<string, any> | null) {
+    const currentProfile = this.snapshot.profile ?? null;
+    const updatedProfile = profile ? { ...(currentProfile ?? {}), ...profile } : profile;
+    const next = { ...this.snapshot, profile: updatedProfile };
+    this.state$.next(next);
+    this.saveToStorage(next);
+  }
+
   // Token validation cache
   private lastValidation = 0;
   private validating$?: Observable<boolean>;
@@ -93,7 +108,8 @@ export class AuthService {
         // Actualiza estado en memoria con datos no sensibles
         const role: Role | null = (profile?.rol ?? profile?.role ?? this.snapshot.role) as Role | null;
         const idUsuario: any = profile?.id_usuario ?? profile?.idUsuario ?? profile?.id ?? this.snapshot.idUsuario;
-        const next = { ...this.snapshot, role, idUsuario, profile };
+        const mergedProfile = { ...(this.snapshot.profile ?? {}), ...profile };
+        const next = { ...this.snapshot, role, idUsuario, profile: mergedProfile };
         this.state$.next(next);
         // Persistir solo token y datos básicos (sin rol)
         this.saveToStorage(next);
@@ -163,9 +179,11 @@ function sanitizeProfile(profile: any | null | undefined): any | null {
   const email = profile?.email ?? profile?.correo ?? null;
   const nombres = profile?.nombres ?? profile?.nombre ?? null;
   const apellidos = profile?.apellidos ?? null;
+  const telefono = profile?.telefono ?? null;
   const safe: any = {};
   if (email != null) safe.email = email;
   if (nombres != null) safe.nombres = nombres;
   if (apellidos != null) safe.apellidos = apellidos;
+  if (telefono != null) safe.telefono = telefono;
   return safe;
 }

@@ -10,10 +10,6 @@
   background: #f8fafc;
 }
 
-.sidebar {
-  border-right: 1px solid #e5e7eb;
-}
-
 .content {
   background: radial-gradient(circle at top right, rgba(238, 242, 255, 0.7), transparent 55%), #f8fafc;
   padding: 24px 28px;

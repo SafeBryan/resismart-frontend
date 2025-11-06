@@ -1,93 +1,60 @@
 <div class="layout">
-  <app-sidebar class="sidebar" [nav]="residentNav" subtitle="Residente"></app-sidebar>
+  <app-sidebar [nav]="residentNav" subtitle="Residente"></app-sidebar>
 
   <main class="content">
     <div class="content-inner">
       <header class="page-head">
         <div>
           <h1>Mis datos</h1>
-          <p class="muted">
-            Actualiza tu información personal y define cómo deseas recibir los avisos del condominio.
-          </p>
-        </div>
-        <div class="head-actions">
-          <app-button label="Guardar cambios" variant="primary"></app-button>
+          <p class="muted">Actualiza tu informaci&oacute;n de contacto y protege tu acceso a ResiSmart.</p>
         </div>
       </header>
 
-      <section class="grid main">
-        <article class="card datos-card">
+      <section class="grid">
+        <form class="card" (ngSubmit)="onSubmitProfile()" autocomplete="off">
           <div class="card-head">
-            <h2>Datos personales</h2>
-            <span class="muted">Información básica del residente</span>
+            <div>
+              <h2>Datos personales</h2>
+              <span class="muted">Nombre, correo y n&uacute;mero de contacto</span>
+            </div>
+            <button mat-flat-button color="primary" type="submit" [disabled]="savingProfile()">
+              {{ savingProfile() ? 'Guardando...' : 'Guardar datos' }}
+            </button>
           </div>
+
+          <div *ngIf="profileFeedback() as feedback" class="alert" [class.error]="feedback.type === 'error'" [class.success]="feedback.type === 'success'">
+            {{ feedback.text }}
+          </div>
+
           <div class="form-grid">
-            <app-input placeholder="Nombres" [(model)]="form.nombres"></app-input>
-            <app-input placeholder="Apellidos" [(model)]="form.apellidos"></app-input>
-            <app-input placeholder="Documento de identidad" [(model)]="form.documento"></app-input>
-            <app-input placeholder="Correo electrónico" [(model)]="form.email"></app-input>
+            <app-input label="Nombre" placeholder="Nombre" [(model)]="profileForm.nombre"></app-input>
+            <app-input label="Apellido" placeholder="Apellido" [(model)]="profileForm.apellido"></app-input>
+            <app-input label="Correo electr&oacute;nico" placeholder="Correo electr&oacute;nico" [(model)]="profileForm.email"></app-input>
+            <app-input label="Tel&eacute;fono" placeholder="Tel&eacute;fono" [(model)]="profileForm.telefono"></app-input>
           </div>
-        </article>
+        </form>
 
-        <article class="card contacto-card">
+        <form class="card" (ngSubmit)="onSubmitCredentials()" autocomplete="off">
           <div class="card-head">
-            <h2>Contacto y seguridad</h2>
-            <span class="muted">Mantén estos datos actualizados</span>
+            <div>
+              <h2>Seguridad de acceso</h2>
+              <span class="muted">Correo de ingreso y nueva contrase&ntilde;a</span>
+            </div>
+            <button mat-flat-button color="primary" type="submit" [disabled]="savingCredentials()">
+              {{ savingCredentials() ? 'Actualizando...' : 'Guardar credenciales' }}
+            </button>
           </div>
+
+          <div *ngIf="credentialsFeedback() as feedback" class="alert" [class.error]="feedback.type === 'error'" [class.success]="feedback.type === 'success'">
+            {{ feedback.text }}
+          </div>
+
           <div class="form-grid">
-            <app-input placeholder="Teléfono personal" [(model)]="form.telefono"></app-input>
-            <app-input placeholder="Teléfono de emergencia" [(model)]="form.telefonoEmergencia"></app-input>
-            <app-input placeholder="Vehículo (placa)" [(model)]="form.vehiculo"></app-input>
-            <app-input placeholder="Estacionamiento asignado" [(model)]="form.estacionamiento"></app-input>
+            <app-input label="Correo de acceso" placeholder="correo@ejemplo.com" [(model)]="credentialsForm.email"></app-input>
+            <app-input label="Nueva contrase&ntilde;a" type="password" [(model)]="credentialsForm.password"></app-input>
+            <app-input label="Confirmar contrase&ntilde;a" type="password" [(model)]="credentialsForm.confirmPassword"></app-input>
           </div>
-        </article>
-      </section>
-
-      <section class="grid secondary">
-        <article class="card preferencias-card">
-          <div class="card-head">
-            <h2>Preferencias de avisos</h2>
-            <span class="muted">Elige los canales que prefieres usar</span>
-          </div>
-          <ul class="preferencias-list">
-            <li *ngFor="let pref of preferencias">
-              <div class="info">
-                <strong>{{ pref.titulo }}</strong>
-                <p>{{ pref.descripcion }}</p>
-              </div>
-              <button type="button" class="toggle" [class.active]="preferenciasSeleccionadas[pref.clave]" (click)="togglePreferencia(pref.clave)">
-                <span>{{ preferenciasSeleccionadas[pref.clave] ? 'Activo' : 'Inactivo' }}</span>
-                <span class="switch" aria-hidden="true">
-                  <span class="thumb"></span>
-                </span>
-              </button>
-            </li>
-          </ul>
-        </article>
-
-        <article class="card notas-card">
-          <div class="card-head">
-            <h2>Notas adicionales</h2>
-            <span class="muted">Información relevante para administración</span>
-          </div>
-          <textarea class="textarea" rows="6" [(ngModel)]="form.notas" placeholder="Ejemplo: Viajo constantemente, contactar a mi familiar en caso de emergencias."></textarea>
-        </article>
-
-        <article class="card historial-card">
-          <div class="card-head">
-            <h2>Historial de cambios</h2>
-            <span class="muted">Últimas actualizaciones realizadas</span>
-          </div>
-          <ul class="historial-list">
-            <li *ngFor="let item of historial">
-              <div class="time">{{ item.fecha }}</div>
-              <div class="detalle">
-                <strong>{{ item.accion }}</strong>
-                <p>{{ item.detalle }}</p>
-              </div>
-            </li>
-          </ul>
-        </article>
+        </form>
       </section>
     </div>
   </main>

@@ -1,7 +1,61 @@
 <div class="layout">
   <app-sidebar></app-sidebar>
+
   <main class="content">
-    <h2>Página Configuración</h2>
+    <div class="content-inner">
+      <header class="page-head">
+        <div>
+          <h1>Configuraci&oacute;n personal</h1>
+          <p class="muted">Gestiona tu informaci&oacute;n de contacto y tus credenciales de acceso.</p>
+        </div>
+      </header>
+
+      <section class="grid">
+        <form class="card" (ngSubmit)="onSubmitProfile()" autocomplete="off">
+          <div class="card-head">
+            <div>
+              <h2>Datos personales</h2>
+              <span class="muted">Nombre, correo y tel&eacute;fono de contacto</span>
+            </div>
+            <button mat-flat-button color="primary" type="submit" [disabled]="savingProfile()">
+              {{ savingProfile() ? 'Guardando...' : 'Guardar datos' }}
+            </button>
+          </div>
+
+          <div *ngIf="profileFeedback() as feedback" class="alert" [class.error]="feedback.type === 'error'" [class.success]="feedback.type === 'success'">
+            {{ feedback.text }}
+          </div>
+
+          <div class="form-grid">
+            <app-input label="Nombre" placeholder="Nombre" [(model)]="profileForm.nombre"></app-input>
+            <app-input label="Apellido" placeholder="Apellido" [(model)]="profileForm.apellido"></app-input>
+            <app-input label="Correo electr&oacute;nico" placeholder="Correo electr&oacute;nico" [(model)]="profileForm.email"></app-input>
+            <app-input label="Tel&eacute;fono" placeholder="Tel&eacute;fono" [(model)]="profileForm.telefono"></app-input>
+          </div>
+        </form>
+
+        <form class="card" (ngSubmit)="onSubmitCredentials()" autocomplete="off">
+          <div class="card-head">
+            <div>
+              <h2>Credenciales de acceso</h2>
+              <span class="muted">Actualiza tu correo y contrase&ntilde;a de ingreso</span>
+            </div>
+            <button mat-flat-button color="primary" type="submit" [disabled]="savingCredentials()">
+              {{ savingCredentials() ? 'Actualizando...' : 'Guardar credenciales' }}
+            </button>
+          </div>
+
+          <div *ngIf="credentialsFeedback() as feedback" class="alert" [class.error]="feedback.type === 'error'" [class.success]="feedback.type === 'success'">
+            {{ feedback.text }}
+          </div>
+
+          <div class="form-grid">
+            <app-input label="Correo de acceso" placeholder="correo@ejemplo.com" [(model)]="credentialsForm.email"></app-input>
+            <app-input label="Nueva contrase&ntilde;a" type="password" [(model)]="credentialsForm.password"></app-input>
+            <app-input label="Confirmar contrase&ntilde;a" type="password" [(model)]="credentialsForm.confirmPassword"></app-input>
+          </div>
+        </form>
+      </section>
+    </div>
   </main>
 </div>
-

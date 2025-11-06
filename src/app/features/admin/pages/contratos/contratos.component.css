@@ -8,9 +8,6 @@
   .layout {
     grid-template-columns: 1fr;
   }
-  .layout .sidebar {
-    width: 100% !important;
-  }
 }
 .content {
   padding: 18px 22px;

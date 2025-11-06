@@ -2,7 +2,13 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Usuario, UsuarioCrearRequest, UsuarioEditarRequest } from '../models/usuario.model';
+import {
+  Usuario,
+  UsuarioCrearRequest,
+  UsuarioCredencialesClienteRequest,
+  UsuarioEditarRequest,
+  UsuarioPerfilRequest,
+} from '../models/usuario.model';
 
 const API = environment.apiUrl || 'http://localhost:8080';
 
@@ -28,5 +34,13 @@ export class UsuariosService {
 
   delete(id: number | string): Observable<any> {
     return this.http.delete(`${API}/Usuarios/${id}`);
+  }
+
+  updateOwnProfile(dto: UsuarioPerfilRequest): Observable<Usuario> {
+    return this.http.put<Usuario>(`${API}/Usuarios/me`, dto);
+  }
+
+  updateCredencialesCliente(dto: UsuarioCredencialesClienteRequest): Observable<any> {
+    return this.http.put(`${API}/Usuarios/credencialesCliente`, dto);
   }
 }

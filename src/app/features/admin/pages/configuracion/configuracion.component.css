@@ -1,4 +1,135 @@
-.layout{display:grid;grid-template-columns:260px 1fr;min-height:100dvh}
-@media(max-width:1024px){.layout{grid-template-columns:1fr}.layout .sidebar{width:100%!important}}
-.content{padding:18px 22px;background:#f9fbfe}
+:host {
+  display: block;
+  color: #111827;
+}
 
+.layout {
+  display: grid;
+  grid-template-columns: 252px 1fr;
+  min-height: 100dvh;
+  background: #f8fafc;
+}
+
+.content {
+  background: linear-gradient(145deg, rgba(238, 242, 255, 0.65), #f8fafc 60%, #ffffff 100%);
+  padding: 28px 32px;
+}
+
+.content-inner {
+  max-width: 980px;
+  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+}
+
+.page-head h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1e1b4b;
+}
+
+.page-head .muted {
+  color: #64748b;
+  margin: 6px 0 0;
+}
+
+.grid {
+  display: grid;
+  gap: 24px;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 20px 45px -28px rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  display: grid;
+  gap: 18px;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.card-head h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.card-head .muted {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.form-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.alert {
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  border: 1px solid transparent;
+}
+
+.alert.success {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #047857;
+}
+
+.alert.error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+button[mat-flat-button] {
+  font-weight: 600;
+  border-radius: 30px;
+  padding: 0 22px;
+  height: 42px;
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: 220px 1fr;
+  }
+}
+
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+}
+
+@media (max-width: 640px) {
+  .content {
+    padding: 20px 18px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  button[mat-flat-button] {
+    width: 100%;
+    justify-content: center;
+  }
+}

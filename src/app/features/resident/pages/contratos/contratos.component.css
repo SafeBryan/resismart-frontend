@@ -10,10 +10,6 @@
   background: #f8fafc;
 }
 
-.sidebar {
-  border-right: 1px solid #e5e7eb;
-}
-
 .content {
   background: linear-gradient(135deg, rgba(238, 242, 255, 0.6), #f8fafc 40%, #ffffff 100%);
   padding: 24px 28px;

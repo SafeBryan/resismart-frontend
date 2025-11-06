@@ -1,4 +1,4 @@
 .layout{display:grid;grid-template-columns:260px 1fr;min-height:100dvh}
-@media(max-width:1024px){.layout{grid-template-columns:1fr}.layout .sidebar{width:100%!important}}
+@media(max-width:1024px){.layout{grid-template-columns:1fr}}
 .content{padding:18px 22px;background:#f9fbfe}
 
