@@ -13,6 +13,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-residentes',
@@ -25,6 +26,7 @@ export class ResidentesComponent implements OnInit, AfterViewInit {
   private service = inject(ResidentesService);
   private condoService = inject(CondominiosService);
   private fb = inject(FormBuilder);
+  private toast = inject(ToastService);
 
   // Data
   readonly loading = signal<boolean>(false);
@@ -148,8 +150,15 @@ export class ResidentesComponent implements OnInit, AfterViewInit {
     const dto: ResidenteDTO = this.addForm.value;
     this.loading.set(true);
     this.service.create(dto).subscribe({
-      next: () => { this.showAdd.set(false); this.load(); },
-      error: () => { this.loading.set(false); },
+      next: () => {
+        this.toast.success('Residente agregado correctamente.');
+        this.showAdd.set(false);
+        this.load();
+      },
+      error: () => {
+        this.toast.error('No se pudo agregar el residente.');
+        this.loading.set(false);
+      },
     });
   }
 
@@ -174,19 +183,38 @@ export class ResidentesComponent implements OnInit, AfterViewInit {
     const dto: ResidenteDTO = this.editForm.value;
     this.loading.set(true);
     this.service.update(this.editingId, dto).subscribe({
-      next: () => { this.showEdit.set(false); this.editingId = null; this.load(); },
-      error: () => { this.loading.set(false); },
+      next: () => {
+        this.toast.success('Residente actualizado correctamente.');
+        this.showEdit.set(false);
+        this.editingId = null;
+        this.load();
+      },
+      error: () => {
+        this.toast.error('No se pudo actualizar el residente.');
+        this.loading.set(false);
+      },
     });
   }
 
-  delete(item: ResidenteRespuestaDTO) {
+  async delete(item: ResidenteRespuestaDTO) {
     const idUsuario = item.usuario?.id_usuario;
     if (!idUsuario) return;
-    if (!confirm('¿Eliminar usuario asociado al residente?')) return;
+    const confirmed = await this.toast.confirm('¿Eliminar usuario asociado al residente?', {
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+      type: 'error',
+    });
+    if (!confirmed) return;
     this.loading.set(true);
     this.service.deleteUsuario(idUsuario).subscribe({
-      next: () => this.load(),
-      error: () => { this.loading.set(false); },
+      next: () => {
+        this.toast.success('Residente eliminado.');
+        this.load();
+      },
+      error: () => {
+        this.toast.error('No se pudo eliminar el residente.');
+        this.loading.set(false);
+      },
     });
   }
 

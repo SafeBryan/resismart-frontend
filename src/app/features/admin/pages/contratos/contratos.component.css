@@ -1,71 +1,86 @@
-/* ====== Layout ====== */
+:host {
+  display: block;
+}
+
 .layout {
   display: grid;
   grid-template-columns: 260px 1fr;
   min-height: 100dvh;
 }
+
 @media (max-width: 1024px) {
   .layout {
     grid-template-columns: 1fr;
   }
 }
+
 .content {
   padding: 18px 22px;
   background: #f9fbfe;
 }
 
-/* ====== Header ====== */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 16px;
 }
+
 .header h1 {
   margin: 0;
   font-size: 26px;
+  color: #0f172a;
 }
+
 .header p {
   margin: 4px 0 0;
   color: #6b7280;
 }
 
-/* ====== Filtros ====== */
 .filters {
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-wrap: wrap;
   margin: 10px 0 18px;
 }
+
 .filters .search {
   flex: 1;
+  min-width: 220px;
 }
 
-/* ====== Card y tabla ====== */
+.filters .estado {
+  width: 220px;
+}
+
 .card {
-  background: #fff;
+  background: #ffffff;
   border: 1px solid #dbe3ef;
   border-radius: 14px;
   padding: 12px;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
 }
+
 .card-title {
   padding: 6px 6px 10px;
 }
+
 .card-title h3 {
   margin: 0 0 4px;
 }
-.card-title small {
-  color: #6b7280;
-}
+
 .table-wrapper {
   overflow: auto;
 }
+
 .table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
 }
+
 .table th,
 .table td {
   padding: 10px 12px;
@@ -73,28 +88,42 @@
   text-align: left;
   vertical-align: top;
 }
+
 .table thead th {
   font-weight: 600;
   color: #6b7280;
 }
+
 .table .actions {
   white-space: nowrap;
   text-align: right;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
+
 .cell-main .title {
   font-weight: 600;
 }
+
 .cell-main .muted {
   color: #6b7280;
   font-size: 12px;
 }
+
+.fechas div {
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #334155;
+}
+
 .empty {
   text-align: center;
   color: #6b7280;
   padding: 18px;
 }
 
-/* ====== Badges (Estados) ====== */
 .badge {
   display: inline-block;
   padding: 4px 8px;
@@ -102,86 +131,64 @@
   background: #e5e7eb;
   color: #374151;
   font-size: 12px;
-  font-weight: 600;
 }
-.badge.pendiente {
+
+.badge.estado.pendiente {
   background: #fef3c7;
   color: #92400e;
 }
-.badge.activo {
+
+.badge.estado.activo {
   background: #dcfce7;
   color: #166534;
 }
-.badge.rescindido {
+
+.badge.estado.rescindido,
+.badge.estado.finalizado {
   background: #fee2e2;
   color: #991b1b;
 }
-.badge.finalizado {
-  background: #e0e7ff;
-  color: #3730a3;
-}
 
-/* ====== Paginador Material ====== */
-.mat-mdc-paginator {
-  border-top: 1px solid #eef2f7;
-  border-radius: 0 0 14px 14px;
-}
-.mat-mdc-paginator .mat-mdc-form-field-subscript-wrapper {
-  display: none;
-}
-.mat-mdc-paginator .mat-mdc-select-value {
-  font-weight: 600;
-}
-
-/* ====== Loader y errores ====== */
 .loader {
+  margin-top: 40px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #2563eb;
-  padding: 18px;
-  font-weight: 500;
-  gap: 6px;
-}
-.error {
-  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 6px;
-  background: #fee2e2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 14px;
+  color: #0f172a;
 }
 
-/* ====== KPIs ====== */
+.loader mat-icon {
+  font-size: 32px;
+}
+
 .stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
   margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
 }
+
 .stat {
-  background: #fff;
-  border: 1px solid #dbe3ef;
   border-radius: 14px;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
-  padding: 12px;
-  text-align: center;
-  transition: transform 0.2s ease;
+  padding: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #ffffff;
+  box-shadow: 0 12px 30px -28px rgba(15, 23, 42, 0.45);
 }
-.stat:hover {
-  transform: translateY(-2px);
-}
+
 .stat h4 {
-  margin: 0;
-  font-size: 22px;
-  color: #2563eb;
-  font-weight: 600;
+  margin: 0 0 6px;
+  font-size: 20px;
 }
+
 .stat p {
-  margin: 2px 0 0;
+  margin: 0;
   color: #6b7280;
   font-size: 13px;
+}
+
+.actions button.danger {
+  border-color: rgba(239, 68, 68, 0.6);
+  color: #b91c1c;
 }

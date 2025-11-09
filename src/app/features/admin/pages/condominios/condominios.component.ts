@@ -14,6 +14,7 @@ import { UnidadDTO, UnidadCreateDTO, UnidadUpdateDTO } from '../../../../core/mo
 import { AuthService } from '../../../../core/services/auth.service';
 import { UsuariosService } from '../../../../core/services/usuarios.service';
 import { UsuarioDTO } from '../../../../core/models/residente.model';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-condominios',
@@ -27,6 +28,7 @@ export class CondominiosComponent implements OnInit {
   private service = inject(CondominiosService);
   private auth = inject(AuthService);
   private usuarios = inject(UsuariosService);
+  private toast = inject(ToastService);
 
   // Data
   readonly loading = signal<boolean>(false);
@@ -152,8 +154,15 @@ export class CondominiosComponent implements OnInit {
     } as any;
     this.loading.set(true);
     this.service.create(dto).subscribe({
-      next: () => { this.showAddCondo.set(false); this.loadCondominios(); },
-      error: () => this.loading.set(false),
+      next: () => {
+        this.toast.success('Condominio agregado correctamente.');
+        this.showAddCondo.set(false);
+        this.loadCondominios();
+      },
+      error: () => {
+        this.toast.error('No se pudo agregar el condominio.');
+        this.loading.set(false);
+      },
     });
   }
   openEditCondo() {
@@ -176,18 +185,36 @@ export class CondominiosComponent implements OnInit {
     } as any;
     this.loading.set(true);
     this.service.update(this.selectedId()!, dto).subscribe({
-      next: () => { this.showEditCondo.set(false); this.loadCondominios(); },
-      error: () => this.loading.set(false),
+      next: () => {
+        this.toast.success('Condominio actualizado correctamente.');
+        this.showEditCondo.set(false);
+        this.loadCondominios();
+      },
+      error: () => {
+        this.toast.error('No se pudo actualizar el condominio.');
+        this.loading.set(false);
+      },
     });
   }
-  deleteCondo() {
+  async deleteCondo() {
     const id = this.selectedId();
     if (!id) return;
-    if (!confirm('¿Eliminar condominio seleccionado?')) return;
+    const confirmed = await this.toast.confirm('¿Eliminar condominio seleccionado?', {
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+      type: 'error',
+    });
+    if (!confirmed) return;
     this.loading.set(true);
     this.service.delete(id).subscribe({
-      next: () => this.loadCondominios(),
-      error: () => this.loading.set(false),
+      next: () => {
+        this.toast.success('Condominio eliminado.');
+        this.loadCondominios();
+      },
+      error: () => {
+        this.toast.error('No se pudo eliminar el condominio.');
+        this.loading.set(false);
+      },
     });
   }
 
@@ -202,8 +229,15 @@ export class CondominiosComponent implements OnInit {
     const dto: UnidadCreateDTO = { ...(this.addUnidadForm.value), idCondominio: condominioId } as any;
     this.loading.set(true);
     this.service.agregarUnidad(condominioId, dto).subscribe({
-      next: () => { this.showAddUnidad.set(false); this.onSelectCondo(condominioId); },
-      error: () => this.loading.set(false),
+      next: () => {
+        this.toast.success('Unidad agregada correctamente.');
+        this.showAddUnidad.set(false);
+        this.onSelectCondo(condominioId);
+      },
+      error: () => {
+        this.toast.error('No se pudo agregar la unidad.');
+        this.loading.set(false);
+      },
     });
   }
   openEditUnidad(u: UnidadDTO) {
@@ -218,18 +252,37 @@ export class CondominiosComponent implements OnInit {
     const condominioId = this.selectedId()!;
     this.loading.set(true);
     this.service.actualizarUnidad(id, dto).subscribe({
-      next: () => { this.showEditUnidad.set(false); this.editingUnidadId = null; this.onSelectCondo(condominioId); },
-      error: () => this.loading.set(false),
+      next: () => {
+        this.toast.success('Unidad actualizada correctamente.');
+        this.showEditUnidad.set(false);
+        this.editingUnidadId = null;
+        this.onSelectCondo(condominioId);
+      },
+      error: () => {
+        this.toast.error('No se pudo actualizar la unidad.');
+        this.loading.set(false);
+      },
     });
   }
-  deleteUnidad(u: UnidadDTO) {
+  async deleteUnidad(u: UnidadDTO) {
     if (!u.id) return;
-    if (!confirm('¿Eliminar unidad?')) return;
+    const confirmed = await this.toast.confirm('¿Eliminar unidad?', {
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+      type: 'error',
+    });
+    if (!confirmed) return;
     const condominioId = this.selectedId()!;
     this.loading.set(true);
     this.service.eliminarUnidad(u.id).subscribe({
-      next: () => this.onSelectCondo(condominioId),
-      error: () => this.loading.set(false),
+      next: () => {
+        this.toast.success('Unidad eliminada.');
+        this.onSelectCondo(condominioId);
+      },
+      error: () => {
+        this.toast.error('No se pudo eliminar la unidad.');
+        this.loading.set(false);
+      },
     });
   }
 }

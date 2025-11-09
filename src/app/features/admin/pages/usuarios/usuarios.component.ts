@@ -11,6 +11,7 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { UsuariosService } from '../../../../core/services/usuarios.service';
 import { Usuario, UsuarioCrearRequest, UsuarioEditarRequest, Rol } from '../../../../core/models/usuario.model';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-usuarios',
@@ -23,6 +24,7 @@ export class UsuariosComponent implements OnInit {
   private fb = inject(FormBuilder);
   private service = inject(UsuariosService);
   private auth = inject(AuthService);
+  private toast = inject(ToastService);
 
   readonly loading = signal(false);
   readonly usuarios = signal<Usuario[]>([]);
@@ -105,8 +107,15 @@ export class UsuariosComponent implements OnInit {
     const dto: UsuarioCrearRequest = { ...raw, rol: this.isOwner() ? 'RESIDENTE' : raw.rol };
     this.loading.set(true);
     this.service.create(dto).subscribe({
-      next: () => { this.showAdd.set(false); this.load(); },
-      error: () => this.loading.set(false),
+      next: () => {
+        this.toast.success('Usuario creado correctamente.');
+        this.showAdd.set(false);
+        this.load();
+      },
+      error: () => {
+        this.toast.error('No se pudo crear el usuario.');
+        this.loading.set(false);
+      },
     });
   }
 
@@ -129,18 +138,38 @@ export class UsuariosComponent implements OnInit {
     const dto: UsuarioEditarRequest = { ...raw, rol: this.isOwner() ? 'RESIDENTE' as Rol : raw.rol };
     this.loading.set(true);
     this.service.update(this.editingId, dto).subscribe({
-      next: () => { this.showEdit.set(false); this.editingId = null; this.load(); },
-      error: () => this.loading.set(false),
+      next: () => {
+        this.toast.success('Usuario actualizado correctamente.');
+        this.showEdit.set(false);
+        this.editingId = null;
+        this.load();
+      },
+      error: () => {
+        this.toast.error('No se pudo actualizar el usuario.');
+        this.loading.set(false);
+      },
     });
   }
 
-  delete(u: Usuario) {
-    const id = u.id_usuario; if (!id) return;
-    if (!confirm('¿Eliminar usuario?')) return;
+  async delete(u: Usuario) {
+    const id = u.id_usuario;
+    if (!id) return;
+    const confirmed = await this.toast.confirm('¿Eliminar usuario?', {
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+      type: 'error',
+    });
+    if (!confirmed) return;
     this.loading.set(true);
     this.service.delete(id).subscribe({
-      next: () => this.load(),
-      error: () => this.loading.set(false),
+      next: () => {
+        this.toast.success('Usuario eliminado.');
+        this.load();
+      },
+      error: () => {
+        this.toast.error('No se pudo eliminar el usuario.');
+        this.loading.set(false);
+      },
     });
   }
 }

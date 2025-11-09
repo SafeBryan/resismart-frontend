@@ -22,6 +22,7 @@ import {
   ContratoDialogComponent,
   DialogMode,
 } from "./components/contrato-dialog/contrato-dialog.component"; // Importamos DialogMode
+import { ToastService } from "../../../../core/services/toast.service";
 
 type EstadoFiltro = "" | EstadoContrato;
 
@@ -43,10 +44,9 @@ type EstadoFiltro = "" | EstadoContrato;
   styleUrls: ["./contratos.component.css"],
 })
 export class ContratosComponent implements OnInit {
-  constructor(private contratosSrv: ContratoService) {}
+  constructor(private contratosSrv: ContratoService, private toast: ToastService) {}
 
   loading = signal(false);
-  errorMsg = signal<string | null>(null);
   data = signal<ContratoResumen[]>([]);
   filtros = signal<ContratosFiltro>({ buscar: "", estado: "" as EstadoFiltro });
 
@@ -74,7 +74,6 @@ export class ContratosComponent implements OnInit {
 
   loadData(): void {
     this.loading.set(true);
-    this.errorMsg.set(null);
     this.contratosSrv.listAll().subscribe({
       next: (list) => {
         const ordenados = [...(list || [])].sort((a, b) => {
@@ -84,7 +83,9 @@ export class ContratosComponent implements OnInit {
         });
         this.data.set(ordenados);
       },
-      error: () => this.errorMsg.set("No se pudieron cargar los contratos."),
+      error: () => {
+        this.toast.error("No se pudieron cargar los contratos.");
+      },
       complete: () => this.loading.set(false),
     });
   }
@@ -128,35 +129,54 @@ export class ContratosComponent implements OnInit {
     const payload: ContratoRenovarInput = { nuevaFechaFin: nueva };
     this.loading.set(true);
     this.contratosSrv.renovar(Number(c.id), payload).subscribe({
-      next: () => this.loadData(),
+      next: () => {
+        this.toast.success("Contrato renovado correctamente.");
+        this.loadData();
+      },
       error: () => {
-        this.errorMsg.set("No se pudo renovar el contrato.");
         this.loading.set(false);
+        this.toast.error("No se pudo renovar el contrato.");
       },
     });
   }
 
-  confirmarRescindir(c: ContratoResumen): void {
-    if (!confirm("¿Rescindir este contrato?")) return;
+  async confirmarRescindir(c: ContratoResumen): Promise<void> {
+    const confirmed = await this.toast.confirm("¿Rescindir este contrato?", {
+      confirmText: "Rescindir",
+      cancelText: "Cancelar",
+      type: "error",
+    });
+    if (!confirmed) return;
     const payload: ContratoRescindirInput = {};
     this.loading.set(true);
     this.contratosSrv.rescindir(Number(c.id), payload).subscribe({
-      next: () => this.loadData(),
+      next: () => {
+        this.toast.success("Contrato rescindido correctamente.");
+        this.loadData();
+      },
       error: () => {
-        this.errorMsg.set("No se pudo rescindir el contrato.");
         this.loading.set(false);
+        this.toast.error("No se pudo rescindir el contrato.");
       },
     });
   }
 
-  confirmarEliminar(c: ContratoResumen): void {
-    if (!confirm("¿Eliminar el contrato de forma permanente?")) return;
+  async confirmarEliminar(c: ContratoResumen): Promise<void> {
+    const confirmed = await this.toast.confirm("¿Eliminar el contrato de forma permanente?", {
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+      type: "error",
+    });
+    if (!confirmed) return;
     this.loading.set(true);
     this.contratosSrv.delete(Number(c.id)).subscribe({
-      next: () => this.loadData(),
+      next: () => {
+        this.toast.success("Contrato eliminado correctamente.");
+        this.loadData();
+      },
       error: () => {
-        this.errorMsg.set("No se pudo eliminar el contrato.");
         this.loading.set(false);
+        this.toast.error("No se pudo eliminar el contrato.");
       },
     });
   }

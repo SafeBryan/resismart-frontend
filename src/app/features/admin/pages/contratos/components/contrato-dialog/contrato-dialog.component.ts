@@ -25,6 +25,7 @@ import {
 import { CondominioResumenDTO } from "../../../../../../core/models/condominio.model";
 import { UnidadDTO } from "../../../../../../core/models/unidad.model";
 import { ResidenteRespuestaDTO } from "../../../../../../core/models/residente.model";
+import { ToastService } from "../../../../../../core/services/toast.service";
 
 export type DialogMode = "create" | "edit" | "view";
 
@@ -66,6 +67,7 @@ export class ContratoDialogComponent implements OnInit {
   private contratoSrv = inject(ContratoService);
   private condoSrv = inject(CondominiosService);
   private resSrv = inject(ResidentesService);
+  private toast = inject(ToastService);
 
   // Declaramos el form con tipo específico
   form: any;
@@ -145,9 +147,11 @@ export class ContratoDialogComponent implements OnInit {
     if (this.isCreate()) {
       this.contratoSrv.create(payloadCreate as any).subscribe({
         next: (res) => {
+          this.toast.success('Contrato creado correctamente.');
           this.saved.emit(res);
         },
         error: () => {
+          this.toast.error('No se pudo crear el contrato.');
           this.saving.set(false);
         },
         complete: () => this.saving.set(false),
@@ -167,9 +171,11 @@ export class ContratoDialogComponent implements OnInit {
         .update(Number(this.contrato.id), payloadUpdate as any)
         .subscribe({
           next: (res) => {
+            this.toast.success('Contrato actualizado correctamente.');
             this.saved.emit(res);
           },
           error: () => {
+            this.toast.error('No se pudo actualizar el contrato.');
             this.saving.set(false);
           },
           complete: () => this.saving.set(false),

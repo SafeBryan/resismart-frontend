@@ -1,0 +1,67 @@
+<div
+  class="toast-container"
+  [class.show-confirm]="confirmToast()"
+  aria-live="assertive"
+  aria-atomic="true"
+>
+  <div
+    *ngIf="confirmToast() as confirm"
+    class="toast confirm"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="toast-message">{{ confirm.message }}</div>
+    <div class="toast-actions">
+      <button
+        type="button"
+        class="toast-action secondary"
+        (click)="handleAction(confirm.id, false)"
+      >
+        {{ confirm.actions?.[0]?.label || 'Cancelar' }}
+      </button>
+      <button
+        type="button"
+        class="toast-action primary"
+        (click)="handleAction(confirm.id, true)"
+      >
+        {{ confirm.actions?.[1]?.label || 'Confirmar' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="toast-stack">
+    <div
+      *ngFor="let toast of regularToasts(); trackBy: trackById"
+      class="toast"
+      [class.success]="toast.type === 'success'"
+      [class.error]="toast.type === 'error'"
+      [class.info]="toast.type === 'info'"
+      role="status"
+    >
+      <div class="toast-message">{{ toast.message }}</div>
+
+      <div class="toast-actions" *ngIf="toast.actions?.length">
+        <button
+          *ngFor="let action of toast.actions"
+          type="button"
+          class="toast-action"
+          [class.primary]="action.variant === 'primary'"
+          [class.secondary]="action.variant === 'secondary'"
+          (click)="handleAction(toast.id, action.value)"
+        >
+          {{ action.label }}
+        </button>
+      </div>
+
+      <button
+        *ngIf="toast.dismissible"
+        type="button"
+        class="toast-close"
+        (click)="dismiss(toast.id)"
+        aria-label="Cerrar"
+      >
+        ×
+      </button>
+    </div>
+  </div>
+</div>
