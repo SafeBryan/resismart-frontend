@@ -1,0 +1,81 @@
+<div class="layout">
+  <app-sidebar [nav]="residentNav" subtitle="Residente"></app-sidebar>
+
+  <main class="content">
+    <div class="content-inner">
+      <header class="page-head">
+        <div>
+          <h1>Eventos del condominio</h1>
+          <p class="muted">Confirma o rechaza tu asistencia a las próximas actividades.</p>
+        </div>
+        <div class="filters">
+          <span class="condo-pill">Condominio: {{ condominioNombre() }}</span>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="card-head">
+          <h3>Listado de eventos</h3>
+          <span class="muted">Total: {{ eventos().length }}</span>
+        </div>
+
+        <div class="table-wrapper" *ngIf="!loading(); else loadingTpl">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Descripción</th>
+                <th>Fecha</th>
+                <th>Lugar</th>
+                <th>Tipo</th>
+                <th>Estado</th>
+                <th>Asistencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let evento of eventos(); trackBy: trackById">
+                <td>{{ evento.titulo }}</td>
+                <td class="descripcion">{{ evento.descripcion }}</td>
+                <td>{{ evento.fecha }}</td>
+                <td>{{ evento.lugar }}</td>
+                <td><span class="pill">{{ evento.tipo }}</span></td>
+                <td><span class="pill estado" [ngClass]="evento.estado.toLowerCase()">{{ evento.estado }}</span></td>
+                <td>
+                  <div class="asistencia-cell">
+                    <span class="status" [ngClass]="evento.asistencia.toLowerCase()">
+                      {{ evento.asistencia }}
+                    </span>
+                    <div class="actions">
+                      <button
+                        class="btn primary"
+                        type="button"
+                        (click)="confirm(evento)"
+                        [disabled]="evento.asistencia === 'CONFIRMADO'"
+                      >
+                        Confirmar
+                      </button>
+                      <button
+                        class="btn ghost"
+                        type="button"
+                        (click)="reject(evento)"
+                        [disabled]="evento.asistencia === 'RECHAZADO'"
+                      >
+                        Rechazar
+                      </button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="!eventos().length">
+                <td colspan="7" class="empty">No hay eventos registrados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #loadingTpl>
+          <p class="muted">Cargando eventos…</p>
+        </ng-template>
+      </section>
+    </div>
+  </main>
+</div>

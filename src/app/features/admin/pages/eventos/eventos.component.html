@@ -1,0 +1,145 @@
+<div class="layout">
+  <app-sidebar></app-sidebar>
+
+  <main class="content">
+    <div class="content-inner">
+      <header class="page-head">
+        <div>
+          <h1>Gestión de eventos</h1>
+          <p class="muted">Crea, actualiza y elimina los eventos del condominio.</p>
+        </div>
+        <div class="actions">
+          <button class="btn primary" (click)="openModal()">Nuevo evento</button>
+        </div>
+      </header>
+
+      <section class="filters">
+        <label>
+          Condominio
+          <select [ngModel]="selectedCondominioId()" (ngModelChange)="onSelectCondominio($event)">
+            <option *ngFor="let cond of condominios()" [ngValue]="cond.id">
+              {{ cond.nombre || ('Condominio #' + cond.id) }}
+            </option>
+          </select>
+        </label>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h3>Listado de eventos</h3>
+          <span class="muted">Total: {{ eventos().length }}</span>
+        </div>
+
+        <div class="table-wrapper" *ngIf="!loading(); else loadingTpl">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Descripción</th>
+                <th>Fecha Inicio</th>
+                <th>Fecha Fin</th>
+                <th>Lugar</th>
+                <th>Tipo</th>
+                <th>Participantes</th>
+                <th>Estado</th>
+                <th class="actions">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let evento of eventos(); trackBy: trackById">
+                <td>{{ evento.titulo }}</td>
+                <td class="descripcion">{{ evento.descripcion || '—' }}</td>
+                <td>{{ evento.fechaInicio | date : 'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ evento.fechaFin ? (evento.fechaFin | date : 'dd/MM/yyyy HH:mm') : '—' }}</td>
+                <td>{{ evento.lugar || '—' }}</td>
+                <td><span class="pill">{{ evento.tipo || 'REUNION' }}</span></td>
+                <td class="participantes">
+                  <ng-container *ngIf="evento.participantes?.length; else noParticipants">
+                    <div class="participantes-list">
+                      <div class="participante-item" *ngFor="let participante of evento.participantes">
+                        <span class="nombre">{{ formatParticipanteNombre(participante) }}</span>
+                        <span class="estado-chip" [ngClass]="getParticipanteEstadoClass(participante)">
+                          {{ getParticipanteEstado(participante) }}
+                        </span>
+                      </div>
+                    </div>
+                  </ng-container>
+                  <ng-template #noParticipants>
+                    <span class="participantes-empty">Sin participantes</span>
+                  </ng-template>
+                </td>
+                <td><span class="pill estado" [ngClass]="(evento.estado || 'PROGRAMADO').toLowerCase()">{{ evento.estado || 'PROGRAMADO' }}</span></td>
+                <td class="actions">
+                  <button class="btn ghost" (click)="openModal(evento)">Editar</button>
+                  <button class="btn danger ghost" (click)="deleteEvento(evento)">Eliminar</button>
+                </td>
+              </tr>
+              <tr *ngIf="!eventos().length">
+                <td colspan="8" class="empty">No hay eventos registrados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #loadingTpl>
+          <p class="muted">Cargando eventos…</p>
+        </ng-template>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" *ngIf="showModal()">
+  <div class="modal">
+    <header>
+      <h2>{{ editingId() ? 'Editar evento' : 'Nuevo evento' }}</h2>
+      <button class="close" type="button" (click)="closeModal()">×</button>
+    </header>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="form-grid">
+        <label>
+          Título
+          <input type="text" formControlName="titulo" />
+        </label>
+        <label>
+          Descripción
+          <textarea rows="3" formControlName="descripcion"></textarea>
+        </label>
+        <label>
+          Fecha de inicio
+          <input type="datetime-local" formControlName="fechaInicio" />
+        </label>
+        <label>
+          Fecha de fin
+          <input type="datetime-local" formControlName="fechaFin" />
+        </label>
+        <label>
+          Lugar
+          <input type="text" formControlName="lugar" />
+        </label>
+        <label>
+          Tipo
+          <select formControlName="tipo">
+            <option value="REUNION">Reunión</option>
+            <option value="MANTENIMIENTO">Mantenimiento</option>
+            <option value="SOCIAL">Social</option>
+            <option value="OTRO">Otro</option>
+          </select>
+        </label>
+        <label>
+          Estado
+          <select formControlName="estado">
+            <option value="PROGRAMADO">Programado</option>
+            <option value="EN_CURSO">En curso</option>
+            <option value="FINALIZADO">Finalizado</option>
+            <option value="CANCELADO">Cancelado</option>
+          </select>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="btn primary" [disabled]="form.invalid">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+*** End Patch

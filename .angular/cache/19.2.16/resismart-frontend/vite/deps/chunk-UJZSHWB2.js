@@ -4,14 +4,14 @@ import {
   isFakeMousedownFromScreenReader,
   isFakeTouchstartFromScreenReader,
   normalizePassiveListenerOptions
-} from "./chunk-VHLBUMOR.js";
+} from "./chunk-P7GBSKJC.js";
 import {
   _CdkPrivateStyleLoader
 } from "./chunk-VA23XSEL.js";
 import {
   Platform,
   coerceElement
-} from "./chunk-2V6ZJLJU.js";
+} from "./chunk-NWL2O5SX.js";
 import {
   ANIMATION_MODULE_TYPE,
   ChangeDetectionStrategy,
@@ -674,4 +674,4 @@ export {
   _StructuralStylesLoader,
   MatRippleModule
 };
-//# sourceMappingURL=chunk-VLPRKSM5.js.map
+//# sourceMappingURL=chunk-UJZSHWB2.js.map

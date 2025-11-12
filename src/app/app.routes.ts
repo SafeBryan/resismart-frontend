@@ -27,6 +27,7 @@ export const routes: Routes = [
   { path: 'contratos', redirectTo: 'dashboard/contratos', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },
   { path: 'pagos', redirectTo: 'dashboard/pagos', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },
   { path: 'comprobantes', redirectTo: 'dashboard/comprobantes', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },
+  { path: 'eventos', redirectTo: 'dashboard/eventos', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },
   { path: 'avisos', redirectTo: 'dashboard/avisos', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },
   { path: 'configuracion', redirectTo: 'dashboard/configuracion', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },
   { path: 'condominios', redirectTo: 'dashboard/condominios', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },

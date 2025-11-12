@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../core/services/auth.service';
+import { useAvisos } from '../../core/services/avisos-store.service';
 
 export type NavItem = { label: string; path: string; icon?: string };
 
@@ -17,6 +18,7 @@ export type NavItem = { label: string; path: string; icon?: string };
 export class SidebarComponent {
   private router = inject(Router);
   private auth = inject(AuthService);
+  readonly avisosFacade = useAvisos();
 
   user$ = this.auth.auth$;
 
@@ -26,12 +28,12 @@ export class SidebarComponent {
 
   private readonly defaultNav: NavItem[] = [
     { label: 'Dashboard', path: '/dashboard', icon: 'dashboard' },
+    { label: 'Eventos', path: '/dashboard/eventos', icon: 'event' },
     { label: 'Residentes', path: '/dashboard/residentes', icon: 'groups' },
     { label: 'Usuarios', path: '/dashboard/usuarios', icon: 'manage_accounts' },
     { label: 'Condominios', path: '/dashboard/condominios', icon: 'holiday_village' },
     { label: 'Contratos', path: '/dashboard/contratos', icon: 'assignment' },
     { label: 'Ordenes de Pago', path: '/dashboard/pagos', icon: 'receipt_long' },
-    { label: 'Comprobantes', path: '/dashboard/comprobantes', icon: 'receipt' },
     { label: 'Avisos', path: '/dashboard/avisos', icon: 'campaign' },
     { label: 'Configuracion', path: '/dashboard/configuracion', icon: 'settings' },
   ];

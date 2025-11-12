@@ -29,6 +29,7 @@ export interface AvisoPayload {
   destino: AvisoDestino;
   destinoReferencia?: string | null;
   emitidoEn: string;
+  leido?: boolean;
   metadata?: Record<string, unknown> | null;
 }
 

@@ -11,10 +11,10 @@ const API = environment.apiUrl || 'http://localhost:8080';
 export class CondominiosService {
   private http = inject(HttpClient);
 
-  list(page = 0, size = 50): Observable<PageCondominioResumenDTO> {
-    const params = new HttpParams().set('pageable.page', page).set('pageable.size', size);
-    // En algunos backends basta con ?page=..&size=..; incluimos ambos por compatibilidad
-    const alt = new HttpParams().set('page', page).set('size', size);
+  list(page = 0, size = 50, opts: { ownerOnly?: boolean } = {}): Observable<PageCondominioResumenDTO> {
+    let params = new HttpParams().set('pageable.page', page).set('pageable.size', size);
+    params = params.set('page', page).set('size', size);
+    if (opts.ownerOnly) params = params.set('dueno', 'true');
     return this.http.get<PageCondominioResumenDTO>(`${API}/Condominios`, { params }).pipe() as any;
   }
 

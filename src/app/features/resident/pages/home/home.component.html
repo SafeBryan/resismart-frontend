@@ -19,7 +19,9 @@
           <button type="button" class="avisos-btn" (click)="toggleAvisos($event)">
             <mat-icon>campaign</mat-icon>
             <span>Avisos</span>
-            <span class="badge">{{ avisos().length }}</span>
+            <span class="badge" [class.empty]="!avisosFacade.unreadCount()">
+              {{ avisosFacade.unreadCount() }}
+            </span>
           </button>
           <app-button label="Ver contratos" variant="secondary" [routerLink]="'/home/contratos'"></app-button>
           <app-button label="Subir comprobante" variant="secondary" [routerLink]="'/home/comprobantes'"></app-button>
@@ -29,15 +31,25 @@
           <header>
             <h3>Avisos recientes</h3>
             <span class="muted">
-              {{ avisos().length ? (avisos().length + ' registrados') : 'Sin avisos nuevos' }}
+              {{
+                avisosFacade.avisos().length
+                  ? (avisosFacade.avisos().length + ' registrados')
+                  : 'Sin avisos nuevos'
+              }}
             </span>
           </header>
-          <ng-container *ngIf="avisos().length; else noAvisos">
+          <ng-container *ngIf="avisosDropdown().length; else noAvisos">
             <ul>
-              <li *ngFor="let aviso of avisos()" class="aviso-item">
+              <li
+                *ngFor="let aviso of avisosDropdown(); trackBy: trackByAviso"
+                class="aviso-item"
+                [class.unread]="!aviso.leido"
+                (click)="onAvisoClick(aviso)"
+              >
                 <div class="aviso-meta">
                   <span class="pill" [ngClass]="aviso.etiqueta">{{ aviso.etiqueta }}</span>
                   <span class="fecha">{{ aviso.fecha }}</span>
+                  <span class="dot" *ngIf="!aviso.leido">Nuevo</span>
                 </div>
                 <h4>{{ aviso.titulo }}</h4>
                 <p>{{ aviso.mensaje }}</p>
@@ -120,6 +132,26 @@
                     {{ evento.lugar }}
                   </span>
                   <p>{{ evento.descripcion }}</p>
+                  <div class="event-actions">
+                    <button
+                      type="button"
+                      (click)="registrarAsistencia(evento, 'CONFIRMADO')"
+                      [disabled]="getAsistenciaLabel(evento.id) === 'CONFIRMADO'"
+                    >
+                      Voy a asistir
+                    </button>
+                    <button
+                      type="button"
+                      class="ghost"
+                      (click)="registrarAsistencia(evento, 'RECHAZADO')"
+                      [disabled]="getAsistenciaLabel(evento.id) === 'RECHAZADO'"
+                    >
+                      No asistiré
+                    </button>
+                    <span class="muted" *ngIf="getAsistenciaLabel(evento.id) as estado">
+                      Marcaste {{ estado === 'CONFIRMADO' ? 'asistir' : 'no asistir' }}.
+                    </span>
+                  </div>
                 </div>
               </li>
             </ul>

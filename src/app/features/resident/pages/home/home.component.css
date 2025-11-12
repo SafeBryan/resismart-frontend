@@ -98,6 +98,10 @@
   color: #fff;
   font-weight: 600;
 }
+.badge.empty {
+  background: #e5e7eb;
+  color: #4b5563;
+}
 
 .avisos-dropdown {
   position: absolute;
@@ -149,6 +153,24 @@
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   background: #f9fafb;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+}
+
+.aviso-item.unread {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.12);
+}
+
+.aviso-item .dot {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .aviso-item h4 {
@@ -170,6 +192,7 @@
   justify-content: space-between;
   font-size: 12px;
   color: #6b7280;
+  gap: 8px;
 }
 
 .pill {
@@ -311,6 +334,39 @@
   border-radius: 16px;
   border: 1px solid #e5e7eb;
   background: linear-gradient(135deg, #ffffff 0%, #eef2ff 100%);
+}
+
+.event-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  align-items: center;
+}
+
+.event-actions button {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.event-actions button:hover:not([disabled]) {
+  background: #111827;
+  color: #fff;
+}
+
+.event-actions button.ghost {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.event-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .when {

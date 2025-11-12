@@ -1,5 +1,6 @@
 export const environment = {
-  // En desarrollo, apunta a la ruta del proxy para evitar CORS
+  // En desarrollo, usa el proxy HTTP (/api) pero conecta los sockets directo al backend
   apiUrl: '/api',
+  wsUrl: 'http://localhost:8080',
   debug: true,
 };

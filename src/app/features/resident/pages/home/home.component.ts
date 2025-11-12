@@ -2,7 +2,6 @@ import {
   Component,
   DestroyRef,
   HostListener,
-  OnDestroy,
   computed,
   inject,
   signal,
@@ -10,21 +9,21 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { catchError, forkJoin, map, of, Subscription } from 'rxjs';
-import { WebSocketSubject } from 'rxjs/webSocket';
+import { catchError, forkJoin, map, of } from 'rxjs';
 import { UtilsModule } from '../../../../utils/utils.module';
 import { AuthService } from '../../../../core/services/auth.service';
-import { AvisosService } from '../../../../core/services/avisos.service';
 import { EventosService } from '../../../../core/services/eventos.service';
 import { OrdenesPagoService } from '../../../../core/services/ordenes-pago.service';
 import { DocumentosService } from '../../../../core/services/documentos.service';
 import { ResidentContextService } from '../../../../core/services/resident-context.service';
-import { AvisoPayload, AvisoTipo } from '../../../../core/models/aviso.model';
+import { AvisoTipo } from '../../../../core/models/aviso.model';
 import { EventoDTO } from '../../../../core/models/evento.model';
 import { DocumentoDetalleDTO, DocumentoEstado } from '../../../../core/models/documento.model';
 import { OrdenPagoEstado, OrdenPagoResumenDTO } from '../../../../core/models/orden-pago.model';
 import { ResidentContext } from '../../../../core/models/resident-context.model';
+import { useAvisos, AvisoItem } from '../../../../core/services/avisos-store.service';
 import { RESIDENT_NAV } from '../../resident-nav';
+import { ToastService } from '../../../../core/services/toast.service';
 
 interface AvisoView {
   id: number;
@@ -32,7 +31,9 @@ interface AvisoView {
   mensaje: string;
   fecha: string;
   etiqueta: string;
-  payload: AvisoPayload;
+  leido: boolean;
+  payload: AvisoItem;
+  source: AvisoItem;
 }
 
 interface EventoView {
@@ -68,14 +69,15 @@ interface ResumenPagoView {
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
-export class HomeComponent implements OnDestroy {
+export class HomeComponent {
   private readonly auth = inject(AuthService);
-  private readonly avisosService = inject(AvisosService);
   private readonly eventosService = inject(EventosService);
   private readonly ordenesPagoService = inject(OrdenesPagoService);
   private readonly documentosService = inject(DocumentosService);
   private readonly contextService = inject(ResidentContextService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly toast = inject(ToastService);
+  readonly avisosFacade = useAvisos();
 
   readonly user$ = this.auth.auth$;
   readonly residentNav = RESIDENT_NAV;
@@ -83,9 +85,14 @@ export class HomeComponent implements OnDestroy {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly context = signal<ResidentContext | null>(null);
+  readonly asistencia = signal<Record<number, 'CONFIRMADO' | 'RECHAZADO'>>({});
 
-  private readonly avisosRaw = signal<AvisoPayload[]>([]);
-  readonly avisos = computed<AvisoView[]>(() => this.mapAvisos(this.avisosRaw()));
+  readonly avisosDropdown = computed<AvisoView[]>(() =>
+    this.avisosFacade
+      .avisos()
+      .slice(0, 5)
+      .map((aviso) => this.mapAviso(aviso))
+  );
 
   private readonly eventosRaw = signal<EventoDTO[]>([]);
   readonly eventos = computed<EventoView[]>(() => this.mapEventos(this.eventosRaw()));
@@ -98,10 +105,6 @@ export class HomeComponent implements OnDestroy {
 
   avisosOpen = false;
 
-  private socket?: WebSocketSubject<AvisoPayload>;
-  private socketSubscription?: Subscription;
-  private socketKey?: string;
-  private socketReconnect?: ReturnType<typeof setTimeout>;
   private latestContext: ResidentContext | null = null;
   private lastLoadSignature?: string;
 
@@ -116,18 +119,16 @@ export class HomeComponent implements OnDestroy {
         if (signature !== this.lastLoadSignature) {
           this.lastLoadSignature = signature;
           this.loadDashboard(ctx);
-          this.setupSocket(ctx);
         }
       });
-  }
-
-  ngOnDestroy(): void {
-    this.cleanupSocket();
   }
 
   toggleAvisos(event: MouseEvent): void {
     event.stopPropagation();
     this.avisosOpen = !this.avisosOpen;
+    if (this.avisosOpen) {
+      this.markDropdownAsRead();
+    }
   }
 
   @HostListener('document:click')
@@ -135,6 +136,40 @@ export class HomeComponent implements OnDestroy {
     if (this.avisosOpen) {
       this.avisosOpen = false;
     }
+  }
+
+  onAvisoClick(aviso: AvisoView): void {
+    if (!aviso) return;
+    this.avisosFacade.navigate(aviso.source);
+    this.avisosOpen = false;
+  }
+
+  readonly trackByAviso = (_: number, aviso: AvisoView) => aviso.id;
+
+  private markDropdownAsRead(): void {
+    const ids = this.avisosDropdown()
+      .filter((item) => !item.leido)
+      .map((item) => item.id);
+    if (ids.length) this.avisosFacade.markAllVisible(ids);
+  }
+
+  getAsistenciaLabel(id: number | undefined): 'CONFIRMADO' | 'RECHAZADO' | undefined {
+    if (id == null) return undefined;
+    return this.asistencia()[id];
+  }
+
+  registrarAsistencia(evento: EventoView, estado: 'CONFIRMADO' | 'RECHAZADO'): void {
+    const id = evento.id;
+    if (!id) return;
+    this.eventosService.confirmarAsistencia(id, { estado }).subscribe({
+      next: () => {
+        this.asistencia.update((map) => ({ ...map, [id]: estado }));
+        this.toast.success(
+          estado === 'CONFIRMADO' ? 'Asistencia confirmada.' : 'Has indicado que no asistirás.'
+        );
+      },
+      error: () => this.toast.error('No se pudo registrar la asistencia.'),
+    });
   }
 
   formatEstado(estado?: string | null): string {
@@ -163,13 +198,12 @@ export class HomeComponent implements OnDestroy {
     this.error.set(null);
 
     const data$ = forkJoin({
-      avisos: this.avisosService.aggregateStream(userId, condominioIds, 25),
       eventos:
-        condominioIds.length > 0
-          ? forkJoin(condominioIds.map((id) => this.eventosService.listByCondominio(id))).pipe(
-              map((chunks) => chunks.flat())
-            )
-          : of<EventoDTO[]>([]),
+          condominioIds.length > 0
+            ? forkJoin(condominioIds.map((id) => this.eventosService.listByCondominio(id))).pipe(
+                map((chunks) => chunks.flat())
+              )
+              : of<EventoDTO[]>([]),
       ordenes:
         contratoIds.length > 0
           ? this.ordenesPagoService.listByContratos(contratoIds)
@@ -184,90 +218,26 @@ export class HomeComponent implements OnDestroy {
               flat: true,
             })
           : of<DocumentoDetalleDTO[]>([]),
-    }).pipe(
-      catchError((err) => {
-        console.error('[HomeComponent] loadDashboard error', err);
-        this.error.set('No se pudo cargar la informacion del panel.');
-        return of({
-          avisos: [] as AvisoPayload[],
-          eventos: [] as EventoDTO[],
-          ordenes: [] as OrdenPagoResumenDTO[],
-          documentos: [] as DocumentoDetalleDTO[],
-        });
-      })
+      }).pipe(
+        catchError((err) => {
+          console.error('[HomeComponent] loadDashboard error', err);
+          this.error.set('No se pudo cargar la informacion del panel.');
+          return of({
+            eventos: [] as EventoDTO[],
+            ordenes: [] as OrdenPagoResumenDTO[],
+            documentos: [] as DocumentoDetalleDTO[],
+          });
+        })
     );
 
-    data$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(({ avisos, eventos, ordenes, documentos }) => {
-        this.avisosRaw.set(avisos);
-        this.eventosRaw.set(eventos);
-        this.ordenesRaw.set(ordenes);
-        this.documentosRaw.set(documentos);
-        this.loading.set(false);
-      });
-  }
-
-  private setupSocket(ctx: ResidentContext): void {
-    const key = `${ctx.userId ?? 'anon'}|${(ctx.condominioIds ?? []).join(',')}`;
-    if (this.socketKey === key || !ctx.userId) return;
-    this.cleanupSocket();
-
-    const socket = this.avisosService.connectSocket({
-      condominios: ctx.condominioIds,
-    });
-    if (!socket) return;
-
-    this.socketKey = key;
-    this.socket = socket;
-    this.socketSubscription = socket
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (payload) => {
-          const current = this.avisosRaw();
-          const next = [payload, ...current.filter((item) => item.id !== payload.id)];
-          this.avisosRaw.set(next.slice(0, 30));
-        },
-        error: (err) => {
-          console.warn('[HomeComponent] Socket cerrado', err);
-          this.handleSocketClose();
-        },
-        complete: () => this.handleSocketClose(),
-      });
-  }
-
-  private cleanupSocket(): void {
-    if (this.socketSubscription) {
-      this.socketSubscription.unsubscribe();
-      this.socketSubscription = undefined;
-    }
-    if (this.socket) {
-      this.socket.complete();
-      this.socket = undefined;
-    }
-    if (this.socketReconnect) {
-      clearTimeout(this.socketReconnect);
-      this.socketReconnect = undefined;
-    }
-    this.socketKey = undefined;
-  }
-
-  private handleSocketClose(): void {
-    this.cleanupSocket();
-    const ctx = this.latestContext;
-    if (!ctx || ctx.loading) return;
-    this.scheduleReconnect(ctx);
-  }
-
-  private scheduleReconnect(ctx: ResidentContext): void {
-    if (this.socketReconnect) return;
-    const delayMs = 5000;
-    this.socketReconnect = setTimeout(() => {
-      this.socketReconnect = undefined;
-      const latest = this.latestContext;
-      if (!latest || latest.loading) return;
-      this.setupSocket(latest);
-    }, delayMs);
+      data$
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(({ eventos, ordenes, documentos }) => {
+          this.eventosRaw.set(eventos);
+          this.ordenesRaw.set(ordenes);
+          this.documentosRaw.set(documentos);
+          this.loading.set(false);
+        });
   }
 
   private buildSignature(ctx: ResidentContext): string {
@@ -276,17 +246,17 @@ export class HomeComponent implements OnDestroy {
     return `${ctx.userId ?? 'anon'}|${condos}|${contracts}`;
   }
 
-  private mapAvisos(list: AvisoPayload[]): AvisoView[] {
-    return [...(list ?? [])]
-      .sort((a, b) => (b.emitidoEn || '').localeCompare(a.emitidoEn || ''))
-      .map((item) => ({
-        id: item.id,
-        titulo: item.titulo ?? this.resolveTitulo(item.tipo),
-        mensaje: item.mensaje ?? '',
-        fecha: this.formatDate(item.emitidoEn),
-        etiqueta: this.resolveAvisoEtiqueta(item.tipo),
-        payload: item,
-      }));
+  private mapAviso(aviso: AvisoItem): AvisoView {
+    return {
+      id: aviso.id,
+      titulo: aviso.titulo ?? this.resolveTitulo(aviso.tipo),
+      mensaje: aviso.mensaje ?? '',
+      fecha: aviso.relativeEmitido || this.formatDate(aviso.emitidoEn),
+      etiqueta: this.resolveAvisoEtiqueta(aviso.tipo),
+      leido: !!aviso.leido,
+      payload: aviso,
+      source: aviso,
+    };
   }
 
   private mapEventos(list: EventoDTO[]): EventoView[] {

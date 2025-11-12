@@ -1,0 +1,43 @@
+<div class="bell-wrapper" [class.open]="open()" [class.align-left]="align === 'left'">
+  <button type="button" class="bell-btn" (click)="toggle($event)" [attr.aria-expanded]="open()">
+    <mat-icon>notifications</mat-icon>
+    <span class="badge" [class.empty]="!facade.unreadCount()">{{ facade.unreadCount() }}</span>
+  </button>
+
+  <div class="dropdown" *ngIf="open()">
+    <header>
+      <div>
+        <h4>Notificaciones</h4>
+        <small *ngIf="facade.unreadCount(); else noPendings">Tienes {{ facade.unreadCount() }} sin leer</small>
+        <ng-template #noPendings><small>Todo al día</small></ng-template>
+      </div>
+      <button type="button" class="mark-btn" (click)="markVisible()">Marcar como leídos</button>
+    </header>
+
+    <ul>
+      <li
+        *ngFor="let aviso of topAvisos(); trackBy: trackById"
+        class="aviso-card"
+        [class.unread]="!aviso.leido"
+        (click)="onCardClick(aviso, $event)"
+      >
+        <div class="meta">
+          <span class="pill" [ngClass]="aviso.etiqueta">{{ aviso.categoria | titlecase }}</span>
+          <span class="time">{{ aviso.relative }}</span>
+        </div>
+        <div class="text">
+          <h5>{{ aviso.titulo }}</h5>
+          <p>{{ aviso.mensaje }}</p>
+        </div>
+        <div class="actions">
+          <button type="button" class="link" (click)="onCardClick(aviso, $event)">Ver detalle</button>
+          <button type="button" class="link secondary" (click)="onAck(aviso, $event)" *ngIf="!aviso.leido">Archivar</button>
+        </div>
+      </li>
+    </ul>
+
+    <footer>
+      <a routerLink="/avisos">Ver todos los avisos</a>
+    </footer>
+  </div>
+</div>

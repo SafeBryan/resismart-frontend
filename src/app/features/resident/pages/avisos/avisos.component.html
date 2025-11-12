@@ -11,7 +11,7 @@
           </p>
         </div>
         <div class="head-actions">
-          <app-button label="Marcar todo como leido" variant="secondary"></app-button>
+          <app-button label="Marcar todo como leido" variant="secondary" (clicked)="markAll()"></app-button>
         </div>
       </header>
 
@@ -33,21 +33,24 @@
         <p class="muted loading" *ngIf="loading()">Cargando avisos...</p>
 
         <ng-container *ngIf="!loading() && avisosFiltrados().length; else sinResultados">
-          <article class="aviso-card" *ngFor="let aviso of avisosFiltrados()">
+          <article class="aviso-card" *ngFor="let aviso of avisosFiltrados()" [class.unread]="!aviso.leido">
             <header>
               <div>
                 <span class="pill categoria" [ngClass]="[aviso.categoria]">{{ aviso.categoria | titlecase }}</span>
                 <span class="pill estado" [ngClass]="aviso.etiqueta">{{ aviso.etiqueta | titlecase }}</span>
               </div>
-              <span class="fecha">{{ aviso.fecha }}</span>
+              <div class="meta">
+                <span class="fecha">{{ aviso.fecha }}</span>
+                <span class="dot" *ngIf="!aviso.leido">Nuevo</span>
+              </div>
             </header>
             <h2>{{ aviso.titulo }}</h2>
             <p class="descripcion">{{ aviso.mensaje }}</p>
             <footer>
               <span class="muted">Responsable: {{ aviso.responsable }}</span>
               <div class="acciones">
-                <app-button label="Ver detalle" variant="secondary"></app-button>
-                <app-button label="Archivar" variant="secondary"></app-button>
+                <app-button label="Ver detalle" variant="secondary" (clicked)="verDetalle(aviso)"></app-button>
+                <app-button label="Archivar" variant="secondary" (clicked)="archivar(aviso)"></app-button>
               </div>
             </footer>
           </article>

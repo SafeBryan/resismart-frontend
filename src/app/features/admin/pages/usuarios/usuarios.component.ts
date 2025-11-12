@@ -86,34 +86,87 @@ export class UsuariosComponent implements OnInit {
     this.load();
   }
 
-  load() {
+  load(opts: { notify?: boolean } = {}) {
+    const notify = opts.notify ?? true;
     this.loading.set(true);
+    let loadingToastId: number | null = notify ? this.toast.show('Actualizando usuarios...', 'info', 0, false) : null;
+    const clearLoadingToast = () => {
+      if (loadingToastId != null) {
+        this.toast.dismiss(loadingToastId);
+        loadingToastId = null;
+      }
+    };
     this.service.list().subscribe({
-      next: (list) => { this.usuarios.set(list || []); this.pageIndex.set(0); },
-      error: () => {},
-      complete: () => this.loading.set(false),
+      next: (list) => {
+        const data = list || [];
+        this.usuarios.set(data);
+        this.pageIndex.set(0);
+        clearLoadingToast();
+        if (notify) {
+          const message = data.length
+            ? `Se cargaron ${data.length} usuarios.`
+            : 'No hay usuarios para mostrar.';
+          this.toast.success(message);
+        }
+      },
+      error: (err) => {
+        clearLoadingToast();
+        this.toast.error(this.resolveErrorMessage(err, 'No se pudieron cargar los usuarios.'));
+        this.loading.set(false);
+      },
+      complete: () => {
+        clearLoadingToast();
+        this.loading.set(false);
+      },
     });
   }
 
-  onPage(e: PageEvent) { this.pageIndex.set(e.pageIndex); this.pageSize.set(e.pageSize); }
+  onPage(e: PageEvent) {
+    this.pageIndex.set(e.pageIndex);
+    this.pageSize.set(e.pageSize);
+    const totalPages = Math.max(1, Math.ceil(this.total() / e.pageSize));
+    this.toast.info(`Pagina ${e.pageIndex + 1} de ${totalPages}.`);
+  }
   onSearch(v: string) { this.q.set(v); this.pageIndex.set(0); }
-  onRole(v: any) { this.rolFilter.set(v); this.pageIndex.set(0); }
-  onEstado(v: any) { this.estadoFilter.set(v); this.pageIndex.set(0); }
+  onRole(v: any) {
+    this.rolFilter.set(v);
+    this.pageIndex.set(0);
+    const label = v === 'todos' ? 'todos los roles' : `rol ${String(v).toLowerCase()}`;
+    this.toast.info(`Filtro actualizado: ${label}.`);
+  }
+  onEstado(v: any) {
+    this.estadoFilter.set(v);
+    this.pageIndex.set(0);
+    let label = 'todos los usuarios';
+    if (v === 'activos') label = 'solo activos';
+    else if (v === 'inactivos') label = 'solo inactivos';
+    this.toast.info(`Filtro por estado: ${label}.`);
+  }
 
-  openAdd() { this.addForm.reset({ rol: 'RESIDENTE' }); if (this.isOwner()) this.addForm.get('rol')?.disable(); else this.addForm.get('rol')?.enable(); this.showAdd.set(true); }
+  openAdd() {
+    this.addForm.reset({ rol: 'RESIDENTE' });
+    if (this.isOwner()) this.addForm.get('rol')?.disable(); else this.addForm.get('rol')?.enable();
+    this.showAdd.set(true);
+    this.toast.info('Formulario de registro abierto.');
+  }
   submitAdd() {
-    if (this.addForm.invalid) return;
+    if (this.addForm.invalid) {
+      this.addForm.markAllAsTouched();
+      this.toast.error('Completa los campos obligatorios antes de guardar.');
+      return;
+    }
     const raw: any = this.addForm.getRawValue();
     const dto: UsuarioCrearRequest = { ...raw, rol: this.isOwner() ? 'RESIDENTE' : raw.rol };
+    const nombre = this.resolveNombre(raw);
     this.loading.set(true);
     this.service.create(dto).subscribe({
       next: () => {
-        this.toast.success('Usuario creado correctamente.');
+        this.toast.success(`Usuario ${nombre} creado correctamente.`);
         this.showAdd.set(false);
         this.load();
       },
-      error: () => {
-        this.toast.error('No se pudo crear el usuario.');
+      error: (err) => {
+        this.toast.error(this.resolveErrorMessage(err, 'No se pudo crear el usuario.'));
         this.loading.set(false);
       },
     });
@@ -131,21 +184,32 @@ export class UsuariosComponent implements OnInit {
     });
     if (this.isOwner()) this.editForm.get('rol')?.disable(); else this.editForm.get('rol')?.enable();
     this.showEdit.set(true);
+    const nombre = this.resolveNombre(u);
+    this.toast.info(`Editando a ${nombre}.`);
   }
   submitEdit() {
-    if (this.editForm.invalid || this.editingId == null) return;
+    if (this.editingId == null) {
+      this.toast.error('No hay un usuario seleccionado para editar.');
+      return;
+    }
+    if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
+      this.toast.error('Completa los campos obligatorios antes de actualizar.');
+      return;
+    }
     const raw: any = this.editForm.getRawValue();
     const dto: UsuarioEditarRequest = { ...raw, rol: this.isOwner() ? 'RESIDENTE' as Rol : raw.rol };
+    const nombre = this.resolveNombre({ ...raw });
     this.loading.set(true);
     this.service.update(this.editingId, dto).subscribe({
       next: () => {
-        this.toast.success('Usuario actualizado correctamente.');
+        this.toast.success(`Usuario ${nombre} actualizado correctamente.`);
         this.showEdit.set(false);
         this.editingId = null;
         this.load();
       },
-      error: () => {
-        this.toast.error('No se pudo actualizar el usuario.');
+      error: (err) => {
+        this.toast.error(this.resolveErrorMessage(err, 'No se pudo actualizar el usuario.'));
         this.loading.set(false);
       },
     });
@@ -153,23 +217,52 @@ export class UsuariosComponent implements OnInit {
 
   async delete(u: Usuario) {
     const id = u.id_usuario;
-    if (!id) return;
-    const confirmed = await this.toast.confirm('¿Eliminar usuario?', {
+    const nombre = this.resolveNombre(u);
+    if (!id) {
+      this.toast.error('No se pudo determinar el usuario a eliminar.');
+      return;
+    }
+    const confirmed = await this.toast.confirm(`Eliminar a ${nombre}?`, {
       confirmText: 'Eliminar',
       cancelText: 'Cancelar',
       type: 'error',
     });
-    if (!confirmed) return;
+    if (!confirmed) {
+      this.toast.info('Se cancelo la eliminacion.');
+      return;
+    }
     this.loading.set(true);
     this.service.delete(id).subscribe({
       next: () => {
-        this.toast.success('Usuario eliminado.');
+        this.toast.success(`Usuario ${nombre} eliminado.`);
         this.load();
       },
-      error: () => {
-        this.toast.error('No se pudo eliminar el usuario.');
+      error: (err) => {
+        this.toast.error(this.resolveErrorMessage(err, 'No se pudo eliminar el usuario.'));
         this.loading.set(false);
       },
     });
+  }
+
+  private resolveErrorMessage(err: any, fallback: string): string {
+    const message = err?.error?.message ?? err?.message;
+    if (typeof message === 'string' && message.trim().length) return message;
+    return fallback;
+  }
+
+  private resolveNombre(value: Partial<Usuario> | Record<string, any> | null | undefined): string {
+    if (!value) return 'usuario';
+    const toText = (input: any) => {
+      if (input == null) return '';
+      return String(input).trim();
+    };
+    const nombre = toText((value as any).nombres ?? (value as any).nombre);
+    const apellido = toText((value as any).apellidos ?? (value as any).apellido);
+    const full = `${nombre} ${apellido}`.trim();
+    const fallback =
+      toText((value as any).email) ||
+      toText((value as any).correo) ||
+      toText((value as any).username);
+    return full || fallback || 'usuario';
   }
 }

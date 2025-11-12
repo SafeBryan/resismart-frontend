@@ -11,6 +11,7 @@ import { AvisosComponent } from './pages/avisos/avisos.component';
 import { ConfiguracionComponent } from './pages/configuracion/configuracion.component';
 import { CondominiosComponent } from './pages/condominios/condominios.component';
 import { UsuariosComponent } from './pages/usuarios/usuarios.component';
+import { EventosComponent } from './pages/eventos/eventos.component';
 
 @NgModule({
   imports: [
@@ -25,6 +26,7 @@ import { UsuariosComponent } from './pages/usuarios/usuarios.component';
     ConfiguracionComponent,
     CondominiosComponent,
     UsuariosComponent,
+    EventosComponent,
     RouterModule.forChild([
       { path: '', component: DashboardComponent },
       { path: 'residentes', component: ResidentesComponent },
@@ -34,6 +36,7 @@ import { UsuariosComponent } from './pages/usuarios/usuarios.component';
       { path: 'pagos', component: PagosComponent },
       { path: 'comprobantes', component: ComprobantesComponent },
       { path: 'avisos', component: AvisosComponent },
+      { path: 'eventos', component: EventosComponent },
       { path: 'configuracion', component: ConfiguracionComponent },
     ]),
   ],

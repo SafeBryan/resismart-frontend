@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, forkJoin, map, of, shareReplay } from 'rxjs';
+import { NextObserver, Observable, forkJoin, map, of, shareReplay } from 'rxjs';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { environment } from '../../../environments/environment';
 import { AvisoPayload, AvisoRequest } from '../models/aviso.model';
@@ -11,6 +11,8 @@ const API = environment.apiUrl || 'http://localhost:8080';
 export interface AvisosSocketOptions {
   condominios?: number[];
   reconnectDelayMs?: number;
+  openObserver?: NextObserver<Event>;
+  closeObserver?: NextObserver<CloseEvent>;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -44,21 +46,18 @@ export class AvisosService {
 
   /**
    * Crea un WebSocketSubject conectado a ws://.../ws/avisos con el JWT actual.
-   * El backend espera Authorization por header; en navegadores no se puede
-   * enviar, por lo que adjuntamos el token en el query string usando la clave
-   * AUTHORIZATION (el backend debe leerlo y tratarlo como si fuese el header
-   * homonimo).
+   * El backend valida el token leyendo el query param `token`, por lo que
+   * construimos la URL como wss://.../ws/avisos?token=<jwt-encoded>.
+   * Cada vez que el JWT cambie se debe reconstruir la conexión.
    */
   connectSocket(opts: AvisosSocketOptions = {}): WebSocketSubject<AvisoPayload> | null {
     const token = this.auth.getToken();
     if (!token || typeof window === 'undefined') return null;
 
     const httpBase = environment.apiUrl || 'http://localhost:8080';
-    const base = httpBase.replace(/^http/, 'ws').replace(/^ws(s?):\/\//, (_, secure) =>
-      secure === 's' || httpBase.startsWith('https') ? 'wss://' : 'ws://'
-    );
+    const wsBase = this.resolveWsBase((environment as any).wsUrl ?? httpBase);
     const query: Record<string, string> = {
-      token: `${token}`,
+      token,
     };
     if (opts.condominios?.length) {
       query['condominios'] = opts.condominios.join(',');
@@ -66,15 +65,14 @@ export class AvisosService {
 
     const params = new HttpParams({ fromObject: query }).toString();
 
-    const url = `${base}/ws/avisos${params ? `?${params}` : ''}`;
+    const url = `${wsBase}/ws/avisos${params ? `?${params}` : ''}`;
 
     return webSocket<AvisoPayload>({
       url,
-      protocol: 'authorization',
       deserializer: (e) => JSON.parse(e.data),
       serializer: (value) => JSON.stringify(value),
-      openObserver: undefined,
-      closeObserver: undefined,
+      openObserver: opts.openObserver,
+      closeObserver: opts.closeObserver,
     });
   }
 
@@ -110,6 +108,29 @@ export class AvisosService {
       shareReplay(1)
     );
   }
+
+  markAsRead(idUsuario: number | null, avisoIds: number[]): Observable<void> {
+    if (!idUsuario || !avisoIds.length) return of(void 0);
+    return this.http.post<void>(`${API}/Avisos/usuarios/${idUsuario}/leidos`, {
+      avisoIds,
+    });
+  }
+
+  private resolveWsBase(raw: string | null | undefined): string {
+    if (!raw) return this.defaultWsBase();
+    if (raw.startsWith('ws://') || raw.startsWith('wss://')) return raw;
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+      return raw.replace(/^http/, 'ws');
+    }
+    if (raw.startsWith('/')) {
+      return `${this.defaultWsBase()}${raw}`;
+    }
+    return raw;
+  }
+
+  private defaultWsBase(): string {
+    if (typeof window === 'undefined') return 'ws://localhost:8080';
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${window.location.host}`;
+  }
 }
-
-

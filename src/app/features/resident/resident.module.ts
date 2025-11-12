@@ -7,6 +7,7 @@ import { ResidentAvisosComponent } from './pages/avisos/avisos.component';
 import { ResidentContratosComponent } from './pages/contratos/contratos.component';
 import { ResidentComprobantesComponent } from './pages/comprobantes/comprobantes.component';
 import { ResidentPerfilComponent } from './pages/perfil/perfil.component';
+import { ResidentEventosComponent } from './pages/eventos/resident-eventos.component';
 
 @NgModule({
   imports: [
@@ -17,11 +18,13 @@ import { ResidentPerfilComponent } from './pages/perfil/perfil.component';
     ResidentContratosComponent,
     ResidentComprobantesComponent,
     ResidentPerfilComponent,
+    ResidentEventosComponent,
     RouterModule.forChild([
       { path: '', component: HomeComponent },
       { path: 'avisos', component: ResidentAvisosComponent },
       { path: 'contratos', component: ResidentContratosComponent },
       { path: 'comprobantes', component: ResidentComprobantesComponent },
+      { path: 'eventos', component: ResidentEventosComponent },
       { path: 'perfil', component: ResidentPerfilComponent },
       { path: '**', redirectTo: '' },
     ]),

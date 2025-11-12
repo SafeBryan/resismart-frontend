@@ -4,6 +4,12 @@ export interface UnidadDTO {
   id?: number;
   numero?: string;
   estado?: UnidadEstado;
+  condominioId?: number;
+  condominioNombre?: string;
+  condominio?: {
+    id?: number;
+    nombre?: string;
+  };
 }
 
 export interface UnidadCreateDTO {

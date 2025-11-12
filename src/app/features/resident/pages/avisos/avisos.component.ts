@@ -1,21 +1,9 @@
-﻿import {
-  Component,
-  DestroyRef,
-  OnDestroy,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+﻿import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { catchError, of, Subscription } from 'rxjs';
-import { WebSocketSubject } from 'rxjs/webSocket';
 import { UtilsModule } from '../../../../utils/utils.module';
-import { AvisosService } from '../../../../core/services/avisos.service';
-import { ResidentContextService } from '../../../../core/services/resident-context.service';
-import { AvisoPayload, AvisoTipo } from '../../../../core/models/aviso.model';
-import { ResidentContext } from '../../../../core/models/resident-context.model';
+import { AvisoTipo } from '../../../../core/models/aviso.model';
+import { useAvisos, AvisoItem } from '../../../../core/services/avisos-store.service';
 import { RESIDENT_NAV } from '../../resident-nav';
 
 interface AvisoView {
@@ -27,7 +15,8 @@ interface AvisoView {
   estado: string;
   responsable: string;
   etiqueta: string;
-  payload: AvisoPayload;
+  leido: boolean;
+  source: AvisoItem;
 }
 
 @Component({
@@ -37,12 +26,9 @@ interface AvisoView {
   templateUrl: './avisos.component.html',
   styleUrl: './avisos.component.css',
 })
-export class ResidentAvisosComponent implements OnDestroy {
-  private readonly avisosService = inject(AvisosService);
-  private readonly contextService = inject(ResidentContextService);
-  private readonly destroyRef = inject(DestroyRef);
-
+export class ResidentAvisosComponent {
   readonly residentNav = RESIDENT_NAV;
+  readonly avisosFacade = useAvisos();
 
   readonly filtros = [
     { label: 'Todos', value: 'todos' },
@@ -54,13 +40,13 @@ export class ResidentAvisosComponent implements OnDestroy {
   ];
 
   readonly filtroSeleccionado = signal<string>('todos');
-  readonly loading = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly context = signal<ResidentContext | null>(null);
+  readonly loading = this.avisosFacade.loading;
+  readonly error = this.avisosFacade.error;
 
-  private readonly avisosRaw = signal<AvisoPayload[]>([]);
   readonly avisos = computed<AvisoView[]>(() =>
-    this.avisosRaw().map((item) => this.mapAviso(item))
+    this.avisosFacade
+      .avisos()
+      .map((aviso) => this.mapAviso(aviso))
   );
 
   readonly avisosFiltrados = computed<AvisoView[]>(() => {
@@ -69,126 +55,34 @@ export class ResidentAvisosComponent implements OnDestroy {
     return this.avisos().filter((aviso) => aviso.categoria === filtro);
   });
 
-  private socket?: WebSocketSubject<AvisoPayload>;
-  private socketSubscription?: Subscription;
-  private socketKey?: string;
-  private socketReconnect?: ReturnType<typeof setTimeout>;
-  private latestContext: ResidentContext | null = null;
-
-  constructor() {
-    toObservable(this.contextService.context)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((ctx) => {
-        this.latestContext = ctx;
-        this.context.set(ctx);
-        if (ctx.loading) return;
-        this.loadAvisos(ctx);
-        this.setupSocket(ctx);
-      });
-  }
-
-  ngOnDestroy(): void {
-    this.cleanupSocket();
-  }
-
   seleccionarFiltro(valor: string): void {
     this.filtroSeleccionado.set(valor);
   }
 
-  private loadAvisos(ctx: ResidentContext): void {
-    this.loading.set(true);
-    this.error.set(null);
-
-    this.avisosService
-      .aggregateStream(ctx.userId, ctx.condominioIds, 50)
-      .pipe(
-        catchError((err) => {
-          console.error('[AvisosComponent] aggregate error', err);
-          this.error.set('No se pudieron obtener los avisos.');
-          return of([] as AvisoPayload[]);
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((list) => {
-        this.avisosRaw.set(list);
-        this.loading.set(false);
-      });
+  markAll(): void {
+    this.avisosFacade.markAllVisible();
   }
 
-  private setupSocket(ctx: ResidentContext): void {
-    const key = `${ctx.userId ?? 'anon'}|${(ctx.condominioIds ?? []).join(',')}`;
-    if (this.socketKey === key || !ctx.userId) return;
-
-    this.cleanupSocket();
-
-    const socket = this.avisosService.connectSocket({
-      condominios: ctx.condominioIds,
-    });
-    if (!socket) return;
-
-    this.socketKey = key;
-    this.socket = socket;
-    this.socketSubscription = socket
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (payload) => {
-          const current = this.avisosRaw();
-          const next = [payload, ...current.filter((item) => item.id !== payload.id)];
-          this.avisosRaw.set(next.slice(0, 100));
-        },
-        error: (err) => {
-          console.warn('[AvisosComponent] socket cerrado', err);
-          this.handleSocketClose();
-        },
-        complete: () => this.handleSocketClose(),
-      });
+  verDetalle(aviso: AvisoView): void {
+    this.avisosFacade.navigate(aviso.source);
   }
 
-  private cleanupSocket(): void {
-    if (this.socketSubscription) {
-      this.socketSubscription.unsubscribe();
-      this.socketSubscription = undefined;
-    }
-    if (this.socket) {
-      this.socket.complete();
-      this.socket = undefined;
-    }
-    if (this.socketReconnect) {
-      clearTimeout(this.socketReconnect);
-      this.socketReconnect = undefined;
-    }
-    this.socketKey = undefined;
+  archivar(aviso: AvisoView): void {
+    this.avisosFacade.ack([aviso.id]);
   }
 
-  private handleSocketClose(): void {
-    this.cleanupSocket();
-    const ctx = this.latestContext;
-    if (!ctx || ctx.loading) return;
-    this.scheduleReconnect(ctx);
-  }
-
-  private scheduleReconnect(ctx: ResidentContext): void {
-    if (this.socketReconnect) return;
-    const delayMs = 5000;
-    this.socketReconnect = setTimeout(() => {
-      this.socketReconnect = undefined;
-      const latest = this.latestContext;
-      if (!latest || latest.loading) return;
-      this.setupSocket(latest);
-    }, delayMs);
-  }
-
-  private mapAviso(aviso: AvisoPayload): AvisoView {
+  private mapAviso(aviso: AvisoItem): AvisoView {
     return {
       id: aviso.id,
       titulo: aviso.titulo ?? this.resolveTitulo(aviso.tipo),
       mensaje: aviso.mensaje ?? '',
-      fecha: this.formatDate(aviso.emitidoEn),
+      fecha: aviso.relativeEmitido || this.formatDate(aviso.emitidoEn),
       categoria: this.resolveCategoria(aviso.tipo),
       estado: aviso.destino ?? 'USUARIO',
       responsable: this.resolveResponsable(aviso),
       etiqueta: this.resolveEtiqueta(aviso.tipo),
-      payload: aviso,
+      leido: !!aviso.leido,
+      source: aviso,
     };
   }
 
@@ -223,7 +117,7 @@ export class ResidentAvisosComponent implements OnDestroy {
     }
   }
 
-  private resolveResponsable(aviso: AvisoPayload): string {
+  private resolveResponsable(aviso: AvisoItem): string {
     const meta = aviso.metadata ?? {};
     if (typeof meta['responsable'] === 'string') return String(meta['responsable']);
     if (typeof meta['autorizadoPor'] === 'string') return String(meta['autorizadoPor']);
@@ -233,7 +127,7 @@ export class ResidentAvisosComponent implements OnDestroy {
   private formatDate(value?: string | null): string {
     if (!value) return '';
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
+    if (Number.isNaN(date.getTime())) return value ?? '';
     return new Intl.DateTimeFormat('es-PE', {
       day: '2-digit',
       month: 'short',
@@ -249,5 +143,3 @@ export class ResidentAvisosComponent implements OnDestroy {
     return lower.charAt(0).toUpperCase() + lower.slice(1);
   }
 }
-
-

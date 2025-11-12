@@ -1,7 +1,73 @@
 <div class="layout">
   <app-sidebar></app-sidebar>
+
   <main class="content">
-    <h2>Página Avisos</h2>
+    <div class="content-inner">
+      <header class="page-head">
+        <div>
+          <h1>Avisos y comunicados</h1>
+          <p class="muted">
+            Consulta los últimos avisos enviados a tu usuario. Filtra, navega y archiva rápidamente.
+          </p>
+        </div>
+        <div class="head-actions">
+          <app-button label="Marcar todo como leído" variant="secondary" (clicked)="markAll()"></app-button>
+        </div>
+      </header>
+
+      <section class="filters">
+        <app-input
+          label="Buscar"
+          placeholder="Título o mensaje"
+          (modelChange)="onSearch($event)"
+        ></app-input>
+
+        <button
+          type="button"
+          *ngFor="let filtro of filtros"
+          class="filter-chip"
+          [class.active]="filtroSeleccionado() === filtro.value"
+          (click)="seleccionarFiltro(filtro.value)"
+        >
+          {{ filtro.label }}
+        </button>
+      </section>
+
+      <div class="alert info" *ngIf="avisosFacade.loading()">Cargando avisos...</div>
+
+      <section class="avisos-grid">
+        <ng-container *ngIf="avisosFiltrados().length; else sinResultados">
+          <article
+            class="aviso-card"
+            *ngFor="let aviso of avisosFiltrados(); trackBy: trackById"
+            [class.unread]="!aviso.leido"
+          >
+            <header>
+              <div>
+                <span class="pill categoria" [ngClass]="[aviso.categoria]">{{ aviso.categoria | titlecase }}</span>
+                <span class="pill estado" [ngClass]="aviso.etiqueta">{{ aviso.etiqueta | titlecase }}</span>
+              </div>
+              <span class="fecha">{{ aviso.fecha }}</span>
+            </header>
+            <h2>{{ aviso.titulo }}</h2>
+            <p class="descripcion">{{ aviso.mensaje }}</p>
+            <footer>
+              <span class="muted">Responsable: {{ aviso.responsable }}</span>
+              <div class="acciones">
+                <app-button label="Ver detalle" variant="secondary" (clicked)="verDetalle(aviso)"></app-button>
+                <app-button label="Archivar" variant="secondary" (clicked)="archivar(aviso)" *ngIf="!aviso.leido"></app-button>
+              </div>
+            </footer>
+          </article>
+        </ng-container>
+
+        <ng-template #sinResultados>
+          <p class="muted empty">
+            No se encontraron avisos para la búsqueda o filtro seleccionado.
+          </p>
+        </ng-template>
+      </section>
+    </div>
   </main>
 </div>
 
