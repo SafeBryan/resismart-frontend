@@ -9,13 +9,11 @@
         <p class="muted">Resumen general del sistema ResiSmart</p>
 
         <div class="actions">
-          <app-button label="Ver Reportes" variant="secondary"></app-button>
           <app-button
             label="Refrescar"
             variant="secondary"
             (click)="refrescar()"
           ></app-button>
-          <app-button label="Acción Rápida" variant="primary"></app-button>
           <app-avisos-bell class="bell-anchor"></app-avisos-bell>
         </div>
 
@@ -130,18 +128,6 @@
           <ng-template #noActividad>
             <p class="muted">Sin actividad reciente.</p>
           </ng-template>
-        </div>
-
-        <!-- Acciones Rápidas -->
-        <div class="panel">
-          <div class="panel-head"><h3>Acciones Rápidas</h3></div>
-          <div class="quick-actions">
-            <app-button label="Generar Orden" variant="secondary"></app-button>
-            <app-button
-              label="Subir Comprobante"
-              variant="secondary"
-            ></app-button>
-          </div>
         </div>
       </section>
     </div>
