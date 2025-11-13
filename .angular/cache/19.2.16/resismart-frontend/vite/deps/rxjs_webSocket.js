@@ -7,7 +7,7 @@ import {
   Subscription,
   __assign,
   __extends
-} from "./chunk-EDHIA7JC.js";
+} from "./chunk-NT47DTNH.js";
 
 // node_modules/rxjs/dist/esm5/internal/observable/dom/WebSocketSubject.js
 var DEFAULT_WEBSOCKET_CONFIG = {

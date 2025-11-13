@@ -1,5 +1,5 @@
-export type DocumentoTipo = 'CONTRATO' | 'COMPROBANTE' | 'OTRO';
-export type DocumentoEstado = 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+export type DocumentoTipo = "CONTRATO" | "COMPROBANTE" | "OTRO";
+export type DocumentoEstado = "PENDIENTE" | "APROBADO" | "RECHAZADO";
 
 export interface DocumentoDetalleDTO {
   idDocumento: number;
@@ -15,6 +15,21 @@ export interface DocumentoDetalleDTO {
   sha256?: string | null;
 }
 
+/**
+ * Coincide con el DocItem de DocumentosController.DocItem
+ * (respuesta del endpoint /documentos?flat=true&withLinks=true)
+ */
+export interface DocumentoListItem {
+  id: number;
+  nombre: string;
+  tipo?: string | null;
+  estadoValidacion?: DocumentoEstado | string | null;
+  creadoEn?: string | null;
+  sizeBytes?: number | null;
+  mimeType?: string | null;
+  urlContenido?: string | null;
+}
+
 export interface DocumentoFiltroDTO {
   tipo?: DocumentoTipo;
   estadoValidacion?: DocumentoEstado;
@@ -23,7 +38,7 @@ export interface DocumentoFiltroDTO {
   subidoPor?: string;
   idContrato?: number;
   idOrden?: number;
-  tipoRelacion?: 'ANEXO' | 'COMPROBANTE' | 'OTRO';
+  tipoRelacion?: "ANEXO" | "COMPROBANTE" | "OTRO";
   page?: number;
   size?: number;
   sortBy?: string;
@@ -38,5 +53,5 @@ export interface DocumentoAsociacionDTO {
   idDocumento: number;
   idContrato?: number;
   idOrden?: number;
-  tipoRelacion: 'ANEXO' | 'COMPROBANTE' | 'OTRO';
+  tipoRelacion: "ANEXO" | "COMPROBANTE" | "OTRO";
 }

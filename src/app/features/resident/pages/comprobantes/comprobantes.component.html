@@ -1,77 +1,122 @@
 ﻿<div class="layout">
   <app-sidebar [nav]="residentNav" subtitle="Residente"></app-sidebar>
 
-  <main class="content">
+  <main class="content" [attr.aria-busy]="loading()">
     <div class="content-inner">
+      <!-- HEADER -->
       <header class="page-head">
         <div>
           <h1>Comprobantes y pagos</h1>
           <p class="muted">
-            Registra tus pagos de mantenimiento y adjunta los comprobantes para una revision rapida.
+            Registra tus pagos de mantenimiento y adjunta los comprobantes para
+            una revisión rápida.
           </p>
         </div>
         <div class="head-actions">
-          <app-button label="Ver historial completo" variant="secondary"></app-button>
+          <app-button
+            label="Ver historial completo"
+            variant="secondary"
+            routerLink="/residente/historial-pagos"
+          ></app-button>
         </div>
       </header>
 
+      <!-- ALERTAS -->
+      <div class="alert info" *ngIf="loading()">Cargando información...</div>
       <div class="alert error" *ngIf="error()">{{ error() }}</div>
       <div class="alert success" *ngIf="success()">{{ success() }}</div>
 
+      <!-- GRID PRINCIPAL -->
       <section class="grid main">
+        <!-- SUBIR COMPROBANTE -->
         <article class="card upload-card">
           <div class="card-head">
             <h2>Subir nuevo comprobante</h2>
-            <span class="muted">Formatos permitidos: PDF, JPG o PNG - Maximo recomendado 5 MB</span>
+            <span class="muted">
+              Formatos permitidos: PDF, JPG o PNG · Tamaño máximo recomendado 5
+              MB
+            </span>
           </div>
 
+          <!-- CAMPOS BÁSICOS -->
           <div class="form-grid">
-            <app-input placeholder="Numero de operacion o referencia" [(model)]="form.operacion"></app-input>
-            <app-input placeholder="Monto pagado" [(model)]="form.monto"></app-input>
-            <app-input placeholder="Descripcion opcional" [(model)]="form.descripcion"></app-input>
+            <app-input
+              placeholder="Número de operación o referencia"
+              [(model)]="form.operacion"
+            ></app-input>
+            <app-input
+              placeholder="Monto pagado"
+              [(model)]="form.monto"
+            ></app-input>
+            <app-input
+              placeholder="Descripción opcional"
+              [(model)]="form.descripcion"
+            ></app-input>
           </div>
 
+          <!-- SELECT ORDEN -->
           <div class="select-row">
             <label for="ordenId">Asociar a orden de pago</label>
             <select id="ordenId" [(ngModel)]="selectedOrdenIdModel">
               <option [ngValue]="null">Sin asociar</option>
-              <option *ngFor="let item of ordenesDisponibles()" [ngValue]="item.id">
+              <option
+                *ngFor="let item of ordenesDisponibles()"
+                [ngValue]="item.id"
+              >
                 {{ item.label }}
               </option>
             </select>
           </div>
 
+          <!-- FILE UPLOAD -->
           <div class="file-upload">
-            <input type="file" id="archivo" class="file-input" (change)="onFileSelected($event)" />
+            <input
+              type="file"
+              id="archivo"
+              class="file-input"
+              accept=".pdf,image/*"
+              (change)="onFileSelected($event)"
+            />
             <label for="archivo" class="file-drop">
               <mat-icon>upload_file</mat-icon>
               <div>
-                <strong>Arrastra tu comprobante o haz clic para seleccionarlo</strong>
-                <p *ngIf="selectedFileName(); else placeholder">{{ selectedFileName() }}</p>
+                <strong>
+                  Arrastra tu comprobante o haz clic para seleccionarlo
+                </strong>
+                <p *ngIf="selectedFileName(); else placeholder">
+                  {{ selectedFileName() }}
+                </p>
                 <ng-template #placeholder>
-                  <p>Incluye informacion clara del pago para evitar rechazos.</p>
+                  <p>
+                    Incluye información clara del pago para evitar rechazos.
+                  </p>
                 </ng-template>
               </div>
             </label>
           </div>
 
+          <!-- ACCIONES -->
           <div class="card-actions">
             <app-button
               label="Guardar comprobante"
               variant="primary"
+              [disabled]="saving() || !selectedFileName()"
               (clicked)="onSubmit()"
             ></app-button>
             <span class="muted helper">
-              Una vez enviado, administracion revisara el documento y te notificara por correo.
+              Una vez enviado, administración revisará el documento y te
+              notificará por correo.
             </span>
           </div>
         </article>
 
+        <!-- RESUMEN CONTRATO -->
         <article class="card resumen-card">
           <div class="card-head">
             <h2>Resumen del contrato</h2>
             <span class="muted">Datos clave de tu contrato y pagos</span>
           </div>
+
           <ng-container *ngIf="resumenContrato() as resumen; else sinResumen">
             <ul class="info-list">
               <li>
@@ -84,24 +129,30 @@
               </li>
             </ul>
           </ng-container>
+
           <ng-template #sinResumen>
-            <p class="muted">Sin informacion de contrato disponible.</p>
+            <p class="muted">Sin información de contrato disponible.</p>
           </ng-template>
+
           <div class="alert info">
             <mat-icon>info</mat-icon>
             <p>
-              Recuerda subir el comprobante dentro de las 24 horas posteriores al pago para evitar recargos.
+              Recuerda subir el comprobante dentro de las 24 horas posteriores
+              al pago para evitar recargos.
             </p>
           </div>
         </article>
       </section>
 
+      <!-- GRID SECUNDARIO -->
       <section class="grid secondary">
+        <!-- ÓRDENES DE PAGO -->
         <article class="card pendientes-card">
           <div class="card-head">
-            <h2>Comprobantes registrados</h2>
-            <span class="muted">Estado de tus ultimos pagos</span>
+            <h2>Órdenes de pago</h2>
+            <span class="muted">Estado de tus últimas órdenes</span>
           </div>
+
           <ng-container *ngIf="pendientes().length; else sinPendientes">
             <ul class="pendientes-list">
               <li *ngFor="let item of pendientes()" [ngClass]="item.clase">
@@ -110,21 +161,66 @@
                   <span class="muted">{{ item.periodo }}</span>
                 </div>
                 <div class="estado">
-                  <span class="pill" [ngClass]="item.clase">{{ item.estado }}</span>
-                  <span class="vence" *ngIf="item.vence">{{ item.vence }}</span>
+                  <span class="pill" [ngClass]="item.clase">
+                    {{ item.estado }}
+                  </span>
+                  <span class="vence" *ngIf="item.vence">
+                    {{ item.vence }}
+                  </span>
                   <strong class="monto">{{ item.monto }}</strong>
                 </div>
               </li>
             </ul>
           </ng-container>
+
           <ng-template #sinPendientes>
-            <p class="muted">No hay ordenes registradas todavia.</p>
+            <p class="muted">No hay órdenes registradas todavía.</p>
           </ng-template>
         </article>
 
+        <!-- ÚLTIMOS COMPROBANTES -->
+        <article class="card comprobantes-card">
+          <div class="card-head">
+            <h2>Últimos comprobantes</h2>
+            <span class="muted">Documentos subidos recientemente</span>
+          </div>
+
+          <ng-container *ngIf="comprobantes().length; else sinComprobantes">
+            <ul class="comprobantes-list">
+              <li *ngFor="let c of comprobantes()">
+                <div class="comp-main">
+                  <strong>{{ c.nombre }}</strong>
+                  <span class="muted">{{ c.fecha }}</span>
+                </div>
+                <div class="comp-meta">
+                  <span class="pill" [ngClass]="c.clase">
+                    {{ c.estado }}
+                  </span>
+                  <span class="muted size" *ngIf="c.size">{{ c.size }}</span>
+
+                  <a
+                    *ngIf="c.url"
+                    [href]="c.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="link-ver"
+                  >
+                    Ver
+                  </a>
+                </div>
+              </li>
+            </ul>
+          </ng-container>
+
+          <ng-template #sinComprobantes>
+            <p class="muted">Todavía no has subido comprobantes.</p>
+          </ng-template>
+        </article>
+
+        <!-- GUÍA -->
         <article class="card pasos-card">
           <div class="card-head">
-            <h2>Guia para subir comprobantes</h2>
+            <h2>Guía para subir comprobantes</h2>
             <span class="muted">Sigue estos pasos para evitar rechazos</span>
           </div>
           <ol class="pasos-list">

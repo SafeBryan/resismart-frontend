@@ -5,25 +5,37 @@ import {
   computed,
   inject,
   signal,
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { catchError, forkJoin, map, of } from 'rxjs';
-import { UtilsModule } from '../../../../utils/utils.module';
-import { AuthService } from '../../../../core/services/auth.service';
-import { EventosService } from '../../../../core/services/eventos.service';
-import { OrdenesPagoService } from '../../../../core/services/ordenes-pago.service';
-import { DocumentosService } from '../../../../core/services/documentos.service';
-import { ResidentContextService } from '../../../../core/services/resident-context.service';
-import { AvisoTipo } from '../../../../core/models/aviso.model';
-import { EventoDTO } from '../../../../core/models/evento.model';
-import { DocumentoDetalleDTO, DocumentoEstado } from '../../../../core/models/documento.model';
-import { OrdenPagoEstado, OrdenPagoResumenDTO } from '../../../../core/models/orden-pago.model';
-import { ResidentContext } from '../../../../core/models/resident-context.model';
-import { useAvisos, AvisoItem } from '../../../../core/services/avisos-store.service';
-import { RESIDENT_NAV } from '../../resident-nav';
-import { ToastService } from '../../../../core/services/toast.service';
+} from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { RouterModule } from "@angular/router";
+import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
+import { catchError, forkJoin, map, of } from "rxjs";
+import { UtilsModule } from "../../../../utils/utils.module";
+import { AuthService } from "../../../../core/services/auth.service";
+import { EventosService } from "../../../../core/services/eventos.service";
+import { OrdenesPagoService } from "../../../../core/services/ordenes-pago.service";
+import { DocumentosService } from "../../../../core/services/documentos.service";
+import { ResidentContextService } from "../../../../core/services/resident-context.service";
+import { AvisoTipo } from "../../../../core/models/aviso.model";
+import { EventoDTO } from "../../../../core/models/evento.model";
+
+import {
+  DocumentoDetalleDTO,
+  DocumentoEstado,
+  DocumentoListItem,
+} from "../../../../core/models/documento.model";
+
+import {
+  OrdenPagoEstado,
+  OrdenPagoResumenDTO,
+} from "../../../../core/models/orden-pago.model";
+import { ResidentContext } from "../../../../core/models/resident-context.model";
+import {
+  useAvisos,
+  AvisoItem,
+} from "../../../../core/services/avisos-store.service";
+import { RESIDENT_NAV } from "../../resident-nav";
+import { ToastService } from "../../../../core/services/toast.service";
 
 interface AvisoView {
   id: number;
@@ -63,11 +75,11 @@ interface ResumenPagoView {
 }
 
 @Component({
-  selector: 'app-home',
+  selector: "app-home",
   standalone: true,
   imports: [CommonModule, RouterModule, UtilsModule],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.css',
+  templateUrl: "./home.component.html",
+  styleUrl: "./home.component.css",
 })
 export class HomeComponent {
   private readonly auth = inject(AuthService);
@@ -85,7 +97,7 @@ export class HomeComponent {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly context = signal<ResidentContext | null>(null);
-  readonly asistencia = signal<Record<number, 'CONFIRMADO' | 'RECHAZADO'>>({});
+  readonly asistencia = signal<Record<number, "CONFIRMADO" | "RECHAZADO">>({});
 
   readonly avisosDropdown = computed<AvisoView[]>(() =>
     this.avisosFacade
@@ -95,13 +107,23 @@ export class HomeComponent {
   );
 
   private readonly eventosRaw = signal<EventoDTO[]>([]);
-  readonly eventos = computed<EventoView[]>(() => this.mapEventos(this.eventosRaw()));
+  readonly eventos = computed<EventoView[]>(() =>
+    this.mapEventos(this.eventosRaw())
+  );
 
-  private readonly documentosRaw = signal<DocumentoDetalleDTO[]>([]);
-  readonly documentos = computed<DocumentoView[]>(() => this.mapDocumentos(this.documentosRaw()));
+  // Ahora soporta ambos tipos
+  private readonly documentosRaw = signal<
+    (DocumentoDetalleDTO | DocumentoListItem)[]
+  >([]);
+
+  readonly documentos = computed<DocumentoView[]>(() =>
+    this.mapDocumentos(this.documentosRaw())
+  );
 
   private readonly ordenesRaw = signal<OrdenPagoResumenDTO[]>([]);
-  readonly resumenPagos = computed<ResumenPagoView[]>(() => this.mapResumenPagos(this.ordenesRaw()));
+  readonly resumenPagos = computed<ResumenPagoView[]>(() =>
+    this.mapResumenPagos(this.ordenesRaw())
+  );
 
   avisosOpen = false;
 
@@ -115,7 +137,9 @@ export class HomeComponent {
         this.latestContext = ctx;
         this.context.set(ctx);
         if (ctx.loading) return;
+
         const signature = this.buildSignature(ctx);
+
         if (signature !== this.lastLoadSignature) {
           this.lastLoadSignature = signature;
           this.loadDashboard(ctx);
@@ -126,16 +150,12 @@ export class HomeComponent {
   toggleAvisos(event: MouseEvent): void {
     event.stopPropagation();
     this.avisosOpen = !this.avisosOpen;
-    if (this.avisosOpen) {
-      this.markDropdownAsRead();
-    }
+    if (this.avisosOpen) this.markDropdownAsRead();
   }
 
-  @HostListener('document:click')
+  @HostListener("document:click")
   closeAvisos(): void {
-    if (this.avisosOpen) {
-      this.avisosOpen = false;
-    }
+    if (this.avisosOpen) this.avisosOpen = false;
   }
 
   onAvisoClick(aviso: AvisoView): void {
@@ -150,48 +170,53 @@ export class HomeComponent {
     const ids = this.avisosDropdown()
       .filter((item) => !item.leido)
       .map((item) => item.id);
+
     if (ids.length) this.avisosFacade.markAllVisible(ids);
   }
 
-  getAsistenciaLabel(id: number | undefined): 'CONFIRMADO' | 'RECHAZADO' | undefined {
+  getAsistenciaLabel(id: number | undefined) {
     if (id == null) return undefined;
     return this.asistencia()[id];
   }
 
-  registrarAsistencia(evento: EventoView, estado: 'CONFIRMADO' | 'RECHAZADO'): void {
+  registrarAsistencia(evento: EventoView, estado: "CONFIRMADO" | "RECHAZADO") {
     const id = evento.id;
     if (!id) return;
+
     this.eventosService.confirmarAsistencia(id, { estado }).subscribe({
       next: () => {
         this.asistencia.update((map) => ({ ...map, [id]: estado }));
         this.toast.success(
-          estado === 'CONFIRMADO' ? 'Asistencia confirmada.' : 'Has indicado que no asistirás.'
+          estado === "CONFIRMADO"
+            ? "Asistencia confirmada."
+            : "Has indicado que no asistirás."
         );
       },
-      error: () => this.toast.error('No se pudo registrar la asistencia.'),
+      error: () => this.toast.error("No se pudo registrar la asistencia."),
     });
   }
 
   formatEstado(estado?: string | null): string {
-    const value = (estado ?? '').toUpperCase();
+    const value = (estado ?? "").toUpperCase();
     switch (value) {
-      case 'APROBADO':
-        return 'ok';
-      case 'PENDIENTE':
-        return 'warn';
-      case 'RECHAZADO':
-        return 'danger';
+      case "APROBADO":
+        return "ok";
+      case "PENDIENTE":
+        return "warn";
+      case "RECHAZADO":
+        return "danger";
       default:
-        return '';
+        return "";
     }
   }
 
-  private loadDashboard(ctx: ResidentContext): void {
-    const userId = ctx.userId ?? null;
+  private loadDashboard(ctx: ResidentContext) {
     const condominioIds = ctx.condominioIds ?? [];
+
     const contratoIds = (ctx.contratos ?? [])
       .map((c) => c.id)
       .filter((id): id is number => id != null);
+
     const contratoActivoId = ctx.contratoActivo?.id ?? null;
 
     this.loading.set(true);
@@ -199,58 +224,63 @@ export class HomeComponent {
 
     const data$ = forkJoin({
       eventos:
-          condominioIds.length > 0
-            ? forkJoin(condominioIds.map((id) => this.eventosService.listByCondominio(id))).pipe(
-                map((chunks) => chunks.flat())
+        condominioIds.length > 0
+          ? forkJoin(
+              condominioIds.map((id) =>
+                this.eventosService.listByCondominio(id)
               )
-              : of<EventoDTO[]>([]),
+            ).pipe(map((chunks) => chunks.flat()))
+          : of<EventoDTO[]>([]),
+
       ordenes:
         contratoIds.length > 0
           ? this.ordenesPagoService.listByContratos(contratoIds)
           : of<OrdenPagoResumenDTO[]>([]),
+
       documentos:
         contratoActivoId != null
           ? this.documentosService.list({
               idContrato: contratoActivoId,
               size: 5,
-              sortDir: 'DESC',
-              sortBy: 'fechaSubida',
+              sortDir: "DESC",
+              sortBy: "fechaSubida",
               flat: true,
+              withLinks: true,
             })
-          : of<DocumentoDetalleDTO[]>([]),
-      }).pipe(
-        catchError((err) => {
-          console.error('[HomeComponent] loadDashboard error', err);
-          this.error.set('No se pudo cargar la informacion del panel.');
-          return of({
-            eventos: [] as EventoDTO[],
-            ordenes: [] as OrdenPagoResumenDTO[],
-            documentos: [] as DocumentoDetalleDTO[],
-          });
-        })
+          : of<(DocumentoDetalleDTO | DocumentoListItem)[]>([]),
+    }).pipe(
+      catchError((err) => {
+        console.error("[HomeComponent] loadDashboard error", err);
+        this.error.set("No se pudo cargar la informacion del panel.");
+        return of({
+          eventos: [] as EventoDTO[],
+          ordenes: [] as OrdenPagoResumenDTO[],
+          documentos: [] as (DocumentoDetalleDTO | DocumentoListItem)[],
+        });
+      })
     );
 
-      data$
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(({ eventos, ordenes, documentos }) => {
-          this.eventosRaw.set(eventos);
-          this.ordenesRaw.set(ordenes);
-          this.documentosRaw.set(documentos);
-          this.loading.set(false);
-        });
+    data$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ eventos, ordenes, documentos }) => {
+        this.eventosRaw.set(eventos);
+        this.ordenesRaw.set(ordenes);
+        this.documentosRaw.set(documentos);
+        this.loading.set(false);
+      });
   }
 
   private buildSignature(ctx: ResidentContext): string {
-    const contracts = (ctx.contratos ?? []).map((c) => c.id).join(',');
-    const condos = (ctx.condominioIds ?? []).join(',');
-    return `${ctx.userId ?? 'anon'}|${condos}|${contracts}`;
+    const contracts = (ctx.contratos ?? []).map((c) => c.id).join(",");
+    const condos = (ctx.condominioIds ?? []).join(",");
+    return `${ctx.userId ?? "anon"}|${condos}|${contracts}`;
   }
 
   private mapAviso(aviso: AvisoItem): AvisoView {
     return {
       id: aviso.id,
       titulo: aviso.titulo ?? this.resolveTitulo(aviso.tipo),
-      mensaje: aviso.mensaje ?? '',
+      mensaje: aviso.mensaje ?? "",
       fecha: aviso.relativeEmitido || this.formatDate(aviso.emitidoEn),
       etiqueta: this.resolveAvisoEtiqueta(aviso.tipo),
       leido: !!aviso.leido,
@@ -261,27 +291,47 @@ export class HomeComponent {
 
   private mapEventos(list: EventoDTO[]): EventoView[] {
     return [...(list ?? [])]
-      .sort((a, b) => (a.fechaInicio || '').localeCompare(b.fechaInicio || ''))
+      .sort((a, b) => (a.fechaInicio || "").localeCompare(b.fechaInicio || ""))
       .map((evento) => ({
         id: evento.id,
-        titulo: evento.titulo ?? 'Evento del condominio',
+        titulo: evento.titulo ?? "Evento del condominio",
         fecha: this.formatDay(evento.fechaInicio),
         hora: this.formatHour(evento.fechaInicio),
-        lugar: evento.lugar ?? 'Por definir',
-        descripcion: evento.descripcion ?? '',
+        lugar: evento.lugar ?? "Por definir",
+        descripcion: evento.descripcion ?? "",
       }))
       .slice(0, 4);
   }
 
-  private mapDocumentos(list: DocumentoDetalleDTO[]): DocumentoView[] {
+  /** ⭐ SOPORTA DocumentoDetalleDTO y DocumentoListItem */
+  private mapDocumentos(
+    list: (DocumentoDetalleDTO | DocumentoListItem)[]
+  ): DocumentoView[] {
     return [...(list ?? [])]
-      .sort((a, b) => (b.fechaSubida || '').localeCompare(a.fechaSubida || ''))
+      .sort((a, b) => {
+        const fechaA =
+          "idDocumento" in a ? a.fechaSubida ?? "" : a.creadoEn ?? "";
+        const fechaB =
+          "idDocumento" in b ? b.fechaSubida ?? "" : b.creadoEn ?? "";
+        return fechaB.localeCompare(fechaA);
+      })
       .map((doc) => {
-        const estado = doc.estadoValidacion ?? 'PENDIENTE';
+        const isDetalle = "idDocumento" in doc;
+
+        const id = isDetalle ? doc.idDocumento : doc.id;
+
+        const nombre = isDetalle
+          ? doc.nombreOriginal ?? `Documento #${id}`
+          : doc.nombre ?? `Documento #${id}`;
+
+        const fecha = isDetalle ? doc.fechaSubida : doc.creadoEn;
+
+        const estado = (doc as any).estadoValidacion ?? "PENDIENTE";
+
         return {
-          id: doc.idDocumento,
-          nombre: doc.nombreOriginal ?? `Documento #${doc.idDocumento}`,
-          fecha: this.formatDate(doc.fechaSubida),
+          id,
+          nombre,
+          fecha: this.formatDate(fecha),
           estadoLabel: this.formatSentenceCase(estado),
           estadoClass: this.formatEstado(estado),
         };
@@ -291,9 +341,11 @@ export class HomeComponent {
 
   private mapResumenPagos(list: OrdenPagoResumenDTO[]): ResumenPagoView[] {
     return [...(list ?? [])]
-      .sort((a, b) => (b.fechaVencimiento || '').localeCompare(a.fechaVencimiento || ''))
+      .sort((a, b) =>
+        (b.fechaVencimiento || "").localeCompare(a.fechaVencimiento || "")
+      )
       .map((orden) => {
-        const estado = orden.estado ?? 'PENDIENTE';
+        const estado = orden.estado ?? "PENDIENTE";
         return {
           id: orden.id,
           concepto: this.formatPeriodo(orden.periodo),
@@ -307,109 +359,119 @@ export class HomeComponent {
   }
 
   private resolveTitulo(tipo: AvisoTipo | undefined): string {
-    if (!tipo) return 'Aviso del condominio';
-    return this.formatSentenceCase(tipo.replace(/_/g, ' ').toLowerCase());
+    if (!tipo) return "Aviso del condominio";
+    return this.formatSentenceCase(tipo.replace(/_/g, " ").toLowerCase());
   }
 
   private resolveAvisoEtiqueta(tipo: AvisoTipo | undefined): string {
     switch (tipo) {
-      case 'ALERTA_GENERAL':
-      case 'DOCUMENTO_RECHAZADO':
-        return 'importante';
-      case 'ORDEN_PAGO_PROX_VENCER':
-      case 'EVENTO_CANCELADO':
-        return 'recordatorio';
-      case 'ORDEN_PAGO_GENERADA':
-      case 'ORDEN_PAGO_PAGADA':
-      case 'DOCUMENTO_APROBADO':
-        return 'pago';
+      case "ALERTA_GENERAL":
+      case "DOCUMENTO_RECHAZADO":
+        return "importante";
+      case "ORDEN_PAGO_PROX_VENCER":
+      case "EVENTO_CANCELADO":
+        return "recordatorio";
+      case "ORDEN_PAGO_GENERADA":
+      case "ORDEN_PAGO_PAGADA":
+      case "DOCUMENTO_APROBADO":
+        return "pago";
       default:
-        return 'info';
+        return "info";
     }
   }
 
   private mapOrdenEstadoClass(estado: OrdenPagoEstado | string): string {
-    const value = (estado ?? '').toString().toUpperCase();
+    const value = (estado ?? "").toString().toUpperCase();
     switch (value) {
-      case 'PAGADA':
-        return 'ok';
-      case 'PENDIENTE':
-        return 'warn';
-      case 'VENCIDA':
-      case 'EN_MORA':
-        return 'danger';
+      case "PAGADA":
+        return "ok";
+      case "PENDIENTE":
+        return "warn";
+      case "VENCIDA":
+      case "EN_MORA":
+        return "danger";
       default:
-        return '';
+        return "";
     }
   }
 
   private formatSentenceCase(value: string): string {
-    if (!value) return '';
-    const lower = value.toLowerCase().replace(/_/g, ' ');
+    if (!value) return "";
+    const lower = value.toLowerCase().replace(/_/g, " ");
     return lower.charAt(0).toUpperCase() + lower.slice(1);
   }
 
   private formatDate(value?: string | null): string {
-    if (!value) return '';
+    if (!value) return "";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
-    return new Intl.DateTimeFormat('es-PE', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
+
+    return new Intl.DateTimeFormat("es-PE", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
     }).format(date);
   }
 
   private formatDay(value?: string | null): string {
-    if (!value) return '';
+    if (!value) return "";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
-    return new Intl.DateTimeFormat('es-PE', {
-      day: '2-digit',
-      month: 'short',
+
+    return new Intl.DateTimeFormat("es-PE", {
+      day: "2-digit",
+      month: "short",
     }).format(date);
   }
 
   private formatHour(value?: string | null): string {
-    if (!value) return '';
+    if (!value) return "";
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '';
-    return new Intl.DateTimeFormat('es-PE', {
-      hour: '2-digit',
-      minute: '2-digit',
+    if (Number.isNaN(date.getTime())) return "";
+
+    return new Intl.DateTimeFormat("es-PE", {
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   }
 
   private formatPeriodo(periodo?: string | null): string {
-    if (!periodo) return 'Periodo sin definir';
+    if (!periodo) return "Periodo sin definir";
+
     const normalized = periodo.length === 7 ? `${periodo}-01` : periodo;
+
     const date = new Date(normalized);
     if (Number.isNaN(date.getTime())) return periodo;
-    return new Intl.DateTimeFormat('es-PE', {
-      month: 'long',
-      year: 'numeric',
+
+    return new Intl.DateTimeFormat("es-PE", {
+      month: "long",
+      year: "numeric",
     }).format(date);
   }
 
   private formatCurrency(value?: number | null): string {
-    return new Intl.NumberFormat('es-PE', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("es-PE", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 2,
     }).format(value ?? 0);
   }
 
   private formatRelative(value?: string | null): string {
-    if (!value) return '';
+    if (!value) return "";
+
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '';
+    if (Number.isNaN(date.getTime())) return "";
+
     const now = new Date();
     const diffMs = date.getTime() - now.getTime();
     const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
     if (diffDays > 1) return `Vence en ${diffDays} dias`;
-    if (diffDays === 1) return 'Vence manana';
-    if (diffDays === 0) return 'Vence hoy';
-    if (diffDays === -1) return 'Vencio ayer';
-    return `Vencio hace ${Math.abs(diffDays)} dias`;
+    if (diffDays === 1) return "Vence mañana";
+    if (diffDays === 0) return "Vence hoy";
+    if (diffDays === -1) return "Venció ayer";
+
+    return `Venció hace ${Math.abs(diffDays)} dias`;
   }
 }

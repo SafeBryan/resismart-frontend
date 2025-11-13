@@ -1,7 +1,266 @@
 <div class="layout">
   <app-sidebar></app-sidebar>
+
   <main class="content">
-    <h2>Página Órdenes de Pago</h2>
+    <div class="content-inner">
+      <!-- =======================
+           HEADER
+      ======================== -->
+      <header class="content-header">
+        <h2>Órdenes de Pago</h2>
+        <p class="subtitle">Consulta general, KPIs, generación y pagos</p>
+      </header>
+
+      <!-- =======================
+           FILTROS
+      ======================== -->
+      <section class="card filtros">
+        <h3>Filtros</h3>
+
+        <div class="filtros-grid">
+          <!-- ID CONTRATO -->
+          <div class="field">
+            <label>ID Contrato</label>
+            <input
+              type="number"
+              [(ngModel)]="filtros.contratoId"
+              placeholder="Ej: 12"
+            />
+          </div>
+
+          <!-- ESTADO -->
+          <div class="field">
+            <label>Estado</label>
+            <select [(ngModel)]="filtros.estado">
+              <option value="">Todos</option>
+              <option *ngFor="let est of estados" [value]="est">
+                {{ est }}
+              </option>
+            </select>
+          </div>
+
+          <!-- FECHA DESDE -->
+          <div class="field">
+            <label>Desde (fecha emisión)</label>
+            <input type="date" [(ngModel)]="filtros.from" />
+          </div>
+
+          <!-- FECHA HASTA -->
+          <div class="field">
+            <label>Hasta (fecha emisión)</label>
+            <input type="date" [(ngModel)]="filtros.to" />
+          </div>
+
+          <!-- ORDENAR POR -->
+          <div class="field">
+            <label>Ordenar por</label>
+            <select [(ngModel)]="filtros.sortBy">
+              <option value="fechaEmision">Fecha emisión</option>
+              <option value="fechaVencimiento">Fecha vencimiento</option>
+              <option value="periodo">Periodo</option>
+              <option value="id">ID</option>
+            </select>
+          </div>
+
+          <!-- DIRECCIÓN -->
+          <div class="field">
+            <label>Dirección</label>
+            <select [(ngModel)]="filtros.sortDir">
+              <option value="DESC">Descendente</option>
+              <option value="ASC">Ascendente</option>
+            </select>
+          </div>
+
+          <!-- ITEMS POR PÁGINA -->
+          <div class="field">
+            <label>Items por página</label>
+            <select [(ngModel)]="filtros.size">
+              <option *ngFor="let size of pageSizeOptions" [ngValue]="size">
+                {{ size }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filtros-actions">
+          <button (click)="aplicarFiltros()">Aplicar</button>
+          <button class="secondary" (click)="limpiarFiltros()">Limpiar</button>
+        </div>
+      </section>
+
+      <!-- =======================
+           KPIs
+      ======================== -->
+      <section class="kpi-grid">
+        <article class="card kpi" *ngFor="let est of estados">
+          <h4>{{ est }}</h4>
+          <p class="kpi-value">{{ resumenEstados[est] ?? 0 }}</p>
+        </article>
+      </section>
+
+      <!-- =======================
+           GENERAR ÓRDENES
+      ======================== -->
+      <section class="card generar">
+        <h3>Generar órdenes del mes</h3>
+        <p class="generar-subtitle">
+          Se crean órdenes para todos los contratos activos en el mes
+          seleccionado.
+        </p>
+
+        <div class="generar-grid">
+          <div class="field">
+            <label>Año</label>
+            <select [(ngModel)]="anioGenerar">
+              <option *ngFor="let y of aniosDisponibles" [ngValue]="y">
+                {{ y }}
+              </option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Mes</label>
+            <select [(ngModel)]="mesGenerar">
+              <option *ngFor="let m of meses" [ngValue]="m.value">
+                {{ m.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="field generar-accion">
+            <button (click)="generarMes()">Generar órdenes</button>
+          </div>
+        </div>
+
+        <p class="msg msg-error" *ngIf="generacionError">
+          {{ generacionError }}
+        </p>
+
+        <p class="msg msg-ok" *ngIf="generacionResultado">
+          Órdenes creadas:
+          <strong>{{ generacionResultado.creadas }}</strong> · Ya existentes:
+          <strong>{{ generacionResultado.existentes }}</strong>
+        </p>
+      </section>
+
+      <!-- =======================
+           INGRESOS
+      ======================== -->
+      <section class="card ingresos">
+        <h3>Ingresos Mensuales (Pagadas)</h3>
+
+        <table *ngIf="ingresos.length > 0" class="tabla-simple">
+          <thead>
+            <tr>
+              <th>Mes</th>
+              <th>Monto Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of ingresos">
+              <td>{{ item.mes }}</td>
+              <td>{{ item.montoTotal | currency : "USD" }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p *ngIf="ingresos.length === 0" class="no-data">
+          Sin datos de ingresos
+        </p>
+      </section>
+
+      <!-- =======================
+           TABLA PRINCIPAL
+      ======================== -->
+      <section class="card tabla">
+        <div class="tabla-header">
+          <h3>Listado de órdenes</h3>
+          <p *ngIf="pageInfo" class="tabla-subtitle">
+            Total: {{ pageInfo.total }} registros
+          </p>
+        </div>
+
+        <p *ngIf="loading">Cargando...</p>
+
+        <table *ngIf="ordenes.length > 0" class="tabla-simple">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Contrato</th>
+              <th>Periodo</th>
+              <th>Monto</th>
+              <th>Estado</th>
+              <th>Emisión</th>
+              <th>Vencimiento</th>
+              <th style="width: 140px">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let o of ordenes">
+              <td>{{ o.id }}</td>
+              <td>{{ o.idContrato }}</td>
+              <td>{{ o.periodo }}</td>
+              <td>{{ o.monto | currency : "USD" }}</td>
+
+              <td>
+                <span class="badge" [ngClass]="o.estado.toLowerCase()">
+                  {{ o.estado }}
+                </span>
+              </td>
+
+              <td>{{ o.fechaEmision }}</td>
+              <td>{{ o.fechaVencimiento }}</td>
+
+              <td class="acciones">
+                <button
+                  (click)="marcarPagada(o.id)"
+                  [disabled]="o.estado === 'PAGADA'"
+                >
+                  ✔
+                </button>
+
+                <button class="secondary" (click)="mostrarQR(o)">QR</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p *ngIf="!loading && ordenes.length === 0" class="no-data">
+          No hay registros
+        </p>
+
+        <!-- Paginación -->
+        <div class="paginacion" *ngIf="pageInfo">
+          <button (click)="paginaAnterior()" [disabled]="pageInfo.first">
+            ◀ Anterior
+          </button>
+
+          <span
+            >Página {{ pageInfo.page + 1 }} de {{ pageInfo.totalPages }}</span
+          >
+
+          <button (click)="paginaSiguiente()" [disabled]="pageInfo.last">
+            Siguiente ▶
+          </button>
+        </div>
+      </section>
+    </div>
   </main>
 </div>
 
+<!-- =======================
+     MODAL QR
+======================== -->
+<div class="modal-backdrop" *ngIf="qrVisible">
+  <div class="modal">
+    <h3>QR de Orden #{{ qrOrdenId }}</h3>
+
+    <qrcode [qrdata]="qrData" [width]="220" [errorCorrectionLevel]="'M'">
+    </qrcode>
+
+    <pre class="qr-info">{{ qrData }}</pre>
+
+    <button class="close-btn" (click)="cerrarQR()">Cerrar</button>
+  </div>
+</div>
