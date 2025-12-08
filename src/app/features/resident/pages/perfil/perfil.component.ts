@@ -8,6 +8,7 @@ import { UsuariosService } from '../../../../core/services/usuarios.service';
 import { UsuarioPerfilRequest } from '../../../../core/models/usuario.model';
 import { UtilsModule } from '../../../../utils/utils.module';
 import { RESIDENT_NAV } from '../../resident-nav';
+import { environment } from '../../../../../environments/environment';
 
 type Feedback = { type: 'success' | 'error'; text: string };
 
@@ -37,6 +38,7 @@ export class ResidentPerfilComponent implements OnInit, OnDestroy {
     password: '',
     confirmPassword: '',
   };
+  isUploadingAvatar = signal(false);
 
   savingProfile = signal(false);
   savingCredentials = signal(false);
@@ -98,6 +100,40 @@ export class ResidentPerfilComponent implements OnInit, OnDestroy {
           },
         })
     );
+  }
+
+  get avatarUrl(): string {
+    const profile: any = this.auth.snapshot.profile;
+    const url = profile?.avatarUrl ?? profile?.avatar_url ?? null;
+    if (!url || typeof url !== 'string') {
+        return 'assets/img/default-user.png';
+    }
+    if (url.startsWith('http')) {
+      return url;
+    }
+    const base = environment.apiUrl || '';
+    if (url.startsWith('/files')) {
+      return `${base}${url}`;
+    }
+    if (url.startsWith('/')) {
+      return `${base}${url}`;
+    }
+    return `${base}/files/${url}`;
+  }
+
+  onAvatarSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || !input.files.length) return;
+    const file = input.files[0];
+    this.isUploadingAvatar.set(true);
+    this.auth.updateAvatar(file).pipe(finalize(() => this.isUploadingAvatar.set(false))).subscribe({
+      next: () => {
+        this.profileFeedback.set({ type: 'success', text: 'Avatar actualizado.' });
+      },
+      error: () => {
+        this.profileFeedback.set({ type: 'error', text: 'No se pudo actualizar el avatar.' });
+      },
+    });
   }
 
   onSubmitCredentials(): void {

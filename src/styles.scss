@@ -1,0 +1,307 @@
+@use './styles/design-tokens' as *;
+@use 'sass:color';
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* Base reset + typography */
+html,
+body {
+  height: 100%;
+  min-height: 100vh;
+  background: $color-bg;
+  color: $color-text;
+  font-family: $font-family-base;
+}
+
+body {
+  margin: 0;
+  font-size: $font-size-md;
+  font-weight: $font-weight-regular;
+  line-height: 1.5;
+}
+
+a {
+  color: $color-primary;
+  text-decoration: none;
+}
+
+a:hover {
+  color: $color-primary-dark;
+  text-decoration: underline;
+}
+
+app-root {
+  display: block;
+  min-height: 100vh;
+  background: $color-bg;
+}
+
+/* Layout helpers */
+.layout {
+  align-items: start;
+  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(180deg, $color-bg 0%, $color-bg-alt 70%, $color-bg 100%);
+}
+
+.layout > main.content {
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  background: $color-bg;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    height: auto;
+    max-height: none;
+    min-height: 100%;
+    overflow: visible;
+  }
+  .layout > main.content {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+/* Utilities */
+.text-muted {
+  color: $color-text-muted;
+}
+.text-sm {
+  font-size: $font-size-sm;
+}
+.text-lg {
+  font-size: $font-size-lg;
+}
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: $spacing-lg;
+}
+
+/* Focus outline */
+.focus-outline:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid $color-primary-light;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba($color-primary, 0.25);
+}
+
+/* Buttons */
+.btn {
+  border-radius: $border-radius-md;
+  padding: $spacing-sm $spacing-lg;
+  font-weight: $font-weight-medium;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  min-height: 36px;
+  font-size: $font-size-md;
+}
+.btn-primary {
+  background: $color-primary;
+  color: #fff;
+  border-color: $color-primary;
+  box-shadow: $box-shadow-soft;
+}
+.btn-primary:hover {
+  background: $color-primary-dark;
+  border-color: $color-primary-dark;
+  box-shadow: $box-shadow-strong;
+}
+.btn-primary:active {
+  background: $color-primary-dark;
+  transform: translateY(1px);
+}
+.btn-outline {
+  background: transparent;
+  color: $color-primary;
+  border-color: $color-primary;
+}
+.btn-outline:hover {
+  background: rgba($color-primary, 0.08);
+}
+.btn:focus-visible {
+  outline: 2px solid $color-primary-light;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px rgba($color-primary, 0.2);
+}
+.btn-danger {
+  background: $color-danger;
+  color: #fff;
+  border-color: $color-danger;
+}
+.btn-danger:hover {
+  background: color.adjust($color-danger, $lightness: -6%);
+  border-color: color.adjust($color-danger, $lightness: -6%);
+}
+.btn:disabled,
+.btn[disabled],
+.btn-primary:disabled {
+  background: color.mix($color-primary, #9ca3af, $weight: 50%);
+  border-color: color.mix($color-primary, #9ca3af, $weight: 50%);
+  color: #f8fafc;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+/* Cards */
+.card {
+  background: $color-surface;
+  border-radius: $border-radius-md;
+  border: 1px solid $color-border;
+  box-shadow: $box-shadow-soft;
+  padding: $spacing-lg;
+}
+.card-header {
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+}
+.card-body {
+  display: block;
+}
+
+/* Tags / badges */
+.tag,
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+.badge-status-success {
+  background: rgba($color-success, 0.12);
+  color: $color-success;
+}
+.badge-status-warning {
+  background: rgba($color-warning, 0.15);
+  color: $color-warning;
+}
+.badge-status-danger {
+  background: rgba($color-danger, 0.12);
+  color: $color-danger;
+}
+.badge-status-info {
+  background: rgba($color-primary, 0.12);
+  color: $color-primary-dark;
+}
+
+/* Inputs */
+input,
+select,
+textarea {
+  font-family: $font-family-base;
+  font-size: $font-size-md;
+  border: 1px solid $color-border;
+  border-radius: $border-radius-sm;
+  padding: $spacing-sm $spacing-md;
+  background: $color-surface;
+  color: $color-text;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $font-size-md;
+}
+table th,
+table td {
+  padding: $spacing-sm $spacing-md;
+  border-bottom: 1px solid $color-border;
+  text-align: left;
+}
+table thead {
+  background: $color-primary-soft;
+  color: $color-primary-dark;
+  font-weight: $font-weight-medium;
+}
+
+/* Accessible form scaffolding */
+form.accessible-form {
+  display: grid;
+  gap: $spacing-lg;
+}
+
+.form-section {
+  border: 1px solid $color-border;
+  border-radius: $border-radius-lg;
+  padding: $spacing-lg;
+  margin: 0;
+  display: grid;
+  gap: $spacing-md;
+  background: rgba($color-bg-alt, 0.8);
+}
+
+.form-section legend {
+  font-weight: $font-weight-bold;
+  color: $color-text;
+  font-size: $font-size-lg;
+  padding: 0 $spacing-xs;
+  margin-left: -$spacing-xs;
+}
+
+.form-section .section-description {
+  color: $color-text-muted;
+  font-size: $font-size-sm;
+  margin: -$spacing-xs 0 $spacing-sm;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-md;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .form-section {
+    padding: $spacing-md;
+  }
+
+  .form-actions {
+    justify-content: stretch;
+  }
+}
+
+/* Sidebar logout button contrast fix (Material inner label elements) */
+aside.sidebar .mat-mdc-outlined-button,
+aside.sidebar .mat-mdc-stroked-button {
+  border-color: rgba(255, 255, 255, 0.7) !important;
+  color: #ffffff !important;
+}
+aside.sidebar .mat-mdc-outlined-button .mdc-button__label,
+aside.sidebar .mat-mdc-stroked-button .mdc-button__label {
+  color: #ffffff !important;
+}
+aside.sidebar .mat-mdc-outlined-button .mat-icon,
+aside.sidebar .mat-mdc-stroked-button .mat-icon {
+  color: #ffffff !important;
+}

@@ -1,15 +1,20 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap, of, map, catchError, finalize, shareReplay } from 'rxjs';
+import { BehaviorSubject, Observable, tap, of, map, catchError, finalize, shareReplay, throwError } from 'rxjs';
 import { AuthState, LoginResponse, Role, JwtPayload } from '../models/auth.model';
 import { UserProfile } from '../models/user.model';
 import { environment } from '../../../environments/environment';
+import { CondominioContextService } from './condominio-context.service';
+import { normalizeRole } from '../utils/role.util';
+import { UsuariosService } from './usuarios.service';
 
-const API_URL: string = environment.apiUrl || 'http://localhost:3000';
+const API_URL: string = environment.apiUrl || 'http://localhost:8080';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
+  private condominioContext = inject(CondominioContextService);
+  private usuariosService = inject(UsuariosService);
 
   private state$ = new BehaviorSubject<AuthState & { profile?: UserProfile | null }>(this.loadFromStorage());
 
@@ -23,8 +28,9 @@ export class AuthService {
 
   login(email: string, password: string): Observable<LoginResponse> {
     const body = { email, password };
-    if (environment.debug) console.log('[AuthService] POST', `${API_URL}/login`, body);
-    return this.http.post<LoginResponse | { access_token: string } | string>(`${API_URL}/login`, body).pipe(
+    const url = `${API_URL}/auth/login`;
+    if (environment.debug) console.log('[AuthService] POST', url, body);
+    return this.http.post<LoginResponse | { access_token: string } | string>(url, body).pipe(
       tap((resp: any) => {
         if (environment.debug) console.log('[AuthService] login response', resp);
         const token: string = (resp && (resp.token || resp.access_token)) || (typeof resp === 'string' ? resp : '');
@@ -34,6 +40,11 @@ export class AuthService {
         const next: AuthState = { token: token || null, role, idUsuario };
         this.state$.next(next as any);
         this.saveToStorage(next as any);
+        const normalizedRole = normalizeRole(role);
+        if (normalizedRole === 'ADMIN' || normalizedRole === 'OWNER') {
+          // Precarga condominios solo si aplica; errores ya se manejan en el servicio
+          this.condominioContext.loadMisCondominios().subscribe();
+        }
       })
     );
   }
@@ -75,12 +86,58 @@ export class AuthService {
     );
   }
 
+  updateAvatar(file: File): Observable<void> {
+    const auth = this.state$.value;
+    if (!auth) {
+      return throwError(() => new Error('No hay sesión activa'));
+    }
+
+    const request$ = this.usuariosService.uploadMyAvatar(file);
+
+    return request$.pipe(
+      tap((updatedUser) => {
+        const current = this.state$.value;
+        if (!current) return;
+        const next = {
+          ...current,
+          profile: {
+            ...(current.profile ?? {}),
+            avatarUrl: (updatedUser as any)?.avatarUrl,
+          },
+        };
+        this.state$.next(next as any);
+        this.saveToStorage(next as any);
+      }),
+      map(() => void 0)
+    );
+  }
+
   mergeProfile(profile: Partial<UserProfile> | Record<string, any> | null) {
     const currentProfile = this.snapshot.profile ?? null;
     const updatedProfile = profile ? { ...(currentProfile ?? {}), ...profile } : profile;
     const next = { ...this.snapshot, profile: updatedProfile };
     this.state$.next(next);
     this.saveToStorage(next);
+  }
+
+  forgotPassword(email: string): Observable<void> {
+    const body = { email };
+    const url = `${API_URL}/auth/forgot-password`;
+    if (environment.debug) console.log('[AuthService] POST', url, body);
+    return this.http.post<void>(url, body, { responseType: 'text' as 'json' }).pipe(
+      map(() => void 0),
+      catchError((err) => throwError(() => this.formatHttpError(err, 'No se pudo enviar el enlace de recuperacion.'))),
+    );
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<void> {
+    const body = { token, newPassword };
+    const url = `${API_URL}/auth/reset-password`;
+    if (environment.debug) console.log('[AuthService] POST', url, body);
+    return this.http.post<void>(url, body, { responseType: 'text' as 'json' }).pipe(
+      map(() => void 0),
+      catchError((err) => throwError(() => this.formatHttpError(err, 'No se pudo actualizar la contrasena.'))),
+    );
   }
 
   // Token validation cache
@@ -159,6 +216,13 @@ export class AuthService {
       return null;
     }
   }
+
+  private formatHttpError(err: any, fallback: string) {
+    const status = err?.status;
+    const msg = err?.error?.message ?? err?.error?.error ?? err?.message;
+    const message = typeof msg === 'string' && msg.trim().length ? msg : fallback;
+    return { status, message };
+  }
 }
 
 // Helpers
@@ -180,10 +244,12 @@ function sanitizeProfile(profile: any | null | undefined): any | null {
   const nombres = profile?.nombres ?? profile?.nombre ?? null;
   const apellidos = profile?.apellidos ?? null;
   const telefono = profile?.telefono ?? null;
+  const avatarUrl = profile?.avatarUrl ?? profile?.avatar_url ?? null;
   const safe: any = {};
   if (email != null) safe.email = email;
   if (nombres != null) safe.nombres = nombres;
   if (apellidos != null) safe.apellidos = apellidos;
   if (telefono != null) safe.telefono = telefono;
+  if (avatarUrl != null) safe.avatarUrl = avatarUrl;
   return safe;
 }

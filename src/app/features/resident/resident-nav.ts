@@ -5,6 +5,6 @@ export const RESIDENT_NAV: NavItem[] = [
   { label: 'Avisos', path: '/home/avisos', icon: 'campaign' },
   { label: 'Eventos', path: '/home/eventos', icon: 'event' },
   { label: 'Contratos', path: '/home/contratos', icon: 'assignment' },
-  { label: 'Comprobantes', path: '/home/comprobantes', icon: 'cloud_upload' },
+  { label: 'Pagos', path: '/home/pagos', icon: 'credit_card' },
   { label: 'Mis Datos', path: '/home/perfil', icon: 'account_circle' },
 ];

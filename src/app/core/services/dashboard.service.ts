@@ -14,7 +14,6 @@ import {
   ContratoBasic,
   OrdenEstado,
 } from "../models/dashboard.model";
-
 const API = environment.apiUrl || "http://localhost:8080";
 
 interface PageResponse<T> {
@@ -51,7 +50,7 @@ interface IngresosMensualesRow {
 
 /**
  * Servicio central del Dashboard Administrativo
- * Permite consultar órdenes de pago, comprobantes y KPIs generales
+ * Permite consultar ordenes de pago, comprobantes y KPIs generales
  */
 @Injectable({ providedIn: "root" })
 export class DashboardService {
@@ -61,7 +60,7 @@ export class DashboardService {
   // Helpers de mapeo
   // ==============================
 
-  /** Mapea estado del backend (MAYÚSCULAS) al tipo del front (minúsculas). */
+  /** Mapea estado del backend (MAYUSCULAS) al tipo del front (minusculas). */
   private adaptEstado(
     apiEstado: string | null | undefined
   ): OrdenEstado | undefined {
@@ -95,7 +94,7 @@ export class DashboardService {
     };
   }
 
-  /** Suma KPIs a partir de la lista de órdenes (fallback si no usamos /resumen). */
+  /** Suma KPIs a partir de la lista de ordenes (fallback si no usamos /resumen). */
   buildKpis(ordenes: DashboardOrden[]): DashboardKpis {
     const total = ordenes.length;
     const pendientes = ordenes.filter((o) => o.estado === "pendiente").length;
@@ -136,7 +135,7 @@ export class DashboardService {
   }
 
   // ==============================
-  // MÉTODOS BASE (Endpoints directos)
+  // METODOS BASE (Endpoints directos)
   // ==============================
 
   getCondominios(): Observable<CondominioBasic[]> {
@@ -163,7 +162,7 @@ export class DashboardService {
       .pipe(map((list) => (list || []).map((o) => this.adaptOrden(o))));
   }
 
-  /** Listado general de órdenes con filtros (nuevo endpoint /OrdenesPago?flat=true). */
+  /** Listado general de ordenes con filtros (nuevo endpoint /OrdenesPago?flat=true). */
   getOrdenes(params: OrdenesQuery = {}): Observable<DashboardOrden[]> {
     const base: OrdenesQuery = {
       flat: true,
@@ -183,8 +182,13 @@ export class DashboardService {
 
     const httpParams = new HttpParams({ fromObject: clean as any });
     return this.http
-      .get<any[]>(`${API}/OrdenesPago`, { params: httpParams })
-      .pipe(map((list) => (list || []).map((o) => this.adaptOrden(o))));
+      .get<any[] | { content?: any[] }>(`${API}/OrdenesPago`, { params: httpParams })
+      .pipe(
+        map((resp) => {
+          const list = Array.isArray(resp) ? resp : resp?.content ?? [];
+          return (list || []).map((o) => this.adaptOrden(o));
+        })
+      );
   }
 
   /** Resumen por estado (KPIs) */
@@ -202,7 +206,7 @@ export class DashboardService {
     });
   }
 
-  /** Serie de ingresos mensuales (sumatoria de PAGADAS). Mapea mes-objeto → "YYYY-MM". */
+  /** Serie de ingresos mensuales (sumatoria de PAGADAS). Mapea mes-objeto -> "YYYY-MM". */
   getIngresosMensuales(
     params: ResumenQuery = {}
   ): Observable<IngresosMensualesRow[]> {
@@ -241,7 +245,7 @@ export class DashboardService {
       );
   }
 
-  /** Listar documentos (paginado por defecto del back) → mapeo content */
+  /** Listar documentos (paginado por defecto del back) -> mapeo content */
   getDocumentos(params?: {
     q?: string;
     from?: string;
@@ -273,7 +277,7 @@ export class DashboardService {
       );
   }
 
-  /** Documentos en modo “flat” (si habilitaste flat & X-Total-Count en el back) */
+  /** Documentos en modo "flat" (si habilitaste flat & X-Total-Count en el back) */
   getDocumentosFlat(
     params: {
       q?: string;
@@ -322,7 +326,22 @@ export class DashboardService {
   }
 
   // ==============================
-  // MÉTODOS DERIVADOS / COMPUESTOS
+  // RESUMEN FINANCIERO (backend /dashboard/financiero)
+  // ==============================
+
+  getFinanciero(condominioId?: number): Observable<{
+    ingresosDelMes?: number;
+    egresosDelMes?: number;
+    totalDeudaPorCobrar?: number;
+    balanceGeneral?: number;
+  }> {
+    const params: any = {};
+    if (condominioId != null) params.condominioId = condominioId;
+    return this.http.get(`${API}/dashboard/financiero`, { params });
+  }
+
+  // ==============================
+  // METODOS DERIVADOS / COMPUESTOS
   // ==============================
 
   loadOrdenesConFiltro(
@@ -330,7 +349,7 @@ export class DashboardService {
   ): Observable<DashboardOrden[]> {
     const { contratoId, condominioId, residenteId, from, to } = filtros;
 
-    // 1) Simple/eficiente: directo a /OrdenesPago si hay contratoId o no hay filtros jerárquicos
+    // 1) Simple/eficiente: directo a /OrdenesPago si hay contratoId o no hay filtros jerarquicos
     if (contratoId || (!condominioId && !residenteId)) {
       const params: OrdenesQuery = {};
       if (contratoId != null) params.contratoId = contratoId;
@@ -428,7 +447,7 @@ export class DashboardService {
   }
 
   /**
-   * Actividad reciente a partir de los últimos documentos y su auditoría.
+   * Actividad reciente a partir de los ultimos documentos y su auditoria.
    * Evita N+1 abusivo limitando documentos y eventos por doc.
    */
   getActividadReciente(
@@ -436,7 +455,7 @@ export class DashboardService {
   ): Observable<DashboardActividad[]> {
     const { docsLimit = 5, auditLimit = 5 } = opts;
 
-    // Usa tu endpoint "flat" para traer los últimos N documentos (orden por fecha ya lo maneja el back)
+    // Usa tu endpoint "flat" para traer los ultimos N documentos (orden por fecha ya lo maneja el back)
     return this.getDocumentosFlat({ size: docsLimit }).pipe(
       switchMap(({ items }) => {
         if (!items.length) return of<DashboardActividad[]>([]);
@@ -451,7 +470,7 @@ export class DashboardService {
         );
         return forkJoin(calls).pipe(map((chunks) => chunks.flat()));
       }),
-      // Ordenar por fecha desc y cortar a top 10–20
+      // Ordenar por fecha desc y cortar a top 10-20
       map((all) =>
         all
           .sort((a, b) => b.fecha?.localeCompare(a.fecha || "") ?? 0)

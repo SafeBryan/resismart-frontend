@@ -12,6 +12,9 @@ import { ConfiguracionComponent } from './pages/configuracion/configuracion.comp
 import { CondominiosComponent } from './pages/condominios/condominios.component';
 import { UsuariosComponent } from './pages/usuarios/usuarios.component';
 import { EventosComponent } from './pages/eventos/eventos.component';
+import { PropietariosComponent } from './pages/propietarios/propietarios.component';
+import { ReportesComponent } from './pages/reportes/reportes.component';
+import { roleGuard } from '../../core/guards/role.guard';
 
 @NgModule({
   imports: [
@@ -27,16 +30,22 @@ import { EventosComponent } from './pages/eventos/eventos.component';
     CondominiosComponent,
     UsuariosComponent,
     EventosComponent,
+    PropietariosComponent,
+    ReportesComponent,
     RouterModule.forChild([
       { path: '', component: DashboardComponent },
-      { path: 'residentes', component: ResidentesComponent },
+      { path: 'residentes', redirectTo: 'inquilinos', pathMatch: 'full' },
+      { path: 'inquilinos', component: ResidentesComponent },
       { path: 'usuarios', component: UsuariosComponent },
       { path: 'condominios', component: CondominiosComponent },
       { path: 'contratos', component: ContratosComponent },
       { path: 'pagos', component: PagosComponent },
+      { path: 'pagos/:id', component: PagosComponent, canMatch: [roleGuard], data: { roles: ['ADMIN', 'OWNER'], strictRoles: true } },
       { path: 'comprobantes', component: ComprobantesComponent },
       { path: 'avisos', component: AvisosComponent },
       { path: 'eventos', component: EventosComponent },
+      { path: 'propietarios', component: PropietariosComponent, canMatch: [roleGuard], data: { roles: ['ADMIN'], strictRoles: true } },
+      { path: 'reportes', component: ReportesComponent },
       { path: 'configuracion', component: ConfiguracionComponent },
     ]),
   ],

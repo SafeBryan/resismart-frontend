@@ -13,4 +13,8 @@ export class UnidadesService {
   getUnidadActual(): Observable<UnidadDTO> {
     return this.http.get<UnidadDTO>(`${API}/Unidades/me`);
   }
+
+  getByCondominio(condominioId: number): Observable<UnidadDTO[]> {
+    return this.http.get<UnidadDTO[]>(`${API}/Unidades/por-condominio/${condominioId}`);
+  }
 }

@@ -5,7 +5,8 @@ import {
   Input,
   Output,
   OnInit,
-  computed,
+  OnChanges,
+  SimpleChanges,
   signal,
   inject,
 } from "@angular/core";
@@ -44,10 +45,11 @@ export type DialogMode = "create" | "edit" | "view";
   templateUrl: "./contrato-dialog.component.html",
   styleUrls: ["./contrato-dialog.component.css"],
 })
-export class ContratoDialogComponent implements OnInit {
+export class ContratoDialogComponent implements OnInit, OnChanges {
   @Input() visible = false;
   @Input() mode: DialogMode = "create";
   @Input() contrato: ContratoResumen | null = null;
+  @Input() condominioId: number | null = null;
 
   @Output() close = new EventEmitter<void>();
   @Output() saved = new EventEmitter<any>();
@@ -57,6 +59,15 @@ export class ContratoDialogComponent implements OnInit {
   condominios = signal<CondominioResumenDTO[]>([]);
   unidades = signal<UnidadDTO[]>([]);
   residentes = signal<ResidenteRespuestaDTO[]>([]);
+  readonly isActivo = (r: ResidenteRespuestaDTO): boolean => {
+    const usuario = r.usuario || ({} as any);
+    return Boolean(
+      usuario.estado ??
+      r.usuarioEstado ??
+      r.usuarioActivo ??
+      usuario.activo
+    );
+  };
 
   isCreate = () => this.mode === "create";
   isEdit = () => this.mode === "edit";
@@ -80,13 +91,20 @@ export class ContratoDialogComponent implements OnInit {
       idResidente: [null as number | null, [Validators.required]],
       fechaInicio: ["", [Validators.required]],
       fechaFin: [""],
-      monto: [null as number | null, [Validators.required, Validators.min(0)]],
+      montoAlquiler: [null as number | null, [Validators.required, Validators.min(0)]],
+      montoAlicuota: [null as number | null, [Validators.required, Validators.min(0)]],
       estado: [{ value: EstadoContrato.PENDIENTE, disabled: true }],
     });
   }
 
   ngOnInit(): void {
     this.cargarCatalogos();
+    // Si viene condominio desde el padre, fijarlo y cargar opciones
+    if (this.condominioId) {
+      this.form.patchValue({ idCondominio: this.condominioId });
+      this.cargarOpcionesPorCondominio(this.condominioId);
+    }
+
     if (this.contrato) {
       this.form.patchValue({
         idUnidad: this.contrato.idUnidad ?? null,
@@ -95,7 +113,8 @@ export class ContratoDialogComponent implements OnInit {
           : null,
         fechaInicio: this.contrato.fechaInicio || "",
         fechaFin: this.contrato.fechaFin || "",
-        monto: this.contrato.monto ?? null,
+        montoAlquiler: this.contrato.montoAlquiler ?? null,
+        montoAlicuota: this.contrato.montoAlicuota ?? null,
         estado: this.contrato.estado,
       });
       if (this.mode === "view") this.form.disable();
@@ -105,14 +124,15 @@ export class ContratoDialogComponent implements OnInit {
     this.form
       .get("idCondominio")
       ?.valueChanges.subscribe((idCondo: number | null) => {
-        if (!idCondo) {
-          this.unidades.set([]);
-          return;
-        }
-        this.condoSrv
-          .unidadesPorCondominio(Number(idCondo))
-          .subscribe((u) => this.unidades.set(u || []));
+        this.cargarOpcionesPorCondominio(idCondo);
       });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes["condominioId"] && this.condominioId) {
+      this.form.patchValue({ idCondominio: this.condominioId });
+      this.cargarOpcionesPorCondominio(this.condominioId);
+    }
   }
 
   cargarCatalogos(): void {
@@ -120,10 +140,12 @@ export class ContratoDialogComponent implements OnInit {
       next: (p) => this.condominios.set(p?.content || []),
       error: () => this.condominios.set([]),
     });
-    this.resSrv.list().subscribe({
-      next: (r) => this.residentes.set(r || []),
-      error: () => this.residentes.set([]),
-    });
+    // Residentes se cargan por condominio cuando corresponda
+    if (this.condominioId) {
+      this.cargarResidentesPorCondo(this.condominioId);
+    } else {
+      this.residentes.set([]);
+    }
   }
 
   cancelar(): void {
@@ -134,12 +156,20 @@ export class ContratoDialogComponent implements OnInit {
     if (this.isView() || this.form.invalid) return;
 
     const raw = this.form.getRawValue();
+    const montoAlquiler = Number(raw.montoAlquiler);
+    const montoAlicuota = Number(raw.montoAlicuota);
+    const montoTotal =
+      (Number.isFinite(montoAlquiler) ? montoAlquiler : 0) +
+      (Number.isFinite(montoAlicuota) ? montoAlicuota : 0);
+
     const payloadCreate = {
       idUnidad: Number(raw.idUnidad),
       idResidente: Number(raw.idResidente),
       fechaInicio: String(raw.fechaInicio),
       fechaFin: raw.fechaFin ? String(raw.fechaFin) : undefined,
-      monto: Number(raw.monto),
+      monto: montoTotal,
+      montoAlquiler: Number(raw.montoAlquiler),
+      montoAlicuota: Number(raw.montoAlicuota),
     };
 
     this.saving.set(true);
@@ -164,6 +194,8 @@ export class ContratoDialogComponent implements OnInit {
         fechaInicio: payloadCreate.fechaInicio,
         fechaFin: payloadCreate.fechaFin,
         monto: payloadCreate.monto,
+        montoAlquiler: payloadCreate.montoAlquiler,
+        montoAlicuota: payloadCreate.montoAlicuota,
         idUnidad: payloadCreate.idUnidad,
         idResidente: payloadCreate.idResidente,
       };
@@ -181,5 +213,30 @@ export class ContratoDialogComponent implements OnInit {
           complete: () => this.saving.set(false),
         });
     }
+  }
+
+  private cargarOpcionesPorCondominio(idCondo: number | null) {
+    if (!idCondo) {
+      this.unidades.set([]);
+      this.residentes.set([]);
+      this.form.patchValue({ idUnidad: null, idResidente: null });
+      return;
+    }
+    const cid = Number(idCondo);
+    this.form.patchValue({ idUnidad: null, idResidente: null });
+    this.condoSrv
+      .unidadesPorCondominio(cid)
+      .subscribe((u) => this.unidades.set(u || []));
+    this.cargarResidentesPorCondo(cid);
+  }
+
+  private cargarResidentesPorCondo(condominioId: number) {
+    this.resSrv.getByCondominio(condominioId).subscribe({
+      next: (r) => {
+        const list = Array.isArray(r) ? r : [];
+        this.residentes.set(list);
+      },
+      error: () => this.residentes.set([]),
+    });
   }
 }

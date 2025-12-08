@@ -6,7 +6,23 @@
       <header class="page-head">
         <div>
           <h1>Mis datos</h1>
-          <p class="muted">Actualiza tu información de contacto y protege tu acceso a ResiSmart.</p>
+          <p class="muted">Actualiza tu informacion de contacto y protege tu acceso a ResiSmart.</p>
+        </div>
+        <div class="avatar-panel">
+          <img [src]="avatarUrl" alt="Avatar del usuario" class="avatar-img" />
+          <div class="avatar-actions">
+            <label class="btn-outline" for="avatarInput">Cambiar avatar</label>
+            <input
+              id="avatarInput"
+              type="file"
+              accept="image/*"
+              (change)="onAvatarSelected($event)"
+              [disabled]="isUploadingAvatar()"
+              hidden
+            />
+            <small class="muted">Formatos: JPG, PNG, WEBP. Tamano recomendado &lt; 2MB.</small>
+            <span class="muted" *ngIf="isUploadingAvatar()">Subiendo...</span>
+          </div>
         </div>
       </header>
 
@@ -20,7 +36,7 @@
           <div class="card-head">
             <div>
               <h2 id="resident-profile-heading">Datos personales</h2>
-              <span class="muted" id="resident-profile-desc">Nombre, correo y número de contacto.</span>
+              <span class="muted" id="resident-profile-desc">Nombre, correo y numero de contacto.</span>
             </div>
             <button mat-flat-button color="primary" type="submit" [disabled]="savingProfile()">
               {{ savingProfile() ? 'Guardando...' : 'Guardar datos' }}
@@ -38,19 +54,19 @@
           </div>
 
           <fieldset class="form-section">
-            <legend>Información personal</legend>
-            <p class="section-description">Verifica que tus datos estén actualizados para recibir avisos oportunamente.</p>
+            <legend>Informacion personal</legend>
+            <p class="section-description">Verifica que tus datos esten actualizados para recibir avisos oportunamente.</p>
             <div class="form-grid">
               <app-input label="Nombre" placeholder="Nombre" name="nombre" [(model)]="profileForm.nombre"></app-input>
               <app-input label="Apellido" placeholder="Apellido" name="apellido" [(model)]="profileForm.apellido"></app-input>
               <app-input
-                label="Correo electrónico"
-                placeholder="Correo electrónico"
+                label="Correo electronico"
+                placeholder="Correo electronico"
                 type="email"
                 name="correo"
                 [(model)]="profileForm.email"
               ></app-input>
-              <app-input label="Teléfono" placeholder="Teléfono" name="telefono" [(model)]="profileForm.telefono"></app-input>
+              <app-input label="Telefono" placeholder="Telefono" name="telefono" [(model)]="profileForm.telefono"></app-input>
             </div>
           </fieldset>
         </form>
@@ -64,7 +80,7 @@
           <div class="card-head">
             <div>
               <h2 id="resident-credentials-heading">Seguridad de acceso</h2>
-              <span class="muted" id="resident-credentials-desc">Correo de ingreso y nueva contraseña.</span>
+              <span class="muted" id="resident-credentials-desc">Correo de ingreso y nueva contrasena.</span>
             </div>
             <button mat-flat-button color="primary" type="submit" [disabled]="savingCredentials()">
               {{ savingCredentials() ? 'Actualizando...' : 'Guardar credenciales' }}
@@ -82,9 +98,9 @@
           </div>
 
           <fieldset class="form-section">
-            <legend>Actualización de credenciales</legend>
+            <legend>Actualizacion de credenciales</legend>
             <p class="section-description">
-              Si cambias tu correo, recuerda usar uno al que tengas acceso. La contraseña debe coincidir en ambos campos.
+              Si cambias tu correo, recuerda usar uno al que tengas acceso. La contrasena debe coincidir en ambos campos.
             </p>
             <div class="form-grid">
               <app-input
@@ -95,13 +111,13 @@
                 [(model)]="credentialsForm.email"
               ></app-input>
               <app-input
-                label="Nueva contraseña"
+                label="Nueva contrasena"
                 type="password"
                 name="cred-password"
                 [(model)]="credentialsForm.password"
               ></app-input>
               <app-input
-                label="Confirmar contraseña"
+                label="Confirmar contrasena"
                 type="password"
                 name="cred-confirm"
                 [(model)]="credentialsForm.confirmPassword"

@@ -1,10 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { UtilsModule } from '../../../../utils/utils.module';
 import { SidebarComponent } from '../../../../utils/sidebar/sidebar.component';
-import { AvisoTipo } from '../../../../core/models/aviso.model';
+import { AvisoDestino, AvisoTipo } from '../../../../core/models/aviso.model';
 import { useAvisos, AvisoItem } from '../../../../core/services/avisos-store.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { AvisosService } from '../../../../core/services/avisos.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 interface AvisoView {
   id: number;
@@ -22,11 +26,17 @@ interface AvisoView {
 @Component({
   selector: 'app-avisos',
   standalone: true,
-  imports: [CommonModule, RouterModule, UtilsModule, SidebarComponent],
+  imports: [CommonModule, RouterModule, FormsModule, UtilsModule, SidebarComponent],
   templateUrl: './avisos.component.html',
   styleUrl: './avisos.component.css',
 })
 export class AvisosComponent {
+  constructor(
+    private readonly auth: AuthService,
+    private readonly avisosService: AvisosService,
+    private readonly toast: ToastService
+  ) {}
+
   readonly avisosFacade = useAvisos();
   readonly filtros = [
     { label: 'Todos', value: 'todos' },
@@ -39,6 +49,15 @@ export class AvisosComponent {
 
   readonly filtroSeleccionado = signal<'todos' | string>('todos');
   readonly busqueda = signal('');
+  readonly tipoMensaje = signal<'general' | 'usuario'>('general');
+  readonly tituloNuevo = signal('');
+  readonly mensajeNuevo = signal('');
+  readonly receptorId = signal<number | null>(null);
+
+  readonly esAdmin = computed(() => {
+    const role = (this.auth.snapshot.role ?? '').toString().toUpperCase();
+    return role === 'ADMIN';
+  });
 
   readonly avisos = computed<AvisoView[]>(() =>
     this.avisosFacade
@@ -80,6 +99,47 @@ export class AvisosComponent {
   }
 
   trackById = (_: number, aviso: AvisoView) => aviso.id;
+
+  crearAviso(): void {
+    if (!this.esAdmin()) {
+      this.toast.error('Solo ADMIN puede enviar avisos.');
+      return;
+    }
+    const mensaje = this.mensajeNuevo().trim();
+    if (!mensaje) {
+      this.toast.error('Ingresa un mensaje.');
+      return;
+    }
+    const titulo = this.tituloNuevo().trim() || 'Mensaje';
+    const destino = this.tipoMensaje() === 'usuario' ? ('USUARIO' as AvisoDestino) : ('TODOS' as AvisoDestino);
+    const destinoReferencia = destino === 'USUARIO' ? (this.receptorId() ? String(this.receptorId()) : null) : null;
+    if (destino === 'USUARIO' && !destinoReferencia) {
+      this.toast.error('Ingresa el ID de usuario destinatario.');
+      return;
+    }
+
+    const req = {
+      tipo: 'ALERTA_GENERAL' as AvisoTipo,
+      titulo,
+      mensaje,
+      destino,
+      destinoReferencia,
+    };
+
+    this.avisosService.crearAviso(req).subscribe({
+      next: () => {
+        this.toast.success('Aviso enviado.');
+        this.mensajeNuevo.set('');
+        this.tituloNuevo.set('');
+        this.receptorId.set(null);
+        this.avisosFacade.refresh();
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error('No se pudo enviar el aviso.');
+      },
+    });
+  }
 
   private mapAviso(aviso: AvisoItem): AvisoView {
     return {

@@ -11,11 +11,12 @@ export interface Usuario {
   email?: string;
   estado?: boolean;
   enabled?: boolean;
+  avatarUrl?: string;
 }
 
 export interface UsuarioCrearRequest {
   email: string;
-  password: string;
+  password?: string;
   nombre: string;
   apellido: string;
   telefono?: string;

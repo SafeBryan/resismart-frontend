@@ -43,4 +43,10 @@ export class UsuariosService {
   updateCredencialesCliente(dto: UsuarioCredencialesClienteRequest): Observable<any> {
     return this.http.put(`${API}/Usuarios/credencialesCliente`, dto);
   }
+
+  uploadMyAvatar(file: File): Observable<Usuario> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return this.http.post<Usuario>(`${API}/Usuarios/me/avatar`, formData);
+  }
 }

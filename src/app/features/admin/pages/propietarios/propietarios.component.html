@@ -1,0 +1,162 @@
+<div class="layout">
+  <app-sidebar></app-sidebar>
+
+  <main class="content">
+
+    <div class="header">
+      <div>
+        <h1>Propietarios</h1>
+        <p>Usuarios con rol DUEÑO/OWNER registrados en el sistema.</p>
+      </div>
+      <button mat-raised-button color="primary" (click)="openAdd()">
+        <mat-icon fontIcon="person_add"></mat-icon>
+        Nuevo propietario
+      </button>
+    </div>
+
+    <section class="card">
+      <div class="card-title">
+        <h3>Listado ({{ propietarios().length }})</h3>
+        <small>Nombre, contacto y estado</small>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nombre completo</th>
+              <th>Correo</th>
+              <th>Teléfono</th>
+              <th>Estado</th>
+              <th class="actions">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of propietarios()">
+              <td>
+                <div class="cell-main">
+                  <div class="title">{{ u.nombres }} {{ u.apellidos }}</div>
+                  <div class="muted">{{ u.username || '-' }}</div>
+                </div>
+              </td>
+              <td>{{ u.correo || '-' }}</td>
+              <td>{{ u.telefono || '-' }}</td>
+              <td>
+                <span class="badge" [class.ok]="u.estado" [class.bad]="!u.estado">
+                  {{ u.estado ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="actions">
+                <button mat-stroked-button color="accent" (click)="openEdit(u)">
+                  <mat-icon fontIcon="edit"></mat-icon>
+                  Editar
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="!loading() && propietarios().length === 0">
+              <td colspan="5" class="empty">No hay propietarios para mostrar.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Add Modal -->
+    <div class="modal" *ngIf="showAdd()">
+      <div class="modal-content">
+        <h3 id="add-owner-title">Nuevo propietario</h3>
+        <form
+          [formGroup]="addForm"
+          (ngSubmit)="submitAdd()"
+          class="accessible-form"
+          aria-labelledby="add-owner-title"
+        >
+          <fieldset class="form-section">
+            <legend>Datos del propietario</legend>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Nombre</mat-label>
+                <input matInput formControlName="nombre" required />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Apellido</mat-label>
+                <input matInput formControlName="apellido" required />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Correo</mat-label>
+                <input matInput type="email" formControlName="email" required />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Teléfono</mat-label>
+                <input matInput formControlName="telefono" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Rol</mat-label>
+                <input matInput formControlName="rol" [disabled]="true" />
+              </mat-form-field>
+            </div>
+          </fieldset>
+          <p class="muted info-hint">
+            La contraseña será establecida por el propietario usando “¿Olvidaste tu contraseña?” en el inicio de sesión.
+          </p>
+          <div class="form-actions">
+            <button type="button" mat-stroked-button (click)="showAdd.set(false)">Cancelar</button>
+            <button type="submit" mat-raised-button color="primary" [disabled]="addForm.invalid || loading()">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" *ngIf="showEdit()">
+      <div class="modal-content">
+        <h3 id="edit-owner-title">Ver / Editar propietario</h3>
+        <form
+          [formGroup]="editForm"
+          (ngSubmit)="submitEdit()"
+          class="accessible-form"
+          aria-labelledby="edit-owner-title"
+        >
+          <fieldset class="form-section">
+            <legend>Datos del propietario</legend>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Nombre</mat-label>
+                <input matInput formControlName="nombre" required />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Apellido</mat-label>
+                <input matInput formControlName="apellido" required />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Correo</mat-label>
+                <input matInput type="email" formControlName="email" required />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Teléfono</mat-label>
+                <input matInput formControlName="telefono" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Estado</mat-label>
+                <mat-select formControlName="estado">
+                  <mat-option [value]="true">Activo</mat-option>
+                  <mat-option [value]="false">Inactivo</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Rol</mat-label>
+                <input matInput formControlName="rol" [disabled]="true" />
+              </mat-form-field>
+            </div>
+          </fieldset>
+          <div class="form-actions">
+            <button type="button" mat-stroked-button (click)="closeEdit()">Cancelar</button>
+            <button type="submit" mat-raised-button color="primary" [disabled]="editForm.invalid || loading()">
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>

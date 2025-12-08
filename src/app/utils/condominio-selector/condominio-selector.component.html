@@ -1,0 +1,30 @@
+<ng-container *ngIf="visible()">
+  <div class="condo-selector" [class.loading]="loading()">
+    <div class="condo-label">
+      <mat-icon aria-hidden="true">apartment</mat-icon>
+      <div class="label-text">
+        <span class="eyebrow">Condominio actual</span>
+        <strong>{{ condominio()?.nombre || 'Selecciona un condominio' }}</strong>
+      </div>
+    </div>
+
+    <div class="condo-control" *ngIf="condominios().length; else emptyList">
+      <mat-form-field appearance="outline" class="condo-field">
+        <mat-select
+          [value]="seleccionado()"
+          (selectionChange)="onChange($event.value)"
+          [disabled]="loading()"
+          aria-label="Seleccionar condominio actual"
+        >
+          <mat-option *ngFor="let c of condominios()" [value]="c.id">
+            {{ c.nombre || 'Sin nombre' }} <span class="option-sub" *ngIf="c.direccion"> — {{ c.direccion }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <ng-template #emptyList>
+      <span class="muted">Sin condominios asignados.</span>
+    </ng-template>
+  </div>
+</ng-container>

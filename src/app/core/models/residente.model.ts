@@ -1,5 +1,3 @@
-import { UnidadDTO } from './unidad.model';
-
 export type RolUsuario = 'ADMIN' | 'RESIDENTE' | 'DUEÑO';
 
 export interface UsuarioDTO {
@@ -11,14 +9,25 @@ export interface UsuarioDTO {
   telefono?: string;
   correo?: string;
   estado?: boolean;
+  activo?: boolean;
 }
 
 export interface ResidenteRespuestaDTO {
-  id_Cliente?: number;
+  id?: number;
+  id_Cliente?: number; // compatibilidad con back anterior
   telefono?: string;
   cedula?: string;
+  usuarioId?: number | null;
   usuario?: UsuarioDTO | null;
-  unidad?: UnidadDTO | null;
+  usuarioNombre?: string | null;
+  usuarioApellido?: string | null;
+  usuarioEmail?: string | null;
+  usuarioRol?: RolUsuario | null;
+  usuarioEstado?: boolean | null;
+  usuarioActivo?: boolean | null;
+  avatarUrl?: string | null;
+  condominioId?: number | null;
+  condominioNombre?: string | null;
 }
 
 export interface ResidenteDTO {
@@ -27,6 +36,6 @@ export interface ResidenteDTO {
   email: string;
   telefono?: string;
   cedula: string;
-  idUnidad?: number | null;
+  usuarioId?: number | null;
+  condominioId: number;
 }
-

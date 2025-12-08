@@ -1,14 +1,54 @@
-﻿<aside class="sidebar">
-  <div class="brand">
-    <div class="brand-logo"><img src="/assets/logo.png" alt="ResiSmart" /></div>
-    <div class="brand-text">
-      <div class="brand-title">{{ title }}</div>
-      <div class="brand-sub" *ngIf="subtitle as sub">{{ sub }}</div>
+<aside class="sidebar">
+  <div class="condo-selector-wrapper">
+    <div
+      class="brand brand-cover"
+      [ngStyle]="{ 'background-image': 'url(' + condominioPortadaUrl + ')' }"
+      tabindex="0"
+      (keydown.enter)="toggleCondoSelector($event)"
+      (keydown.space)="toggleCondoSelector($event)"
+    >
+      <div class="brand-overlay"></div>
+      <div class="brand-body" (click)="toggleCondoSelector($event)">
+        <div class="brand-logo"><img [src]="condominioLogoUrl" [alt]="condominioNombre" /></div>
+        <div class="brand-text">
+          <div class="brand-title">{{ condominioNombre }}</div>
+          <div class="brand-sub">{{ condominioSubtitle }}</div>
+        </div>
+        <button class="brand-toggle" aria-label="Cambiar condominio" type="button" *ngIf="canSwitch()">
+          <mat-icon>{{ showCondoSelector ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="condo-dropdown-panel" *ngIf="showCondoSelector && canSwitch()">
+      <div class="condo-picker" *ngIf="condominios().length; else noCondo">
+        <button
+          class="condo-item"
+          type="button"
+          *ngFor="let c of condominios(); trackBy: trackById"
+          [class.active]="c.id === condominioActual()?.id"
+          (click)="selectCondominio(c.id)"
+        >
+          <div class="condo-thumb">
+            <img [src]="condominioLogo(c)" [alt]="c.nombre || 'Condominio'" />
+          </div>
+          <div class="condo-text">
+            <div class="condo-name">{{ c.nombre || 'Condominio' }}</div>
+            <div class="condo-sub">{{ c.direccion || 'Sin dirección' }}</div>
+          </div>
+          <span class="badge" *ngIf="c.id === condominioActual()?.id">Actual</span>
+        </button>
+      </div>
+      <ng-template #noCondo>
+        <div class="condo-empty">Sin condominios disponibles.</div>
+      </ng-template>
     </div>
   </div>
 
   <div class="user" *ngIf="(user$ | async) as st">
-    <div class="avatar">{{ (st.profile?.nombres || '?').slice(0,1) }}</div>
+    <div class="avatar">
+      <img [src]="avatarUrl" alt="Avatar" class="sidebar-avatar" />
+    </div>
     <div class="info">
       <div class="name">{{ st.profile?.nombres }} {{ st.profile?.apellidos }}</div>
       <div class="email">{{ st.profile?.email }}</div>
@@ -19,10 +59,7 @@
     <a *ngFor="let item of navItems" class="nav-link" [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
       <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
       <span>{{ item.label }}</span>
-      <span
-        class="nav-badge"
-        *ngIf="item.label === 'Avisos' && avisosFacade.unreadCount()"
-      >
+      <span class="nav-badge" *ngIf="item.label === 'Avisos' && avisosFacade.unreadCount()">
         {{ avisosFacade.unreadCount() }}
       </span>
     </a>
@@ -33,7 +70,3 @@
     Cerrar Sesion
   </button>
 </aside>
-
-
-
-

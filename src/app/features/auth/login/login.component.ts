@@ -1,5 +1,5 @@
 ﻿import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { UtilsModule } from '../../../utils/utils.module';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
@@ -9,7 +9,7 @@ import { ToastService } from '../../../core/services/toast.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [UtilsModule],
+  imports: [UtilsModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -106,6 +106,5 @@ export class LoginComponent {
     return 'No se pudo iniciar sesion. Intentalo de nuevo.';
   }
 }
-
 
 

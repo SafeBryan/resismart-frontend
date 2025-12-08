@@ -1,2 +1,3 @@
 <router-outlet />
 <app-toast-container />
+<app-loading-overlay *ngIf="loading$ | async" [fullscreen]="true" message="Procesando..."></app-loading-overlay>

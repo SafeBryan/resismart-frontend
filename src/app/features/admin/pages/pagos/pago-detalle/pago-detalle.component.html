@@ -1,0 +1,150 @@
+<div class="layout">
+  <app-sidebar></app-sidebar>
+  <main class="content">
+
+    <div class="page-header">
+      <div>
+        <p class="eyebrow">Detalle de pago</p>
+        <h1>Orden #{{ detalle()?.id || '-' }}</h1>
+        <p class="muted">Contrato #{{ detalle()?.contratoId || 'N/D' }} · Inquilino: {{ detalle()?.inquilinoNombre || 'N/D' }}</p>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" (click)="back()">Volver</button>
+      </div>
+    </div>
+
+    <div *ngIf="error()" class="error">{{ error() }}</div>
+
+    <section class="kpi-grid" *ngIf="detalle()">
+      <article class="kpi-card tone-blue">
+        <p class="kpi-label">Monto total</p>
+        <p class="kpi-value">{{ formatCurrency(detalle()?.total ?? detalle()?.montoBase) }}</p>
+        <p class="muted">Base {{ formatCurrency(detalle()?.montoBase) }} + Mora {{ formatCurrency(detalle()?.mora) }}</p>
+      </article>
+      <article class="kpi-card tone-slate">
+        <p class="kpi-label">Saldo pendiente</p>
+        <p class="kpi-value">{{ formatCurrency(detalle()?.saldoPendiente) }}</p>
+        <span [class]="getEstadoClase()">{{ detalle()?.estado }}</span>
+        <p class="muted tiny">Mora actual: {{ formatCurrency(detalle()?.mora) }}</p>
+      </article>
+      <article class="kpi-card tone-amber">
+        <p class="kpi-label">Periodo</p>
+        <p class="kpi-value">{{ formatPeriodo(detalle()?.periodo) }}</p>
+        <p class="muted">Vence {{ formatDate(detalle()?.fechaVencimiento) }}</p>
+      </article>
+    </section>
+
+    <section class="card" *ngIf="detalle()">
+      <div class="section-header">
+        <h2>Contrato e inquilino</h2>
+      </div>
+      <div class="meta-grid">
+        <div>
+          <p class="muted">Contrato</p>
+          <p class="strong">#{{ detalle()?.contratoId || 'N/D' }}</p>
+        </div>
+        <div>
+          <p class="muted">Unidad</p>
+          <p class="strong">{{ detalle()?.unidad || 'N/D' }}</p>
+        </div>
+        <div>
+          <p class="muted">Condominio</p>
+          <p class="strong">{{ detalle()?.condominio || 'N/D' }}</p>
+        </div>
+        <div>
+          <p class="muted">Inquilino</p>
+          <p class="strong">{{ detalle()?.inquilinoNombre || 'N/D' }}</p>
+          <p class="muted tiny">{{ detalle()?.inquilinoCorreo }}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" *ngIf="detalle()">
+      <div class="section-header">
+        <h2>Montos y estado</h2>
+      </div>
+      <div class="meta-grid">
+        <div>
+          <p class="muted">Monto base</p>
+          <p class="strong">{{ formatCurrency(detalle()?.montoBase) }}</p>
+        </div>
+        <div>
+          <p class="muted">Mora actual</p>
+          <p class="strong warning-text">{{ formatCurrency(detalle()?.mora) }}</p>
+        </div>
+        <div>
+          <p class="muted">Saldo pendiente</p>
+          <p class="strong">{{ formatCurrency(detalle()?.saldoPendiente) }}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <h2>Transacciones</h2>
+      </div>
+      <div class="table">
+        <div class="table-head">
+          <div>Fecha</div>
+          <div>Monto</div>
+          <div>Método</div>
+          <div>Estado</div>
+          <div>Referencia</div>
+          <div>Notas</div>
+          <div *ngIf="puedeGestionar()">Acciones</div>
+          <div>Comprobante</div>
+        </div>
+        <div class="table-row" *ngFor="let tx of transacciones()">
+          <div>{{ formatDate(tx.fechaPago) }}</div>
+          <div class="strong">{{ formatCurrency(tx.monto) }}</div>
+          <div>{{ tx.metodoPago || 'N/D' }}</div>
+          <div><span [class]="estadoTxClase(tx.estado)">{{ tx.estado }}</span></div>
+          <div>{{ tx.referencia || '-' }}</div>
+          <div class="muted tiny">
+            <div *ngIf="tx.motivoRechazo">Motivo: {{ tx.motivoRechazo }}</div>
+            <div *ngIf="tx.fechaAprobacion">Aprobado: {{ formatDate(tx.fechaAprobacion) }}</div>
+            <div *ngIf="tx.fechaRechazo">Rechazado: {{ formatDate(tx.fechaRechazo) }}</div>
+          </div>
+          <div class="actions" *ngIf="puedeGestionar()">
+            <ng-container *ngIf="tx.estado === 'PENDIENTE'; else noActions">
+              <button class="btn success" (click)="openAprobar(tx)">Aprobar</button>
+              <button class="btn danger" (click)="openRechazar(tx)">Rechazar</button>
+            </ng-container>
+            <ng-template #noActions>
+              <span class="muted">-</span>
+            </ng-template>
+          </div>
+          <div>
+            <a *ngIf="comprobanteUrl(tx); else noComp" [href]="comprobanteUrl(tx)" target="_blank" rel="noreferrer" class="link">Ver</a>
+            <ng-template #noComp><span class="muted">-</span></ng-template>
+          </div>
+        </div>
+        <div class="empty" *ngIf="!transacciones().length">Sin transacciones.</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" *ngIf="modalAccion().tx">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>{{ modalAccion().modo === 'APROBAR' ? 'Aprobar pago' : 'Rechazar pago' }}</h3>
+      <button class="icon-button" (click)="closeModal()">&times;</button>
+    </div>
+    <p class="muted">
+      Transaccion #{{ modalAccion().tx?.id }} · Orden #{{ modalAccion().tx?.ordenPago?.id ?? detalle()?.id }} ·
+      {{ formatCurrency(modalAccion().tx?.monto) }}
+    </p>
+
+    <div *ngIf="modalAccion().modo === 'RECHAZAR'" class="field">
+      <label>Motivo</label>
+      <textarea rows="3" [ngModel]="rechazoMotivo()" (ngModelChange)="rechazoMotivo.set($event)" placeholder="Describe el motivo del rechazo"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn ghost" (click)="closeModal()">Cancelar</button>
+      <button class="btn success" *ngIf="modalAccion().modo === 'APROBAR'" (click)="confirmarAccion()">Confirmar</button>
+      <button class="btn danger" *ngIf="modalAccion().modo === 'RECHAZAR'" (click)="confirmarAccion()">Rechazar</button>
+    </div>
+  </div>
+</div>

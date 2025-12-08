@@ -1,0 +1,16 @@
+.ui-empty {
+  padding: var(--spacing-lg, 16px);
+  text-align: center;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.ui-empty .title {
+  margin: 0;
+  font-weight: var(--font-weight-bold, 700);
+  color: var(--color-text, #0f172a);
+}
+
+.ui-empty .message {
+  margin: var(--spacing-xs, 4px) 0 0;
+  font-size: var(--font-size-md, 14px);
+}

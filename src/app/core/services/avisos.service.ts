@@ -44,6 +44,18 @@ export class AvisosService {
       .pipe(map((list) => list.slice(0, limit)));
   }
 
+  crearAviso(request: AvisoRequest): Observable<AvisoPayload> {
+    return this.http.post<AvisoPayload>(`${API}/Avisos`, request);
+  }
+
+  crearPrivado(request: AvisoRequest): Observable<AvisoPayload> {
+    return this.http.post<AvisoPayload>(`${API}/Avisos/privado`, request);
+  }
+
+  responder(avisoId: number, request: AvisoRequest): Observable<AvisoPayload> {
+    return this.http.post<AvisoPayload>(`${API}/Avisos/${avisoId}/responder`, request);
+  }
+
   /**
    * Crea un WebSocketSubject conectado a ws://.../ws/avisos con el JWT actual.
    * El backend valida el token leyendo el query param `token`, por lo que

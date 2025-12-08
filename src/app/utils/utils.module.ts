@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { AvisosBellComponent } from './avisos-bell/avisos-bell.component';
+import { CondominioSelectorComponent } from './condominio-selector/condominio-selector.component';
 
 @NgModule({
   imports: [
@@ -19,6 +20,7 @@ import { AvisosBellComponent } from './avisos-bell/avisos-bell.component';
     InputComponent,
     SidebarComponent,
     AvisosBellComponent,
+    CondominioSelectorComponent,
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
@@ -30,6 +32,7 @@ import { AvisosBellComponent } from './avisos-bell/avisos-bell.component';
     InputComponent,
     SidebarComponent,
     AvisosBellComponent,
+    CondominioSelectorComponent,
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,

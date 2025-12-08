@@ -3,148 +3,171 @@
 
   <main class="content">
     <div class="content-inner">
-      <!-- NUEVO CONTENEDOR -->
-      <header class="header">
-        <h1>Dashboard Administrativo</h1>
-        <p class="muted">Resumen general del sistema ResiSmart</p>
 
-        <div class="actions">
-          <app-button label="Ver Reportes" variant="secondary"></app-button>
-          <app-button
-            label="Refrescar"
-            variant="secondary"
-            (click)="refrescar()"
-          ></app-button>
-          <app-button label="Acción Rápida" variant="primary"></app-button>
-          <app-avisos-bell class="bell-anchor"></app-avisos-bell>
-        </div>
-
-        <div *ngIf="loading()" class="muted loading-hint">
-          Cargando datos...
-        </div>
-      </header>
-
-      <!-- KPIs (con colores) -->
-      <section class="grid kpis">
-        <div class="box kpi info">
-          <div class="title">Total Órdenes</div>
-          <div class="value">{{ kpis().totalOrdenes }}</div>
-        </div>
-        <div class="box kpi warn">
-          <div class="title">Pagos Pendientes</div>
-          <div class="value">{{ kpis().pendientes }}</div>
-        </div>
-        <div class="box kpi success">
-          <div class="title">Pagadas</div>
-          <div class="value">{{ kpis().pagadas }}</div>
-        </div>
-        <div class="box kpi indigo">
-          <div class="title">Con Comprobante</div>
-          <div class="value">{{ kpis().conComprobante }}</div>
-        </div>
-      </section>
-
-      <!-- Panels -->
-      <section class="grid panels">
-        <!-- Estado de Pagos (donut pequeño) -->
-        <div class="panel">
-          <div class="panel-head">
-            <h3>Estado de Pagos</h3>
-            <span class="chip">Resumen</span>
+      <ng-container *ngIf="condominioId(); else emptyState">
+        <header class="hero hero-with-cover">
+          <div class="hero-cover" [style.background-image]="'url(' + getPortadaUrl() + ')'"></div>
+          <div class="hero-body">
+            <div class="logo-badge">
+              <img [src]="getLogoUrl()" alt="Logo del condominio" />
+            </div>
+            <div class="hero-text">
+              <p class="eyebrow">Condominio seleccionado</p>
+              <h1>{{ condominio()?.nombre || 'Condominio' }}</h1>
+              <p class="muted">{{ condominio()?.direccion || 'Sin dirección registrada' }}</p>
+              <div class="hero-meta">
+                <span><mat-icon aria-hidden="true">mail</mat-icon>{{ condominio()?.correo || 'Sin correo' }}</span>
+                <span><mat-icon aria-hidden="true">call</mat-icon>{{ condominio()?.telefono || 'Sin teléfono' }}</span>
+              </div>
+            </div>
           </div>
-          <div class="chart-sm">
-            <canvas
-              baseChart
-              [data]="estadosData"
-              [options]="estadosOpts"
-              [type]="'doughnut'"
-            ></canvas>
-          </div>
-          <ul class="stat-list compact">
-            <li>
-              <span>Total</span><strong>{{ kpis().totalOrdenes }}</strong>
-            </li>
-            <li>
-              <span class="pill warn">Pendientes</span
-              ><strong>{{ kpis().pendientes }}</strong>
-            </li>
-            <li>
-              <span class="pill ok">Pagadas</span
-              ><strong>{{ kpis().pagadas }}</strong>
-            </li>
-            <li>
-              <span class="pill danger">Vencidas</span
-              ><strong>{{ kpis().vencidas }}</strong>
-            </li>
-            <li>
-              <span class="pill danger">En Mora</span
-              ><strong>{{ kpis().enMora }}</strong>
-            </li>
-          </ul>
-        </div>
+        </header>
 
-        <!-- Ingresos Mensuales (barra pequeña) -->
-        <div class="panel">
-          <div class="panel-head">
-            <h3>Ingresos Mensuales</h3>
-            <span class="chip muted">Actualizado</span>
+        <section class="section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">KPIs</p>
+              <h2>Salud del mes</h2>
+            </div>
+            <span *ngIf="loading()" class="badge muted">Cargando...</span>
           </div>
-          <div class="chart-md">
-            <canvas
-              baseChart
-              [data]="ingresosData"
-              [options]="ingresosOpts"
-              [type]="'bar'"
-            ></canvas>
+          <div class="kpi-grid">
+            <article class="kpi-card tone-slate">
+              <div class="kpi-meta"><mat-icon aria-hidden="true">home_work</mat-icon><span>Unidades</span></div>
+              <div class="kpi-value">{{ unidades().total }}</div>
+              <p class="kpi-hint">{{ unidades().ocupadas }} ocupadas / {{ unidades().libres }} libres</p>
+            </article>
+            <article class="kpi-card tone-blue">
+              <div class="kpi-meta"><mat-icon aria-hidden="true">payments</mat-icon><span>Ingresos del mes</span></div>
+              <div class="kpi-value">{{ kpis().ingresosMes | currency : 'USD' : 'symbol' : '1.0-0' }}</div>
+              <p class="kpi-hint">Basado en pagos completados</p>
+            </article>
+            <article class="kpi-card tone-rose">
+              <div class="kpi-meta"><mat-icon aria-hidden="true">warning_amber</mat-icon><span>Deuda pendiente</span></div>
+              <div class="kpi-value">{{ kpis().deuda | currency : 'USD' : 'symbol' : '1.0-0' }}</div>
+              <p class="kpi-hint">Pendientes, vencidas y en mora</p>
+            </article>
           </div>
-          <p class="muted tiny-note">Calculado desde órdenes pagadas.</p>
-        </div>
+        </section>
 
-        <!-- Actividad Reciente -->
-        <div class="panel">
-          <div class="panel-head">
-            <h3>Actividad Reciente</h3>
-            <span class="chip muted" *ngIf="actividades()?.length">
-              {{ actividades().length }} eventos
-            </span>
-          </div>
+        <section class="section grid-two">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Próximos pagos</p>
+                <h3>Órdenes por vencer</h3>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr><th>Orden</th><th>Monto</th><th>Vence</th><th>Estado</th></tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let pago of proximosPagos(); trackBy: trackByPago">
+                    <td>#{{ pago.numero || pago.id }}</td>
+                    <td>{{ (pago.total || 0) | currency : 'USD' : 'symbol' : '1.0-0' }}</td>
+                    <td>{{ pago.fechaVencimiento | date : 'dd MMM' }}</td>
+                    <td><span class="pill warn">Pendiente</span></td>
+                  </tr>
+                  <tr *ngIf="!proximosPagos().length">
+                    <td colspan="4" class="muted empty">No hay pagos próximos.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
 
-          <ng-container *ngIf="actividades()?.length; else noActividad">
-            <ul class="recent-list">
-              <li
-                *ngFor="let a of actividades(); trackBy: trackByActividad"
-                class="recent-item"
-              >
-                <div class="row">
-                  <span class="pill">{{ a.accion || "EVENTO" }}</span>
-                  <strong>#DOC {{ a.documentoId }}</strong>
-                  <span class="muted user">{{ a.usuario || "sistema" }}</span>
-                </div>
-                <div class="row muted tiny">
-                  {{ a.fecha | date : "short" }}
-                </div>
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Pagos recientes</p>
+                <h3>Últimas transacciones</h3>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr><th>Orden</th><th>Monto</th><th>Fecha</th><th>Estado</th></tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let pago of pagosRecientes(); trackBy: trackByPago">
+                    <td>#{{ pago.numero || pago.id }}</td>
+                    <td>{{ (pago.total || 0) | currency : 'USD' : 'symbol' : '1.0-0' }}</td>
+                    <td>{{ (pago.fechaEmision || pago.fechaVencimiento) | date : 'dd MMM' }}</td>
+                    <td><span class="pill ok">Pagada</span></td>
+                  </tr>
+                  <tr *ngIf="!pagosRecientes().length">
+                    <td colspan="4" class="muted empty">Sin pagos registrados.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section class="section grid-two">
+          <article class="panel chart-card">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Ingresos mensuales</p>
+                <h3>Evolución</h3>
+              </div>
+              <span class="badge muted">USD</span>
+            </div>
+            <div class="chart-md">
+              <canvas
+                baseChart
+                [data]="ingresosData"
+                [options]="ingresosOpts"
+                [type]="'bar'"
+              ></canvas>
+            </div>
+            <p class="muted tiny-note">Serie basada en órdenes pagadas.</p>
+          </article>
+
+          <article class="panel chart-card">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Estado de pagos</p>
+                <h3>Distribución</h3>
+              </div>
+            </div>
+            <div class="chart-sm">
+              <canvas
+                baseChart
+                [data]="estadosData"
+                [options]="estadosOpts"
+                [type]="'doughnut'"
+              ></canvas>
+            </div>
+            <ul class="stat-list compact">
+              <li>
+                <span>Total</span><strong>{{ (estadosData.datasets[0].data[0] || 0) + (estadosData.datasets[0].data[1] || 0) + (estadosData.datasets[0].data[2] || 0) + (estadosData.datasets[0].data[3] || 0) }}</strong>
+              </li>
+              <li>
+                <span class="pill warn">Pendientes</span><strong>{{ estadosData.datasets[0].data[0] || 0 }}</strong>
+              </li>
+              <li>
+                <span class="pill ok">Pagadas</span><strong>{{ estadosData.datasets[0].data[1] || 0 }}</strong>
+              </li>
+              <li>
+                <span class="pill danger">Vencidas</span><strong>{{ estadosData.datasets[0].data[2] || 0 }}</strong>
+              </li>
+              <li>
+                <span class="pill danger">En Mora</span><strong>{{ estadosData.datasets[0].data[3] || 0 }}</strong>
               </li>
             </ul>
-          </ng-container>
+          </article>
+        </section>
+      </ng-container>
 
-          <ng-template #noActividad>
-            <p class="muted">Sin actividad reciente.</p>
-          </ng-template>
+      <ng-template #emptyState>
+        <div class="panel empty-state">
+          <p class="eyebrow">Sin condominio</p>
+          <h3>Selecciona un condominio para ver el resumen</h3>
         </div>
-
-        <!-- Acciones Rápidas -->
-        <div class="panel">
-          <div class="panel-head"><h3>Acciones Rápidas</h3></div>
-          <div class="quick-actions">
-            <app-button label="Generar Orden" variant="secondary"></app-button>
-            <app-button
-              label="Subir Comprobante"
-              variant="secondary"
-            ></app-button>
-          </div>
-        </div>
-      </section>
+      </ng-template>
     </div>
-    <!-- /content-inner -->
   </main>
 </div>

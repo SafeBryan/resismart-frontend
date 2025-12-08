@@ -1,7 +1,320 @@
 <div class="layout">
   <app-sidebar></app-sidebar>
   <main class="content">
-    <h2>Página Órdenes de Pago</h2>
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Finanzas</p>
+        <h1>Pagos</h1>
+        <p class="muted">Revisa &oacute;rdenes de pago, pagos registrados y estado de morosidad por condominio.</p>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" (click)="onRefresh()">Actualizar</button>
+      </div>
+    </header>
+
+    <section class="kpi-grid">
+      <article class="kpi-card">
+        <div class="kpi-icon success"><mat-icon>layers</mat-icon></div>
+        <div>
+          <p class="kpi-label">&Oacute;rdenes mes actual</p>
+          <p class="kpi-value">{{ kpiMesTotal() }}</p>
+        </div>
+      </article>
+      <article class="kpi-card">
+        <div class="kpi-icon warning"><mat-icon>schedule</mat-icon></div>
+        <div>
+          <p class="kpi-label">Pendiente mes</p>
+          <p class="kpi-value">{{ formatCurrency(kpiMesPendiente()) }}</p>
+        </div>
+      </article>
+      <article class="kpi-card">
+        <div class="kpi-icon info"><mat-icon>payments</mat-icon></div>
+        <div>
+          <p class="kpi-label">Cobrado mes</p>
+          <p class="kpi-value">{{ formatCurrency(kpiMesCobrado()) }}</p>
+        </div>
+      </article>
+      <article class="kpi-card">
+        <div class="kpi-icon danger"><mat-icon>warning_amber</mat-icon></div>
+        <div>
+          <p class="kpi-label">&Oacute;rdenes en mora</p>
+          <p class="kpi-value">{{ kpiEnMora() }}</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="card table-card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Mes actual</p>
+          <h2>&Oacute;rdenes de pago de este mes</h2>
+        </div>
+        <div class="section-actions">
+          <span *ngIf="loadingOrdenes()" class="pill">Cargando...</span>
+        </div>
+      </div>
+      <div class="table" *ngIf="!loadingOrdenes()">
+        <div class="table-head">
+          <div>Inquilino</div>
+          <div>Unidad</div>
+          <div>Periodo</div>
+          <div>Monto base</div>
+          <div>Mora</div>
+          <div>Total c/mora</div>
+          <div>Saldo</div>
+          <div>Estado</div>
+          <div>Acciones</div>
+        </div>
+        <div class="table-row" *ngFor="let orden of ordenesMesView()">
+          <div>
+            <div class="strong">{{ orden.inquilino || 'Sin inquilino' }}</div>
+            <div class="muted small">Contrato #{{ orden.contratoId }}</div>
+          </div>
+          <div>
+            <div class="strong">{{ orden.unidad || 'Sin unidad' }}</div>
+            <div class="muted small">{{ orden.condominio || '-' }}</div>
+          </div>
+          <div>
+            <div class="strong">{{ formatPeriodo(orden.periodo) }}</div>
+            <div class="muted small">Vence {{ orden.fechaVencimiento ? formatDate(orden.fechaVencimiento) : 'N/D' }}</div>
+          </div>
+          <div>
+            <div class="strong">{{ formatCurrency(orden.montoBase ?? orden.monto ?? 0) }}</div>
+            <div class="muted tiny">Base</div>
+          </div>
+          <div class="strong">{{ formatCurrency(orden.mora ?? 0) }}</div>
+          <div class="strong">{{ formatCurrency(orden.totalConMora ?? (orden.monto ?? 0)) }}</div>
+          <div>{{ saldoPendienteLabel(orden) }}</div>
+          <div>
+            <span [class]="estadoClase(orden.estado)">{{ orden.estado || 'N/D' }}</span>
+          </div>
+          <div class="actions">
+            <button class="btn ghost" (click)="openDetalle(orden.id)">Ver detalle</button>
+          </div>
+        </div>
+        <div class="empty" *ngIf="ordenesMesView().length === 0">No hay &oacute;rdenes para este mes.</div>
+      </div>
+    </section>
+
+    <section class="card filters-card">
+      <div class="filters-grid">
+        <div class="filter-item">
+          <label>Inquilino</label>
+          <select [ngModel]="inquilinoFilter()" (ngModelChange)="onInquilinoChange($event)">
+            <option *ngFor="let opt of inquilinosOptions()" [ngValue]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>Estado de la orden</label>
+          <select [ngModel]="estadoFilter()" (ngModelChange)="onEstadoChange($event)">
+            <option value="ALL">Todos</option>
+            <option value="PENDIENTE">Pendiente</option>
+            <option value="PAGADA">Pagada</option>
+            <option value="VENCIDA">Vencida</option>
+            <option value="EN_MORA">En mora</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>Desde</label>
+          <input type="date" [ngModel]="fromFilter()" (ngModelChange)="fromFilter.set($event); onFechaChange()" />
+        </div>
+        <div class="filter-item">
+          <label>Hasta</label>
+          <input type="date" [ngModel]="toFilter()" (ngModelChange)="toFilter.set($event); onFechaChange()" />
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn ghost" (click)="limpiarFiltros()">Limpiar filtros</button>
+        <button class="btn primary" (click)="aplicarFiltros()">Aplicar filtros</button>
+      </div>
+    </section>
+
+    <section class="card table-card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Hist&oacute;rico</p>
+          <h2>Hist&oacute;rico de &oacute;rdenes</h2>
+        </div>
+        <div class="section-actions">
+          <span *ngIf="loadingOrdenes()" class="pill">Cargando...</span>
+        </div>
+      </div>
+      <div *ngIf="error()" class="error">{{ error() }}</div>
+      <div class="table" *ngIf="!loadingOrdenes()">
+        <div class="table-head">
+          <div>Inquilino</div>
+          <div>Unidad</div>
+          <div>Periodo</div>
+          <div>Monto base</div>
+          <div>Mora</div>
+          <div>Total c/mora</div>
+          <div>Pagado</div>
+          <div>Saldo</div>
+          <div>Estado</div>
+          <div>Acciones</div>
+        </div>
+        <div class="table-row" *ngFor="let orden of ordenesView()">
+          <div>
+            <div class="strong">{{ orden.inquilino || 'Sin inquilino' }}</div>
+            <div class="muted small">Contrato #{{ orden.contratoId }}</div>
+          </div>
+          <div>
+            <div class="strong">{{ orden.unidad || 'Sin unidad' }}</div>
+            <div class="muted small">{{ orden.condominio || '-' }}</div>
+          </div>
+          <div>
+            <div class="strong">{{ formatPeriodo(orden.periodo) }}</div>
+            <div class="muted small">Vence {{ orden.fechaVencimiento ? formatDate(orden.fechaVencimiento) : 'N/D' }}</div>
+          </div>
+          <div>
+            <div class="strong">{{ formatCurrency(orden.montoBase ?? orden.monto ?? 0) }}</div>
+            <div class="muted tiny">Base</div>
+          </div>
+          <div class="strong">{{ formatCurrency(orden.mora ?? 0) }}</div>
+          <div class="strong">{{ formatCurrency(orden.totalConMora ?? (orden.monto ?? 0)) }}</div>
+          <div>{{ pagadoLabel(orden) }}</div>
+          <div>{{ saldoPendienteLabel(orden) }}</div>
+          <div>
+            <span [class]="estadoClase(orden.estado)">{{ orden.estado || 'N/D' }}</span>
+            <div class="muted small" *ngIf="orden.ultimaTransaccionEstado">Tx: {{ orden.ultimaTransaccionEstado }}</div>
+          </div>
+          <div class="actions">
+            <button class="btn ghost" (click)="openDetalle(orden.id)">Ver detalle</button>
+          </div>
+        </div>
+        <div class="empty" *ngIf="ordenesView().length === 0">No hay &oacute;rdenes con los filtros seleccionados.</div>
+      </div>
+    </section>
   </main>
 </div>
 
+<div class="detail-overlay" *ngIf="detalle()">
+  <div class="detail-modal">
+    <div class="drawer-header">
+      <div>
+        <p class="eyebrow">Orden #{{ detalle()?.id }}</p>
+        <h3>{{ detalle()?.inquilinoNombre || 'Detalle de orden' }}</h3>
+        <p class="muted">Contrato #{{ detalle()?.contratoId || 'N/D' }} &bull; Unidad {{ detalle()?.unidad || 'N/D' }}</p>
+      </div>
+      <button class="icon-button" (click)="closeDetalle()">&times;</button>
+    </div>
+
+    <div *ngIf="detalleError()" class="error">{{ detalleError() }}</div>
+    <div *ngIf="loadingDetalle()" class="loading-row">Cargando detalle...</div>
+
+    <div class="drawer-body" *ngIf="detalle()">
+      <div class="drawer-kpis">
+        <div class="mini-card">
+          <p class="label">Monto total</p>
+          <p class="value">{{ formatCurrency(detalle()?.total ?? detalle()?.montoBase) }}</p>
+          <p class="muted tiny">Incluye mora</p>
+        </div>
+        <div class="mini-card">
+          <p class="label">Saldo pendiente</p>
+          <p class="value">{{ formatCurrency(saldoDetalleConMora(detalle()) ?? 0) }}</p>
+          <span [class]="estadoClase(detalle()?.estado)" class="badge-inline">{{ detalle()?.estado }}</span>
+          <p class="muted tiny">Mora: {{ formatCurrency(detalle()?.mora ?? 0) }}</p>
+        </div>
+        <div class="mini-card">
+          <p class="label">Periodo</p>
+          <p class="value">{{ formatPeriodo(detalle()?.periodo) }}</p>
+          <p class="muted small">Vence {{ formatDate(detalle()?.fechaVencimiento) }}</p>
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div>
+          <p class="muted small">Condominio</p>
+          <p class="strong">{{ detalle()?.condominio || 'N/D' }}</p>
+        </div>
+        <div>
+          <p class="muted small">Unidad</p>
+          <p class="strong">{{ detalle()?.unidad || 'N/D' }}</p>
+        </div>
+        <div>
+          <p class="muted small">Inquilino</p>
+          <p class="strong">{{ detalle()?.inquilinoNombre || 'N/D' }}</p>
+          <p class="muted tiny">{{ detalle()?.inquilinoCorreo }}</p>
+        </div>
+        <div>
+          <p class="muted small">Contrato</p>
+          <p class="strong">#{{ detalle()?.contratoId || 'N/D' }}</p>
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div>
+          <p class="muted small">Monto base</p>
+          <p class="strong">{{ formatCurrency(detalle()?.montoBase ?? 0) }}</p>
+        </div>
+        <div>
+          <p class="muted small">Mora</p>
+          <p class="strong">{{ formatCurrency(detalle()?.mora ?? 0) }}</p>
+        </div>
+        <div>
+          <p class="muted small">Total c/mora</p>
+          <p class="strong">{{ formatCurrency(detalle()?.total ?? 0) }}</p>
+        </div>
+      </div>
+
+      <section class="transactions">
+        <div class="transactions-head">
+          <h4>Transacciones</h4>
+        </div>
+        <div class="tx-row" *ngFor="let tx of detalle()?.transacciones || []">
+          <div>
+            <p class="strong">{{ formatCurrency(tx.monto) }}</p>
+            <p class="muted tiny">{{ formatDate(tx.fechaPago) }}</p>
+          </div>
+          <div>
+            <p class="muted small">{{ tx.metodoPago || 'N/D' }}</p>
+            <p class="muted tiny">Ref: {{ tx.referencia || '-' }}</p>
+          </div>
+          <div>
+            <span [class]="txClase(tx.estado)">{{ tx.estado }}</span>
+            <p class="muted tiny" *ngIf="tx.motivoRechazo">Motivo: {{ tx.motivoRechazo }}</p>
+          </div>
+          <div>
+            <ng-container *ngIf="comprobanteUrls(tx).length; else noComp">
+              <a class="link pill-link" *ngFor="let url of comprobanteUrls(tx); let i = index" [href]="url" target="_blank" rel="noreferrer">
+                Comprobante {{ comprobanteUrls(tx).length > 1 ? i + 1 : '' }}
+              </a>
+            </ng-container>
+            <ng-template #noComp><span class="muted tiny">Sin comprobante</span></ng-template>
+          </div>
+          <div class="tx-actions" *ngIf="puedeAprobar">
+            <ng-container *ngIf="tx.estado === 'PENDIENTE'; else noTxActions">
+              <button class="btn success" (click)="openAprobar(tx)">Aprobar</button>
+              <button class="btn danger" (click)="openRechazar(tx)">Rechazar</button>
+            </ng-container>
+            <ng-template #noTxActions><span class="muted tiny">Sin acciones</span></ng-template>
+          </div>
+        </div>
+        <div class="empty" *ngIf="!detalle()?.transacciones?.length">Sin transacciones.</div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<app-ui-modal
+  [open]="!!modalAccion().tx"
+  [title]="modalAccion().modo === 'APROBAR' ? 'Aprobar pago' : 'Rechazar pago'"
+  size="sm"
+  (closed)="closeModal()"
+>
+  <p class="muted">
+    Transacci&oacute;n #{{ modalAccion().tx?.id }} &bull; Orden #{{ modalAccion().tx?.ordenPago?.id ?? detalle()?.id }} &bull;
+    {{ formatCurrency(modalAccion().tx?.monto) }}
+  </p>
+
+  <div *ngIf="modalAccion().modo === 'RECHAZAR'" class="field">
+    <label>Motivo</label>
+    <textarea rows="3" [ngModel]="rechazoMotivo()" (ngModelChange)="rechazoMotivo.set($event)" placeholder="Describe el motivo del rechazo"></textarea>
+  </div>
+
+  <div modal-footer class="modal-actions">
+    <app-ui-button variant="outline" (clicked)="closeModal()">Cancelar</app-ui-button>
+    <app-ui-button variant="primary" *ngIf="modalAccion().modo === 'APROBAR'" (clicked)="confirmarAccion()">Confirmar</app-ui-button>
+    <app-ui-button variant="danger" *ngIf="modalAccion().modo === 'RECHAZAR'" (clicked)="confirmarAccion()">Rechazar</app-ui-button>
+  </div>
+</app-ui-modal>

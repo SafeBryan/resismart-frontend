@@ -9,12 +9,15 @@ export const roleGuard: CanMatchFn = (route: Route, _segments: UrlSegment[]) => 
   const auth = inject(AuthService);
   const router = inject(Router);
   const allowed: string[] = (route.data as any)?.['roles'] ?? [];
+  const strictRoles = !!(route.data as any)?.['strictRoles'];
   const roleRaw = auth.getRole();
   const allowedNorm = new Set<RoleNorm>(allowed.map((r) => normalizeRole(r as any)));
 
-  // Equivalencia: ADMIN y OWNER se tratan como el mismo nivel de acceso
-  if (allowedNorm.has('ADMIN')) allowedNorm.add('OWNER');
-  if (allowedNorm.has('OWNER')) allowedNorm.add('ADMIN');
+  // Equivalencia: ADMIN y OWNER se tratan como el mismo nivel de acceso, salvo que se pida modo estricto
+  if (!strictRoles) {
+    if (allowedNorm.has('ADMIN')) allowedNorm.add('OWNER');
+    if (allowedNorm.has('OWNER')) allowedNorm.add('ADMIN');
+  }
 
   // Verifica el token contra el backend en cada cambio de ruta (forzado)
   return auth.validateToken(true).pipe(

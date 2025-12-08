@@ -1,0 +1,24 @@
+.ui-card {
+  background: var(--color-surface, #fff);
+  border-radius: var(--radius-md, 12px);
+  padding: var(--spacing-lg, 16px);
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-soft, 0 8px 24px rgba(15, 23, 42, 0.08));
+}
+
+.ui-card.bordered {
+  border-color: var(--color-border, #d5d9e2);
+}
+
+.ui-card.elevated {
+  box-shadow: var(--shadow-strong, 0 12px 30px rgba(15, 23, 42, 0.15));
+}
+
+.ui-card-header,
+.ui-card-footer {
+  padding-bottom: var(--spacing-md, 12px);
+}
+
+.ui-card-footer {
+  padding-top: var(--spacing-md, 12px);
+}

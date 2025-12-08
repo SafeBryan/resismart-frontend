@@ -1,4 +1,4 @@
-﻿<div class="layout">
+<div class="layout">
   <app-sidebar [nav]="residentNav" subtitle="Residente"></app-sidebar>
 
   <main class="content">
@@ -51,8 +51,28 @@
               <div class="acciones">
                 <app-button label="Ver detalle" variant="secondary" (clicked)="verDetalle(aviso)"></app-button>
                 <app-button label="Archivar" variant="secondary" (clicked)="archivar(aviso)"></app-button>
+                <app-button
+                  *ngIf="puedeResponder(aviso)"
+                  label="Responder"
+                  variant="primary"
+                  (clicked)="abrirRespuesta(aviso)"
+                ></app-button>
               </div>
             </footer>
+
+            <div class="reply" *ngIf="replyingId() === aviso.id">
+              <label>Tu respuesta</label>
+              <textarea
+                rows="3"
+                [ngModel]="replyMessage()"
+                (ngModelChange)="replyMessage.set($event)"
+                placeholder="Escribe tu respuesta al administrador"
+              ></textarea>
+              <div class="reply-actions">
+                <app-button label="Enviar respuesta" variant="primary" (clicked)="enviarRespuesta(aviso)"></app-button>
+                <button type="button" class="ghost" (click)="cancelarRespuesta()">Cancelar</button>
+              </div>
+            </div>
           </article>
         </ng-container>
 

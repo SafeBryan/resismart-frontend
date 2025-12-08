@@ -176,6 +176,18 @@ export class ResidentContextService {
     const usuario =
       params.usuario ?? this.extractUsuario(residente?.usuario ?? null) ?? null;
 
+    const residenteIdNorm =
+      this.normalizeId((residente as any)?.id_Cliente) ??
+      this.normalizeId((residente as any)?.idCliente) ??
+      this.normalizeId((residente as any)?.id);
+    const residenteNormalizado = residente
+      ? {
+          ...residente,
+          idCliente: (residente as any)?.idCliente ?? residenteIdNorm ?? null,
+          id_Cliente: (residente as any)?.id_Cliente ?? residenteIdNorm ?? null,
+        }
+      : null;
+
     const contratoActivo =
       contratos.find(
         (c) => (c.estado ?? "").toString().toUpperCase() === "ACTIVO"
@@ -183,21 +195,14 @@ export class ResidentContextService {
       contratos[0] ??
       null;
 
-    const condominioIds = this.extractCondominios(residente);
-    const unidadId = this.normalizeId(
-      (residente as any)?.unidad?.id ??
-        (residente as any)?.unidad?.idUnidad ??
-        null
-    );
-
     return {
       userId: params.userId ?? null,
       usuario,
-      residente,
+      residente: residenteNormalizado,
       contratos,
       contratoActivo,
-      condominioIds,
-      unidadId,
+      condominioIds: [],
+      unidadId: null,
       loading: false,
     };
   }
@@ -209,16 +214,9 @@ export class ResidentContextService {
   }
 
   private extractCondominios(
-    residente: ResidenteRespuestaDTO | null | undefined
+    _residente: ResidenteRespuestaDTO | null | undefined
   ): number[] {
-    if (!residente?.unidad) return [];
-    const unit: any = residente.unidad;
-    const condominioId =
-      unit?.idCondominio ??
-      unit?.condominioId ??
-      unit?.condominio?.id ??
-      unit?.condominio?.idCondominio ??
-      null;
-    return condominioId ? [Number(condominioId)] : [];
+    // La relación con condominio ahora se resuelve vía contratos, no desde residente.
+    return [];
   }
 }

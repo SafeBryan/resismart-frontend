@@ -1,6 +1,7 @@
 <div class="layout">
   <app-sidebar></app-sidebar>
   <main class="content">
+
     <div class="header">
       <div>
         <h1>Gestión de Usuarios</h1>
@@ -70,7 +71,7 @@
               <td>{{ u.telefono || '-' }}</td>
               <td class="actions">
                 <button mat-stroked-button color="accent" (click)="openEdit(u)"><mat-icon fontIcon="edit"></mat-icon> Editar</button>
-                <button mat-stroked-button color="warn" (click)="delete(u)"><mat-icon fontIcon="delete"></mat-icon> Eliminar</button>
+                <button *ngIf="!isAdmin()" mat-stroked-button color="warn" (click)="delete(u)"><mat-icon fontIcon="delete"></mat-icon> Eliminar</button>
               </td>
             </tr>
             <tr *ngIf="!loading() && pageData().length === 0">

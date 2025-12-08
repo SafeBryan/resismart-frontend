@@ -24,7 +24,6 @@
             </span>
           </button>
           <app-button label="Ver contratos" variant="secondary" [routerLink]="'/home/contratos'"></app-button>
-          <app-button label="Subir comprobante" variant="secondary" [routerLink]="'/home/comprobantes'"></app-button>
         </div>
 
         <div class="avisos-dropdown" *ngIf="avisosOpen" (click)="$event.stopPropagation()">
@@ -71,9 +70,7 @@
         <article class="card user-card" *ngIf="context() as ctx; else loadingCard">
           <div class="card-head">
             <h2>Datos del usuario</h2>
-            <span class="status" *ngIf="ctx.residente?.unidad?.numero as unidad">
-              Unidad {{ unidad }}
-            </span>
+            <span class="status" *ngIf="ctx.contratoActivo?.idUnidad as unidad">Unidad {{ unidad }}</span>
           </div>
           <ul class="details">
             <li>
@@ -216,9 +213,7 @@
           <ng-template #noDocs>
             <p class="muted">Sin documentos recientes para mostrar.</p>
           </ng-template>
-          <div class="card-actions">
-            <app-button label="Ver todo" variant="secondary" [routerLink]="'/home/comprobantes'"></app-button>
-          </div>
+          <div class="card-actions"></div>
         </article>
       </section>
     </div>

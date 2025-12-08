@@ -9,15 +9,15 @@
         <img src="/assets/logo.png" alt="ResiSmart" />
       </div>
       <h1 class="brand-title">ResiSmart</h1>
-      <p class="brand-subtitle">Sistema de gestión de condominios</p>
+      <p class="brand-subtitle">Sistema de gesti&oacute;n de condominios</p>
     </div>
 
     <div class="panel">
       <p class="panel-subtitle">Ingresa tus credenciales para acceder</p>
-      <h2 class="panel-title">Iniciar Sesión</h2>
+      <h2 class="panel-title">Iniciar Sesi&oacute;n</h2>
 
       <form class="form" (submit)="$event.preventDefault()">
-        <label class="input-label">Correo electrónico</label>
+        <label class="input-label">Correo electr&oacute;nico</label>
         <app-input
           placeholder="tu@email.com"
           icon="user"
@@ -25,9 +25,9 @@
           [(model)]="email"
         ></app-input>
 
-        <label class="input-label">Contraseña</label>
+        <label class="input-label">Contrase&ntilde;a</label>
         <app-input
-          placeholder="Tu contraseña"
+          placeholder="Tu contrase&ntilde;a"
           icon="lock"
           type="password"
           [(model)]="password"
@@ -35,7 +35,7 @@
 
         <div class="cta">
           <app-button
-            label="Iniciar Sesión"
+            label="Iniciar Sesi&oacute;n"
             variant="sky"
             [fullWidth]="true"
             (clicked)="goHome()"
@@ -44,8 +44,8 @@
       </form>
 
       <div class="panel-links">
-        <a class="link" href="#" (click)="$event.preventDefault()">¿Olvidaste tu contraseña?</a>
-        <a class="link" href="#" (click)="$event.preventDefault()">¿No tienes cuenta? Regístrate</a>
+        <a class="link" [routerLink]="'/forgot-password'">&iquest;Olvidaste tu contrase&ntilde;a?</a>
+        <a class="link" href="#" (click)="$event.preventDefault()">&iquest;No tienes cuenta? Reg&iacute;strate</a>
       </div>
     </div>
   </div>

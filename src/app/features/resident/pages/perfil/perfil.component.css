@@ -111,6 +111,42 @@ button[mat-flat-button] {
   height: 42px;
 }
 
+.avatar-panel {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.avatar-img {
+  width: 72px;
+  height: 72px;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.avatar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.btn-outline {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #888;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: inline-block;
+  background: transparent;
+  color: #444;
+}
+
+.btn-outline:hover {
+  border-color: #555;
+  color: #000;
+}
+
 @media (max-width: 1080px) {
   .layout {
     grid-template-columns: 220px 1fr;

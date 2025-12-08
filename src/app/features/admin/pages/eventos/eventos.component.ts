@@ -1,17 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, Injector, OnDestroy, OnInit, effect, inject, runInInjectionContext, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { UtilsModule } from '../../../../utils/utils.module';
 import { SidebarComponent } from '../../../../utils/sidebar/sidebar.component';
-import { CondominiosService } from '../../../../core/services/condominios.service';
 import { EventosService } from '../../../../core/services/eventos.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { AuthService } from '../../../../core/services/auth.service';
-import { CondominioResumenDTO } from '../../../../core/models/condominio.model';
 import { EventoCreateDTO, EventoDetalleDTO, EventoParticipanteDTO } from '../../../../core/models/evento.model';
 import { isOwner } from '../../../../core/utils/role.util';
+import { CondominioContextService } from '../../../../core/services/condominio-context.service';
 
 @Component({
   selector: 'app-admin-eventos',
@@ -21,15 +20,15 @@ import { isOwner } from '../../../../core/utils/role.util';
   styleUrl: './eventos.component.css',
 })
 export class EventosComponent implements OnInit, OnDestroy {
-  private readonly condominiosService = inject(CondominiosService);
   private readonly eventosService = inject(EventosService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
+  private readonly condCtx = inject(CondominioContextService);
   private readonly fb = inject(FormBuilder);
+  private readonly injector = inject(Injector);
   private readonly destroy$ = new Subject<void>();
 
-  readonly condominios = signal<CondominioResumenDTO[]>([]);
-  readonly selectedCondominioId = signal<number | null>(null);
+  readonly condominioId = signal<number | null>(this.condCtx.state().condominioActualId);
   readonly eventos = signal<EventoDetalleDTO[]>([]);
   readonly isOwnerUser = signal(isOwner(this.auth.getRole()));
   readonly loading = signal(false);
@@ -50,7 +49,9 @@ export class EventosComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.fetchCurrentUser();
-    this.loadCondominios();
+    this.condCtx.ensureLoaded().subscribe(() => {
+      runInInjectionContext(this.injector, () => this.watchCondominio());
+    });
   }
 
   ngOnDestroy(): void {
@@ -68,32 +69,28 @@ export class EventosComponent implements OnInit, OnDestroy {
       });
   }
 
-  private loadCondominios(): void {
-    this.condominiosService.list(0, 100, { ownerOnly: this.isOwnerUser() }).subscribe({
-      next: (page) => {
-        const list = page?.content ?? [];
-        this.condominios.set(list);
-        const initial = this.toNumericId(list[0]?.id) ?? null;
-        this.selectedCondominioId.set(initial);
-        if (initial) this.loadEventos(initial);
+  private watchCondominio(): void {
+    effect(
+      () => {
+        const state = this.condCtx.state();
+        const id = state.condominioActualId ?? null;
+        this.condominioId.set(id);
+        if (id) {
+          this.eventos.set([]);
+          this.loading.set(true);
+          this.loadEventos(id);
+        } else {
+          this.eventos.set([]);
+        }
       },
-      error: () => {
-        this.toast.error('No se pudieron cargar los condominios.');
-        this.condominios.set([]);
-      },
-    });
-  }
-
-  onSelectCondominio(id: number | string): void {
-    const numeric = this.toNumericId(id);
-    if (!numeric) return;
-    this.selectedCondominioId.set(numeric);
-    this.loadEventos(numeric);
+      { allowSignalWrites: true }
+    );
   }
 
   private loadEventos(id: number): void {
     if (!id) return;
     this.loading.set(true);
+    this.eventos.set([]);
     this.eventosService.listByCondominio(id).subscribe({
       next: (list) => this.eventos.set(list ?? []),
       error: () => {
@@ -140,9 +137,9 @@ export class EventosComponent implements OnInit, OnDestroy {
       this.form.markAllAsTouched();
       return;
     }
-    const condominioId = this.selectedCondominioId();
+    const condominioId = this.condominioId();
     if (!condominioId) {
-      this.toast.error('Selecciona un condominio.');
+      this.toast.error('Selecciona un condominio en el selector superior.');
       return;
     }
     const creator =

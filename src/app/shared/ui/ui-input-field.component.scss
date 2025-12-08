@@ -1,0 +1,46 @@
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 4px);
+  font-size: var(--font-size-md, 14px);
+  color: var(--color-text, #0f172a);
+}
+
+.ui-field-label {
+  font-weight: var(--font-weight-medium, 600);
+  font-size: var(--font-size-sm, 13px);
+}
+
+.ui-input {
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--color-border, #d5d9e2);
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #0f172a);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  min-height: 36px;
+}
+
+.ui-input:focus-visible {
+  outline: 3px solid rgba(29, 78, 216, 0.25);
+  outline-offset: 2px;
+  border-color: var(--color-primary, #1d4ed8);
+  box-shadow: 0 0 0 1px rgba(29, 78, 216, 0.2);
+}
+
+.ui-field.disabled .ui-input {
+  background: var(--color-bg-alt, #eef2f7);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.ui-field-hint {
+  color: var(--color-text-muted, #6b7280);
+  font-size: var(--font-size-sm, 13px);
+}
+
+.ui-field-error {
+  color: var(--color-danger, #dc2626);
+  font-size: var(--font-size-sm, 13px);
+  font-weight: var(--font-weight-medium, 600);
+}

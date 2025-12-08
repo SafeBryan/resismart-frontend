@@ -1,211 +1,293 @@
-import { Component, OnInit, signal, computed } from "@angular/core";
-import { Router } from "@angular/router";
-import { CommonModule } from "@angular/common";
-import { UtilsModule } from "../../../../utils/utils.module";
-
-// ✅ ng2-charts v5+ (standalone)
-import {
-  BaseChartDirective,
-  provideCharts,
-  withDefaultRegisterables,
-} from "ng2-charts";
-import { ChartData, ChartOptions } from "chart.js";
-
-import { DashboardService } from "../../../../core/services/dashboard.service";
-import {
-  DashboardData,
-  DashboardFilters,
-  DashboardKpis,
-  DashboardOrden,
-  DashboardDocumento,
-  DashboardActividad,
-} from "../../../../core/models/dashboard.model";
+import { Component, OnDestroy, computed, effect, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { UtilsModule } from '../../../../utils/utils.module';
+import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
+import { ChartData, ChartOptions } from 'chart.js';
+import { CondominioContextService } from '../../../../core/services/condominio-context.service';
+import { CondominiosService } from '../../../../core/services/condominios.service';
+import { DashboardService } from '../../../../core/services/dashboard.service';
+import { ContratoService } from '../../../../core/services/contrato.service';
+import { DashboardOrden } from '../../../../core/models/dashboard.model';
+import { CondominioResumenDTO } from '../../../../core/models/condominio.model';
+import { ContratoResumen } from '../../../../core/models/contrato.model';
+import { forkJoin, of, Subscription } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
-  selector: "app-dashboard",
+  selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, UtilsModule, BaseChartDirective],
-  providers: [
-    // ✅ Registra todos los elementos/escala/leyendas de Chart.js
-    provideCharts(withDefaultRegisterables()),
-  ],
-  templateUrl: "./dashboard.component.html",
-  styleUrls: ["./dashboard.component.css"],
+  providers: [provideCharts(withDefaultRegisterables())],
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.css'],
 })
-export class DashboardComponent implements OnInit {
-  constructor(
-    private router: Router,
-    private dashboardService: DashboardService
-  ) {}
+export class DashboardComponent implements OnDestroy {
+  private condCtx = inject(CondominioContextService);
+  private condoService = inject(CondominiosService);
+  private dashboardService = inject(DashboardService);
+  private contratoService = inject(ContratoService);
+  private subs = new Subscription();
+  private lastId: number | null = null;
+  private ensuredLoad = false;
 
-  // ==============================
-  // ESTADO REACTIVO
-  // ==============================
+  condominio = signal<CondominioResumenDTO | null>(null);
   loading = signal(false);
-  data = signal<DashboardData | null>(null);
-  filtros = signal<DashboardFilters>({});
+  unidades = signal({ total: 0, ocupadas: 0, libres: 0 });
+  kpis = signal({ ingresosMes: 0, deuda: 0 });
+  proximosPagos = signal<DashboardOrden[]>([]);
+  pagosRecientes = signal<DashboardOrden[]>([]);
+  contratosRecientes = signal<ContratoResumen[]>([]);
+  ingresosMensuales = signal<{ mes: string; montoTotal: number }[]>([]);
 
-  kpis = computed<DashboardKpis>(
-    () =>
-      this.data()?.kpis || {
-        totalOrdenes: 0,
-        pendientes: 0,
-        pagadas: 0,
-        vencidas: 0,
-        enMora: 0,
-        conComprobante: 0,
-      }
-  );
+  readonly condominioId = computed(() => {
+    const ctx = this.condCtx.state();
+    const current = this.condCtx.condominioActual();
+    if (current?.id != null) return Number(current.id);
+    return ctx.condominioActualId ?? null;
+  });
 
-  ordenes = computed<DashboardOrden[]>(() => this.data()?.ordenes || []);
-  documentos = computed<DashboardDocumento[]>(
-    () => this.data()?.documentos || []
-  );
-  actividades = computed<DashboardActividad[]>(
-    () => this.data()?.actividad || []
-  );
-
-  // ==============================
-  // GRÁFICOS
-  // ==============================
-  estadosData: ChartData<"doughnut"> = {
-    labels: ["Pendientes", "Pagadas", "Vencidas", "En Mora"],
-    datasets: [
-      {
-        data: [0, 0, 0, 0],
-        backgroundColor: ["#facc15", "#4ade80", "#f87171", "#fb7185"],
-      },
-    ],
+  estadosData: ChartData<'doughnut'> = {
+    labels: ['Pendientes', 'Pagadas', 'Vencidas', 'En Mora'],
+    datasets: [{ data: [0, 0, 0, 0], backgroundColor: ['#facc15', '#4ade80', '#f87171', '#fb7185'] }],
   };
 
-  estadosOpts: ChartOptions<"doughnut"> = {
-    responsive: true,
-    plugins: { legend: { position: "bottom" } },
-  };
-
-  ingresosData: ChartData<"bar"> = {
+  ingresosData: ChartData<'bar'> = {
     labels: [],
-    datasets: [
-      { data: [], label: "Ingresos (USD)", backgroundColor: "#4f46e5" },
-    ],
+    datasets: [{ data: [], label: 'Ingresos (USD)', backgroundColor: '#2b59ff' }],
   };
 
-  ingresosOpts: ChartOptions<"bar"> = {
+  ingresosOpts: ChartOptions<'bar'> = {
     responsive: true,
-    scales: {
-      x: { ticks: { color: "#6b7280" } },
-      y: { beginAtZero: true, ticks: { color: "#6b7280" } },
-    },
-    plugins: {
-      legend: { display: true },
-      tooltip: { enabled: true },
-    },
+    scales: { x: { ticks: { color: '#6b7280' } }, y: { beginAtZero: true, ticks: { color: '#6b7280' } } },
+    plugins: { legend: { display: true }, tooltip: { enabled: true } },
   };
 
-  // ==============================
-  // CICLO DE VIDA
-  // ==============================
-  ngOnInit(): void {
-    this.cargarDashboard();
+  estadosOpts: ChartOptions<'doughnut'> = { responsive: true, plugins: { legend: { position: 'bottom' } } };
+
+  private dashboardEffect = effect(() => {
+    const ctx = this.condCtx.state();
+    const id = this.condominioId();
+
+    // Carga condominios una vez si aún no hay lista
+    if (!this.ensuredLoad && !ctx.loading && (!ctx.condominios || ctx.condominios.length === 0)) {
+      this.ensuredLoad = true;
+      if (console && console.log) console.log('[Dashboard] Cargando mis condominios inicial');
+      this.condCtx.loadMisCondominios().subscribe();
+      return;
+    }
+
+    // Sin selección: limpiar estado
+    if (!id) {
+      if (console && console.log) console.log('[Dashboard] Sin condominio seleccionado');
+      this.lastId = null;
+      this.reset();
+      return;
+    }
+
+    // Evitar recargar si no cambia
+    if (this.lastId === id) return;
+    this.lastId = id;
+
+    if (console && console.log) console.log('[Dashboard] Cargando datos de condominio', id);
+    this.reset();
+    this.subs.unsubscribe();
+    this.subs = new Subscription();
+    this.cargarData(id);
+  }, { allowSignalWrites: true });
+
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
   }
 
-  /** Carga inicial del dashboard */
-  cargarDashboard(): void {
+  private reset() {
+    this.loading.set(false);
+    this.condominio.set(null);
+    this.unidades.set({ total: 0, ocupadas: 0, libres: 0 });
+    this.kpis.set({ ingresosMes: 0, deuda: 0 });
+    this.proximosPagos.set([]);
+    this.pagosRecientes.set([]);
+    this.contratosRecientes.set([]);
+    this.ingresosMensuales.set([]);
+    this.estadosData = { ...this.estadosData, datasets: [{ ...this.estadosData.datasets[0], data: [0, 0, 0, 0] }] };
+    this.ingresosData = { labels: [], datasets: [{ data: [], label: 'Ingresos (USD)', backgroundColor: '#2b59ff' }] };
+  }
+
+  private cargarData(condominioId: number) {
     this.loading.set(true);
-    const filtros = this.filtros();
-    this.dashboardService.loadDashboardData(filtros).subscribe({
-      next: (res) => {
-        this.data.set(res); // ← incluye actividad reciente desde el service
-        this.actualizarCharts();
-      },
-      error: (err) => console.error("Error al cargar dashboard:", err),
-      complete: () => this.loading.set(false),
-    });
+    this.subs.add(
+      this.condoService.getById(condominioId).subscribe({
+        next: (c) => this.condominio.set(c),
+        error: () => {
+          this.condCtx.setCondominioActual(null);
+          this.reset();
+        },
+      })
+    );
+
+    this.subs.add(
+      this.condoService.unidadesPorCondominio(condominioId).subscribe({
+        next: (list: any[]) => {
+          const total = list.length;
+          const ocupadas = list.filter((u) => (u.estado || '').toUpperCase() === 'OCUPADA').length;
+          const libres = list.filter((u) => (u.estado || '').toUpperCase() === 'LIBRE').length;
+          this.unidades.set({ total, ocupadas, libres });
+        },
+        error: () => this.unidades.set({ total: 0, ocupadas: 0, libres: 0 }),
+      })
+    );
+
+    this.subs.add(
+      this.condoService.resumenOcupacion(condominioId).subscribe({
+        next: (res) => {
+          const total = res?.total ?? res?.unidadesTotales ?? this.unidades().total;
+          const libres = res?.libres ?? res?.unidadesLibres ?? this.unidades().libres;
+          const ocupadas = res?.ocupadas ?? res?.unidadesOcupadas ?? this.unidades().ocupadas;
+          this.unidades.set({ total, ocupadas, libres });
+        },
+        error: () => {},
+      })
+    );
+
+    this.subs.add(
+      this.dashboardService
+        .getResidentesByCondominio(condominioId)
+        .pipe(
+          switchMap((residentes: any[]) => {
+            if (!residentes.length) return of({ contratos: [] as ContratoResumen[], ordenes: [] as DashboardOrden[] });
+            const contratosReqs = residentes
+              .map((r) => r.id)
+              .filter((id: any): id is number => id != null)
+              .map((id) => this.contratoService.listByResidente(id));
+            const contratos$ = contratosReqs.length ? forkJoin(contratosReqs).pipe(map((chunks: any[]) => chunks.flat())) : of<ContratoResumen[]>([]);
+            return contratos$.pipe(
+              switchMap((contratos: ContratoResumen[]) => {
+                if (!contratos.length) return of({ contratos, ordenes: [] as DashboardOrden[] });
+                const ordenesReqs = contratos
+                  .map((c) => c.id)
+                  .filter((id): id is number => id != null)
+                  .map((id) => this.dashboardService.getOrdenesByContrato(id));
+                const ordenes$ = ordenesReqs.length ? forkJoin(ordenesReqs).pipe(map((chunks: any[]) => chunks.flat())) : of<DashboardOrden[]>([]);
+                return forkJoin([of(contratos), ordenes$]).pipe(map(([contratos, ordenes]) => ({ contratos, ordenes })));
+              })
+            );
+          })
+        )
+        .subscribe({
+          next: ({ contratos, ordenes }: { contratos: ContratoResumen[]; ordenes: DashboardOrden[] }) => {
+            this.contratosRecientes.set(
+              [...contratos].sort((a, b) => (b.fechaInicio || '').localeCompare(a.fechaInicio || '')).slice(0, 5)
+            );
+            this.setStatsFromOrdenes(ordenes);
+          },
+          error: () => {
+            this.reset();
+          },
+          complete: () => this.loading.set(false),
+        })
+    );
   }
 
-  // ==============================
-  // LÓGICA DE GRÁFICOS
-  // ==============================
-  private actualizarCharts(): void {
-    const k = this.kpis();
+  private setStatsFromOrdenes(ordenes: DashboardOrden[]) {
+    const hoy = new Date();
+    const monthKey = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+    const ingresosMes = ordenes
+      .filter((o) => (o.estado || '').toLowerCase() === 'pagada')
+      .filter((o) => (o.fechaEmision || o.fechaVencimiento || '').toString().startsWith(monthKey))
+      .reduce((acc, o) => acc + (Number(o.total) || 0), 0);
+    const deuda = ordenes
+      .filter((o) => ['pendiente', 'en_mora', 'vencida'].includes((o.estado || '').toLowerCase()))
+      .reduce((acc, o) => acc + (Number(o.total) || 0), 0);
+    this.kpis.set({ ingresosMes, deuda });
 
-    // Donut: estado de pagos
+    const pendientes = ordenes.filter((o) => (o.estado || '').toLowerCase() === 'pendiente').length;
+    const pagadas = ordenes.filter((o) => (o.estado || '').toLowerCase() === 'pagada').length;
+    const vencidas = ordenes.filter((o) => (o.estado || '').toLowerCase() === 'vencida').length;
+    const enMora = ordenes.filter((o) => (o.estado || '').toLowerCase() === 'en_mora').length;
     this.estadosData = {
-      labels: ["Pendientes", "Pagadas", "Vencidas", "En Mora"],
-      datasets: [
-        {
-          data: [k.pendientes, k.pagadas, k.vencidas, k.enMora],
-          backgroundColor: ["#facc15", "#4ade80", "#f87171", "#fb7185"],
-        },
-      ],
+      ...this.estadosData,
+      datasets: [{ ...this.estadosData.datasets[0], data: [pendientes, pagadas, vencidas, enMora] }],
     };
 
-    // Barras: ingresos mensuales (DINÁMICO usando el endpoint)
-    const f = this.filtros();
-    this.dashboardService
-      .getIngresosMensuales({
-        contratoId: f.contratoId,
-        from: f.from,
-        to: f.to,
-      })
-      .subscribe({
-        next: (rows) => {
-          // rows: [{ mes: "YYYY-MM", montoTotal: number }]
-          const labels = rows.map((r) => this.formatYearMonth(r.mes));
-          const data = rows.map((r) => Number(r.montoTotal || 0));
-
-          this.ingresosData = {
-            labels,
-            datasets: [
-              { data, label: "Ingresos (USD)", backgroundColor: "#4f46e5" },
-            ],
-          };
-        },
-        error: (err) => {
-          console.error("Ingresos mensuales error:", err);
-          // fallback para no dejar el gráfico vacío si falla
-          this.ingresosData = {
-            labels: [],
-            datasets: [
-              { data: [], label: "Ingresos (USD)", backgroundColor: "#4f46e5" },
-            ],
-          };
-        },
+    const ingresosByMonth: Record<string, number> = {};
+    ordenes
+      .filter((o) => (o.estado || '').toLowerCase() === 'pagada')
+      .forEach((o) => {
+        const key = (o.fechaEmision || o.fechaVencimiento || '').toString().slice(0, 7);
+        if (!key) return;
+        ingresosByMonth[key] = (ingresosByMonth[key] || 0) + (Number(o.total) || 0);
       });
+    const serie = Object.entries(ingresosByMonth)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([mes, montoTotal]) => ({ mes, montoTotal }));
+    this.ingresosMensuales.set(serie);
+    this.ingresosData = {
+      labels: serie.map((r) => this.formatYearMonth(r.mes)),
+      datasets: [{ data: serie.map((r) => r.montoTotal), label: 'Ingresos (USD)', backgroundColor: '#2b59ff' }],
+    };
+
+    this.proximosPagos.set(this.pickProximosPagos(ordenes));
+    this.pagosRecientes.set(this.pickPagosRecientes(ordenes));
   }
 
-  // Helper: "2025-10" -> "Oct 2025"
+  private pickProximosPagos(ordenes: DashboardOrden[]): DashboardOrden[] {
+    const hoy = new Date().getTime();
+    return [...ordenes]
+      .filter((o) => (o.estado || '').toLowerCase() === 'pendiente')
+      .filter((o) => {
+        const due = o.fechaVencimiento ? new Date(o.fechaVencimiento).getTime() : null;
+        return due ? due >= hoy : false;
+      })
+      .sort((a, b) => this.orderDate(a) - this.orderDate(b))
+      .slice(0, 5);
+  }
+
+  private pickPagosRecientes(ordenes: DashboardOrden[]): DashboardOrden[] {
+    return [...ordenes]
+      .filter((o) => (o.estado || '').toLowerCase() === 'pagada')
+      .sort((a, b) => this.orderDate(b) - this.orderDate(a))
+      .slice(0, 5);
+  }
+
+  refrescar(): void {
+    const id = this.condominioId();
+    if (id) this.cargarData(id);
+  }
+
+  trackByPago = (_: number, o: DashboardOrden) => o.id;
+
+  private orderDate(o: DashboardOrden): number {
+    const d = o.fechaEmision || o.fechaVencimiento;
+    const ts = d ? new Date(d).getTime() : 0;
+    return Number.isFinite(ts) ? ts : 0;
+  }
+
   private formatYearMonth(ym: string): string {
-    const [y, m] = ym.split("-").map((x) => parseInt(x, 10));
-    const meses = [
-      "Ene",
-      "Feb",
-      "Mar",
-      "Abr",
-      "May",
-      "Jun",
-      "Jul",
-      "Ago",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dic",
-    ];
-    const mesTxt = (meses[(m || 1) - 1] || "").trim();
+    const [y, m] = ym.split('-').map((x) => parseInt(x, 10));
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const mesTxt = (meses[(m || 1) - 1] || '').trim();
     return `${mesTxt} ${y}`;
   }
 
-  /** Acción de recargar manualmente */
-  refrescar(): void {
-    this.cargarDashboard();
+  getLogoUrl(): string {
+    const c = this.condominio();
+    const url = (c as any)?.logoUrl;
+    if (!url) return `${environment.apiUrl}/files/defaults/default-condominio-logo.png`;
+    if (url.startsWith('http')) return url;
+    const base = environment.apiUrl || '';
+    if (url.startsWith('/files')) return `${base}${url}`;
+    if (url.startsWith('/')) return `${base}${url}`;
+    return `${base}/files/${url}`;
   }
 
-  /** trackBy para listas de actividad */
-  trackByActividad = (_: number, a: DashboardActividad) =>
-    `${a.id}-${a.documentoId}-${a.fecha}`;
-
-  /** Cierra sesión */
-  logout(): void {
-    this.router.navigateByUrl("/login");
+  getPortadaUrl(): string {
+    const c = this.condominio();
+    const url = (c as any)?.portadaUrl;
+    if (!url) return `${environment.apiUrl}/files/defaults/default-condominio-portada.png`;
+    if (url.startsWith('http')) return url;
+    const base = environment.apiUrl || '';
+    if (url.startsWith('/files')) return `${base}${url}`;
+    if (url.startsWith('/')) return `${base}${url}`;
+    return `${base}/files/${url}`;
   }
 }

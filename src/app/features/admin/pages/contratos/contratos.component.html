@@ -2,6 +2,7 @@
   <app-sidebar></app-sidebar>
 
   <main class="content">
+
     <!-- HEADER -->
     <div class="header">
       <div>
@@ -189,6 +190,7 @@
       [visible]="dialogVisible()"
       [mode]="dialogMode()"
       [contrato]="dialogContrato()"
+      [condominioId]="condominioId()"
       (close)="onDialogClose()"
       (saved)="onDialogSaved($event)"
     >

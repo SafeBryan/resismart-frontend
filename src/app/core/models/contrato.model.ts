@@ -7,6 +7,8 @@ export interface ContratoResumen {
   fechaInicio: string; // ISO (YYYY-MM-DD)
   fechaFin?: string | null; // puede venir null
   monto: number;
+  montoAlquiler?: number | null;
+  montoAlicuota?: number | null;
   estado: EstadoContrato;
   idUnidad: number | null;
   numeroUnidad?: string | null;
@@ -20,6 +22,8 @@ export interface ContratoDetalle {
   fechaInicio: string;
   fechaFin?: string;
   monto: number;
+  montoAlquiler?: number | null;
+  montoAlicuota?: number | null;
   estado: EstadoContrato;
 
   // Existentes (no se tocan)

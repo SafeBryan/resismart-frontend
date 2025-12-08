@@ -165,7 +165,7 @@ export class ResidentContratosComponent {
     },
     {
       icon: "cloud_upload",
-      titulo: "Sube tus comprobantes",
+      titulo: "Gestiona tus contratos",
       descripcion:
         "Guarda una copia digital de cada pago mensual para evitar contratiempos.",
     },
@@ -192,6 +192,7 @@ export class ResidentContratosComponent {
           const residenteId =
             (ctx.residente as any)?.id_Cliente ??
             (ctx.residente as any)?.idCliente ??
+            (ctx.residente as any)?.id ??
             null;
 
           if (!residenteId) {

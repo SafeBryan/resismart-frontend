@@ -31,6 +31,9 @@ export interface AvisoPayload {
   emitidoEn: string;
   leido?: boolean;
   metadata?: Record<string, unknown> | null;
+  senderId?: number | null;
+  receiverId?: number | null;
+  parentId?: number | null;
 }
 
 export interface AvisoListaResponse extends Array<AvisoPayload> {}

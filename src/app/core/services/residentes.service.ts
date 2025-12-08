@@ -16,6 +16,13 @@ export class ResidentesService {
     return this.http.get<ResidenteRespuestaDTO[]>(`${API}/Residentes`);
   }
 
+  listByCondominio(condominioId: number): Observable<ResidenteRespuestaDTO[]> {
+    if (!condominioId) return of([]);
+    return this.http
+      .get<ResidenteRespuestaDTO[]>(`${API}/Residentes/condominio/${condominioId}`)
+      .pipe(catchError(() => of<ResidenteRespuestaDTO[]>([])));
+  }
+
   getById(id: number | string): Observable<ResidenteRespuestaDTO> {
     return this.http.get<ResidenteRespuestaDTO>(`${API}/Residentes/${id}`);
   }
@@ -28,13 +35,13 @@ export class ResidentesService {
     return this.http.put(`${API}/Residentes/${id}`, dto);
   }
 
-  deleteUsuario(idUsuario: number | string): Observable<any> {
-    return this.http.delete(`${API}/Usuarios/${idUsuario}`);
+  delete(id: number | string): Observable<any> {
+    return this.http.delete(`${API}/Residentes/${id}`);
   }
 
   /**
-   * ✅ Opción A (recomendada):
-   * Resuelve al residente por id de usuario usando el nuevo endpoint
+   * Opción A:
+   * Resuelve al residente por id de usuario usando el endpoint
    * GET /Residentes/por-usuario/{idUsuario}
    *
    * - Devuelve `null` si el backend responde 404 (no existe el residente).
@@ -47,7 +54,7 @@ export class ResidentesService {
     const userId = params?.userId ?? null;
     if (!userId) return of(null);
 
-    // 1) Ruta que sí te funciona por cURL/Swagger:
+    // 1) Ruta larga que mantiene compatibilidad
     const urlLarga = `${API}/Residentes/Residentes/por-usuario/${userId}`;
     // 2) Fallback a la corta por si luego unificas:
     const urlCorta = `${API}/Residentes/por-usuario/${userId}`;
@@ -68,5 +75,12 @@ export class ResidentesService {
     _idUsuario: number | string
   ): Observable<ResidenteRespuestaDTO | null> {
     return of(null);
+  }
+
+  getByCondominio(condominioId: number): Observable<ResidenteRespuestaDTO[]> {
+    if (!condominioId) return of([]);
+    return this.http.get<ResidenteRespuestaDTO[]>(
+      `${API}/Residentes/condominio/${condominioId}`
+    );
   }
 }

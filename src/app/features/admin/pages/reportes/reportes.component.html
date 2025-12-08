@@ -1,0 +1,237 @@
+<div class="layout">
+  <app-sidebar></app-sidebar>
+
+  <main class="content">
+    <header class="page-head">
+      <div>
+        <p class="eyebrow">Analytics</p>
+        <h1>Reportes</h1>
+        <p class="muted">Reportes financieros y operativos del condominio seleccionado.</p>
+      </div>
+      <div class="filters">
+        <label>
+          <span>Desde</span>
+          <input type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" />
+        </label>
+        <label>
+          <span>Hasta</span>
+          <input type="date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" />
+        </label>
+        <app-ui-button variant="outline" size="sm" (clicked)="resetFechas()">Últimos 6 meses</app-ui-button>
+      </div>
+    </header>
+
+    <app-ui-card *ngIf="condominioId(); else emptyState" class="tabs" [elevated]="true">
+      <div class="tab-bar">
+        <button class="tab" [class.active]="activeTab() === 'finanzas'" (click)="setTab('finanzas')">Finanzas</button>
+        <button class="tab" [class.active]="activeTab() === 'mora'" (click)="setTab('mora')">Morosidad</button>
+        <button class="tab" [class.active]="activeTab() === 'ocupacion'" (click)="setTab('ocupacion')">Ocupación</button>
+      </div>
+
+      <div class="tab-content" *ngIf="!loading(); else loadingState">
+        <div *ngIf="error()" class="error">{{ error() }}</div>
+
+        <!-- Finanzas -->
+        <ng-container *ngIf="activeTab() === 'finanzas'">
+          <section class="kpi-grid">
+            <article class="kpi-card tone-blue">
+              <p class="kpi-label">Ingresos</p>
+              <p class="kpi-value">{{ resumenFinanzas().ingresos | currency : 'USD' : 'symbol' : '1.0-0' }}</p>
+              <p class="muted tiny">Periodo filtrado</p>
+            </article>
+            <article class="kpi-card tone-amber">
+              <p class="kpi-label">Egresos</p>
+              <p class="kpi-value">{{ resumenFinanzas().egresos | currency : 'USD' : 'symbol' : '1.0-0' }}</p>
+              <p class="muted tiny">Del backend financiero</p>
+            </article>
+            <article class="kpi-card tone-rose">
+              <p class="kpi-label">Deuda por cobrar</p>
+              <p class="kpi-value">{{ resumenFinanzas().deuda | currency : 'USD' : 'symbol' : '1.0-0' }}</p>
+              <p class="muted tiny">Incluye mora</p>
+            </article>
+            <article class="kpi-card tone-slate">
+              <p class="kpi-label">Balance</p>
+              <p class="kpi-value">{{ resumenFinanzas().balance | currency : 'USD' : 'symbol' : '1.0-0' }}</p>
+              <p class="muted tiny">Ingresos - egresos</p>
+            </article>
+          </section>
+
+          <section class="chart-card">
+            <div class="chart-head">
+              <div>
+                <p class="eyebrow">Ingresos mensuales</p>
+                <h3>Evolución</h3>
+              </div>
+              <app-ui-button variant="outline" size="sm" (clicked)="exportFinanzasCsv()">Exportar CSV</app-ui-button>
+            </div>
+            <div class="bars" *ngIf="ingresosSerie().length; else noSerie">
+              <div class="bar" *ngFor="let item of ingresosSerie()">
+                <div class="bar-fill" [style.height.%]="ingresosMax() ? (item.monto / ingresosMax()) * 100 : 0"></div>
+                <span class="bar-label">{{ item.mes }}</span>
+                <span class="bar-value">{{ item.monto | number : '1.0-0' }}</span>
+              </div>
+            </div>
+            <ng-template #noSerie>
+              <p class="muted tiny">Sin datos de ingresos en el rango seleccionado.</p>
+            </ng-template>
+          </section>
+
+          <section class="table-card">
+            <div class="table-head-inline">
+              <div>
+                <p class="eyebrow">Órdenes</p>
+                <h3>Detalle financiero</h3>
+              </div>
+              <div class="pill" *ngIf="resumenEstados()">
+                PEND: {{ resumenEstados()['PENDIENTE'] || 0 }} · PAG: {{ resumenEstados()['PAGADA'] || 0 }} · VENC: {{ resumenEstados()['VENCIDA'] || 0 }} · MORA: {{ resumenEstados()['EN_MORA'] || 0 }}
+              </div>
+            </div>
+            <app-ui-table [loading]="loading()" [isEmpty]="ordenesView().length === 0" emptyMessage="No hay órdenes en el rango seleccionado.">
+              <thead>
+                <tr>
+                  <th>Periodo</th>
+                  <th>Estado</th>
+                  <th>Base</th>
+                  <th>Mora</th>
+                  <th>Saldo</th>
+                  <th>Emisión</th>
+                  <th>Vencimiento</th>
+                  <th>Inquilino</th>
+                  <th>Contrato</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let o of ordenesView(); trackBy: trackByOrden">
+                  <td>{{ o.periodo }}</td>
+                  <td><span class="pill" [class.danger]="o.estado === 'EN_MORA' || o.estado === 'VENCIDA'" [class.ok]="o.estado === 'PAGADA'">{{ o.estado }}</span></td>
+                  <td>{{ o.montoBase | currency : 'USD' : 'symbol' : '1.0-0' }}</td>
+                  <td>{{ o.mora | currency : 'USD' : 'symbol' : '1.0-0' }}</td>
+                  <td>{{ o.saldoPendiente | currency : 'USD' : 'symbol' : '1.0-0' }}</td>
+                  <td>{{ o.fechaEmision | date : 'yyyy-MM-dd' }}</td>
+                  <td>{{ o.fechaVencimiento | date : 'yyyy-MM-dd' }}</td>
+                  <td>{{ o.inquilino || 'N/D' }}</td>
+                  <td>#{{ o.contratoId }}</td>
+                </tr>
+              </tbody>
+            </app-ui-table>
+          </section>
+        </ng-container>
+
+        <!-- Morosidad -->
+        <ng-container *ngIf="activeTab() === 'mora'">
+          <section class="kpi-grid">
+            <article class="kpi-card tone-rose">
+              <p class="kpi-label">Deuda vencida</p>
+              <p class="kpi-value">{{ morosidadKpis().deuda | currency : 'USD' : 'symbol' : '1.0-0' }}</p>
+              <p class="muted tiny">Saldo pendiente</p>
+            </article>
+            <article class="kpi-card tone-amber">
+              <p class="kpi-label">Inquilinos con deuda</p>
+              <p class="kpi-value">{{ morosidadKpis().deudores }}</p>
+              <p class="muted tiny">Incluye vencida / en mora</p>
+            </article>
+            <article class="kpi-card tone-slate">
+              <p class="kpi-label">Órdenes afectadas</p>
+              <p class="kpi-value">{{ morosidadKpis().ordenes }}</p>
+              <p class="muted tiny">En rango filtrado</p>
+            </article>
+          </section>
+
+          <section class="filters-row">
+            <app-ui-input-field
+              label="Filtro"
+              placeholder="Buscar por inquilino, unidad o contrato"
+              [value]="morosidadSearch()"
+              (valueChange)="morosidadSearch.set(($event ?? '').toString())"
+            ></app-ui-input-field>
+            <select [ngModel]="morosidadEstado()" (ngModelChange)="morosidadEstado.set($event)">
+              <option value="ALL">Vencida + En mora</option>
+              <option value="VENCIDA">Solo vencida</option>
+              <option value="EN_MORA">Solo en mora</option>
+            </select>
+            <app-ui-button variant="outline" size="sm" (clicked)="exportMoraCsv()">Exportar CSV</app-ui-button>
+          </section>
+
+          <app-ui-table [loading]="loading()" [isEmpty]="morosidadOrdenes().length === 0" emptyMessage="No hay órdenes vencidas o en mora con los filtros actuales.">
+            <thead>
+              <tr>
+                <th>Inquilino</th>
+                <th>Unidad</th>
+                <th>Contrato</th>
+                <th>Periodo</th>
+                <th>Estado</th>
+                <th>Saldo</th>
+                <th>Mora</th>
+                <th>Días atraso</th>
+                <th>Vencimiento</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let o of morosidadOrdenes(); trackBy: trackByOrden">
+                <td>{{ o.inquilino || 'N/D' }}</td>
+                <td>{{ o.unidad || '-' }}</td>
+                <td>#{{ o.contratoId }}</td>
+                <td>{{ o.periodo }}</td>
+                <td><span class="pill danger">{{ o.estado }}</span></td>
+                <td>{{ o.saldoPendiente | currency : 'USD' : 'symbol' : '1.0-0' }}</td>
+                <td>{{ o.mora | currency : 'USD' : 'symbol' : '1.0-0' }}</td>
+                <td>{{ o.diasAtraso ?? 0 }}</td>
+                <td>{{ o.fechaVencimiento | date : 'yyyy-MM-dd' }}</td>
+              </tr>
+            </tbody>
+          </app-ui-table>
+        </ng-container>
+
+        <!-- Ocupación -->
+        <ng-container *ngIf="activeTab() === 'ocupacion'">
+          <section class="kpi-grid">
+            <article class="kpi-card tone-blue">
+              <p class="kpi-label">Total unidades</p>
+              <p class="kpi-value">{{ ocupacion().total }}</p>
+              <p class="muted tiny">Condominio {{ condominioNombre() || '' }}</p>
+            </article>
+            <article class="kpi-card tone-amber">
+              <p class="kpi-label">Ocupadas</p>
+              <p class="kpi-value">{{ ocupacion().ocupadas }}</p>
+              <p class="muted tiny">{{ ocupacion().total ? (ocupacion().ocupadas / ocupacion().total) * 100 : 0 | number : '1.0-0' }}% ocupación</p>
+            </article>
+            <article class="kpi-card tone-slate">
+              <p class="kpi-label">Libres</p>
+              <p class="kpi-value">{{ ocupacion().libres }}</p>
+              <p class="muted tiny">{{ ocupacion().total ? (ocupacion().libres / ocupacion().total) * 100 : 0 | number : '1.0-0' }}% disponibles</p>
+            </article>
+            <article class="kpi-card tone-rose">
+              <p class="kpi-label">Mantenimiento</p>
+              <p class="kpi-value">{{ ocupacion().mantenimiento }}</p>
+              <p class="muted tiny">Unidades en pausa</p>
+            </article>
+          </section>
+
+          <section class="donut-card">
+            <div class="donut">
+              <div class="slice ocupada" [style.flex]="ocupacion().ocupadas"></div>
+              <div class="slice libre" [style.flex]="ocupacion().libres"></div>
+              <div class="slice mantenimiento" [style.flex]="ocupacion().mantenimiento"></div>
+            </div>
+            <div class="legend">
+              <span class="dot ocupada"></span> Ocupada
+              <span class="dot libre"></span> Libre
+              <span class="dot mantenimiento"></span> Mantenimiento
+            </div>
+          </section>
+        </ng-container>
+      </div>
+    </app-ui-card>
+  </main>
+</div>
+
+<ng-template #emptyState>
+  <section class="card placeholder">
+    <p class="eyebrow">Selecciona un condominio</p>
+    <h3>Elige un condominio desde el sidebar para ver reportes.</h3>
+  </section>
+</ng-template>
+
+<ng-template #loadingState>
+  <div class="loading-row">Cargando reportes...</div>
+</ng-template>

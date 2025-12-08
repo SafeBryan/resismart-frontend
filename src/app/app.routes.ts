@@ -11,6 +11,16 @@ export const routes: Routes = [
     canMatch: [loginRedirectGuard]
   },
   {
+    path: 'forgot-password',
+    loadComponent: () => import('./features/auth/pages/forgot-password/forgot-password-page.component').then(m => m.ForgotPasswordPageComponent),
+    canMatch: [loginRedirectGuard],
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./features/auth/pages/reset-password/reset-password-page.component').then(m => m.ResetPasswordPageComponent),
+    canMatch: [loginRedirectGuard],
+  },
+  {
     path: 'home',
     loadChildren: () => import('./features/resident/resident.module').then(m => m.ResidentModule),
     canMatch: [authGuard, roleGuard],
@@ -23,9 +33,12 @@ export const routes: Routes = [
     data: { roles: ['ADMIN', 'OWNER'] },
   },
   // Aliases directos para rutas del sidebar
-  { path: 'residentes', redirectTo: 'dashboard/residentes', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },
+  { path: 'residentes', redirectTo: 'dashboard/inquilinos', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },
+  { path: 'inquilinos', redirectTo: 'dashboard/inquilinos', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },
+  { path: 'propietarios', redirectTo: 'dashboard/propietarios', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN'], strictRoles: true } },
   { path: 'contratos', redirectTo: 'dashboard/contratos', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },
   { path: 'pagos', redirectTo: 'dashboard/pagos', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },
+  { path: 'reportes', redirectTo: 'dashboard/reportes', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },
   { path: 'comprobantes', redirectTo: 'dashboard/comprobantes', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },
   { path: 'eventos', redirectTo: 'dashboard/eventos', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },
   { path: 'avisos', redirectTo: 'dashboard/avisos', pathMatch: 'full', canMatch: [authGuard, roleGuard], data: { roles: ['ADMIN', 'OWNER'] } },

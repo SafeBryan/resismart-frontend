@@ -1,0 +1,83 @@
+@use "sass:color";
+
+$color-primary: #47a5f4;
+$color-primary-dark: color.adjust(#47a5f4, $lightness: -10%);
+$color-primary-light: color.adjust(#47a5f4, $lightness: 15%);
+$color-primary-soft: color.mix(#47a5f4, #ffffff, $weight: 10%);
+$color-secondary: #47a5f4;
+
+$color-bg: #f5f7fb;
+$color-bg-alt: #eef2f8;
+$color-surface: #ffffff;
+$color-border: #dde2ec;
+$color-text: #1f2933;
+$color-text-muted: #6b7280;
+
+$color-success: #22c55e;
+$color-warning: #f59e0b;
+$color-danger: #ef4444;
+$color-info: $color-primary-light;
+
+$font-family-base: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$font-size-xs: 0.75rem;
+$font-size-sm: 0.875rem;
+$font-size-md: 1rem;
+$font-size-lg: 1.125rem;
+$font-size-xl: 1.375rem;
+$font-weight-regular: 400;
+$font-weight-medium: 600;
+$font-weight-bold: 700;
+
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 0.75rem;
+$spacing-lg: 1rem;
+$spacing-xl: 1.5rem;
+
+$border-radius-sm: 0.5rem;
+$border-radius-md: 0.75rem;
+$border-radius-lg: 1rem;
+
+$box-shadow-soft: 0 10px 20px rgba(15, 23, 42, 0.06);
+$box-shadow-strong: 0 16px 36px rgba(15, 23, 42, 0.12);
+
+:root {
+  --color-primary: #{$color-primary};
+  --color-primary-dark: #{$color-primary-dark};
+  --color-primary-light: #{$color-primary-light};
+  --color-primary-soft: #{$color-primary-soft};
+  --color-secondary: #{$color-secondary};
+  --color-bg: #{$color-bg};
+  --color-bg-alt: #{$color-bg-alt};
+  --color-surface: #{$color-surface};
+  --color-border: #{$color-border};
+  --color-text: #{$color-text};
+  --color-text-muted: #{$color-text-muted};
+  --color-success: #{$color-success};
+  --color-warning: #{$color-warning};
+  --color-danger: #{$color-danger};
+  --color-info: #{$color-info};
+
+  --font-family-base: #{$font-family-base};
+  --font-size-xs: #{$font-size-xs};
+  --font-size-sm: #{$font-size-sm};
+  --font-size-md: #{$font-size-md};
+  --font-size-lg: #{$font-size-lg};
+  --font-size-xl: #{$font-size-xl};
+  --font-weight-regular: #{$font-weight-regular};
+  --font-weight-medium: #{$font-weight-medium};
+  --font-weight-bold: #{$font-weight-bold};
+
+  --spacing-xs: #{$spacing-xs};
+  --spacing-sm: #{$spacing-sm};
+  --spacing-md: #{$spacing-md};
+  --spacing-lg: #{$spacing-lg};
+  --spacing-xl: #{$spacing-xl};
+
+  --radius-sm: #{$border-radius-sm};
+  --radius-md: #{$border-radius-md};
+  --radius-lg: #{$border-radius-lg};
+
+  --shadow-soft: #{$box-shadow-soft};
+  --shadow-strong: #{$box-shadow-strong};
+}

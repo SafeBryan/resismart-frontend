@@ -5,8 +5,24 @@
     <div class="content-inner">
       <header class="page-head">
         <div>
-          <h1>Configuración personal</h1>
-          <p class="muted">Gestiona tu información de contacto y tus credenciales de acceso.</p>
+          <h1>Configuracion personal</h1>
+          <p class="muted">Gestiona tu informacion de contacto y tus credenciales de acceso.</p>
+        </div>
+        <div class="avatar-panel">
+          <img [src]="avatarUrl" alt="Avatar del usuario" class="avatar-img" />
+          <div class="avatar-actions">
+            <label class="btn-outline" for="avatarInput">Cambiar avatar</label>
+            <input
+              id="avatarInput"
+              type="file"
+              accept="image/*"
+              (change)="onAvatarSelected($event)"
+              [disabled]="isUploadingAvatar()"
+              hidden
+            />
+            <small class="muted">Formatos permitidos: JPG, PNG, WEBP. Tamano recomendado &lt; 2MB.</small>
+            <span class="muted" *ngIf="isUploadingAvatar()">Subiendo...</span>
+          </div>
         </div>
       </header>
 
@@ -20,7 +36,7 @@
           <div class="card-head">
             <div>
               <h2 id="admin-profile-heading">Datos personales</h2>
-              <span class="muted" id="admin-profile-desc">Nombre, correo y teléfono de contacto.</span>
+              <span class="muted" id="admin-profile-desc">Nombre, correo y telefono de contacto.</span>
             </div>
             <button mat-flat-button color="primary" type="submit" [disabled]="savingProfile()">
               {{ savingProfile() ? 'Guardando...' : 'Guardar datos' }}
@@ -38,21 +54,21 @@
           </div>
 
           <fieldset class="form-section">
-            <legend>Información de contacto</legend>
+            <legend>Informacion de contacto</legend>
             <p class="section-description">
-              Estos datos se usan para notificaciones del sistema y comunicación interna.
+              Estos datos se usan para notificaciones del sistema y comunicacion interna.
             </p>
             <div class="form-grid">
               <app-input label="Nombre" placeholder="Nombre" name="nombre" [(model)]="profileForm.nombre"></app-input>
               <app-input label="Apellido" placeholder="Apellido" name="apellido" [(model)]="profileForm.apellido"></app-input>
               <app-input
-                label="Correo electrónico"
-                placeholder="Correo electrónico"
+                label="Correo electronico"
+                placeholder="Correo electronico"
                 type="email"
                 name="correo"
                 [(model)]="profileForm.email"
               ></app-input>
-              <app-input label="Teléfono" placeholder="Teléfono" name="telefono" [(model)]="profileForm.telefono"></app-input>
+              <app-input label="Telefono" placeholder="Telefono" name="telefono" [(model)]="profileForm.telefono"></app-input>
             </div>
           </fieldset>
         </form>
@@ -66,7 +82,7 @@
           <div class="card-head">
             <div>
               <h2 id="admin-credentials-heading">Credenciales de acceso</h2>
-              <span class="muted" id="admin-credentials-desc">Actualiza correo y contraseña de ingreso.</span>
+              <span class="muted" id="admin-credentials-desc">Actualiza correo y contrasena de ingreso.</span>
             </div>
             <button mat-flat-button color="primary" type="submit" [disabled]="savingCredentials()">
               {{ savingCredentials() ? 'Actualizando...' : 'Guardar credenciales' }}
@@ -86,7 +102,7 @@
           <fieldset class="form-section">
             <legend>Seguridad</legend>
             <p class="section-description">
-              Usa una contraseña segura con al menos 8 caracteres y combina letras, números y símbolos.
+              Usa una contrasena segura con al menos 8 caracteres y combina letras, numeros y simbolos.
             </p>
             <div class="form-grid">
               <app-input
@@ -97,13 +113,13 @@
                 [(model)]="credentialsForm.email"
               ></app-input>
               <app-input
-                label="Nueva contraseña"
+                label="Nueva contrasena"
                 type="password"
                 name="cred-password"
                 [(model)]="credentialsForm.password"
               ></app-input>
               <app-input
-                label="Confirmar contraseña"
+                label="Confirmar contrasena"
                 type="password"
                 name="cred-confirm"
                 [(model)]="credentialsForm.confirmPassword"
@@ -111,6 +127,43 @@
             </div>
           </fieldset>
         </form>
+      </section>
+
+      <section class="card" *ngIf="isOwner()">
+        <div class="card-head">
+          <div>
+            <h2>Imagenes de mis condominios</h2>
+            <span class="muted">Solo visible para duenos. Actualiza logo y portada.</span>
+          </div>
+          <span *ngIf="loadingCondominios()">Cargando...</span>
+        </div>
+
+        <div class="condos-grid" *ngIf="misCondominios.length; else noCondos">
+          <div class="condo" *ngFor="let c of misCondominios">
+            <h3>{{ c.nombre }}</h3>
+            <div class="condo-images">
+              <div class="block">
+                <p>Logo</p>
+                <img [src]="getLogoUrl(c)" alt="Logo condominio" class="img-logo" />
+                <label class="btn-outline">
+                  Cambiar logo
+                  <input type="file" accept="image/*" (change)="onLogoSelected(c, $event)" [disabled]="isUploadingImage()" hidden />
+                </label>
+              </div>
+              <div class="block">
+                <p>Portada</p>
+                <img [src]="getPortadaUrl(c)" alt="Portada condominio" class="img-portada" />
+                <label class="btn-outline">
+                  Cambiar portada
+                  <input type="file" accept="image/*" (change)="onPortadaSelected(c, $event)" [disabled]="isUploadingImage()" hidden />
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noCondos>
+          <p class="muted">No tienes condominios asignados.</p>
+        </ng-template>
       </section>
     </div>
   </main>

@@ -2,23 +2,52 @@
   <app-sidebar></app-sidebar>
 
   <main class="content">
+
     <div class="content-inner">
       <header class="page-head">
         <div>
           <h1>Avisos y comunicados</h1>
           <p class="muted">
-            Consulta los últimos avisos enviados a tu usuario. Filtra, navega y archiva rápidamente.
+            Consulta los ultimos avisos enviados a tu usuario. Filtra, navega y archiva rapidamente.
           </p>
         </div>
         <div class="head-actions">
-          <app-button label="Marcar todo como leído" variant="secondary" (clicked)="markAll()"></app-button>
+          <app-button label="Marcar todo como leido" variant="secondary" (clicked)="markAll()"></app-button>
         </div>
       </header>
+
+      <section class="nuevo-aviso card" *ngIf="esAdmin()">
+        <h3>Nuevo mensaje</h3>
+        <div class="form-grid">
+          <div class="field">
+            <label>Tipo</label>
+            <select [ngModel]="tipoMensaje()" (ngModelChange)="tipoMensaje.set($event)">
+              <option [ngValue]="'general'">Mensaje general</option>
+              <option [ngValue]="'usuario'">Mensaje directo a usuario</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Titulo</label>
+            <input type="text" [ngModel]="tituloNuevo()" (ngModelChange)="tituloNuevo.set($event)" placeholder="Asunto del mensaje" />
+          </div>
+          <div class="field" *ngIf="tipoMensaje() === 'usuario'">
+            <label>ID Usuario destino</label>
+            <input type="number" [ngModel]="receptorId()" (ngModelChange)="receptorId.set($event ? +$event : null)" placeholder="Ej: 12" />
+          </div>
+          <div class="field textarea">
+            <label>Mensaje</label>
+            <textarea [ngModel]="mensajeNuevo()" (ngModelChange)="mensajeNuevo.set($event)" rows="3" placeholder="Escribe el mensaje"></textarea>
+          </div>
+        </div>
+        <div class="actions">
+          <app-button label="Enviar" variant="primary" (clicked)="crearAviso()"></app-button>
+        </div>
+      </section>
 
       <section class="filters">
         <app-input
           label="Buscar"
-          placeholder="Título o mensaje"
+          placeholder="Titulo o mensaje"
           (modelChange)="onSearch($event)"
         ></app-input>
 
@@ -63,7 +92,7 @@
 
         <ng-template #sinResultados>
           <p class="muted empty">
-            No se encontraron avisos para la búsqueda o filtro seleccionado.
+            No se encontraron avisos para la busqueda o filtro seleccionado.
           </p>
         </ng-template>
       </section>

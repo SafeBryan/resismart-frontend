@@ -19,12 +19,16 @@ export interface ContratoCreateInput {
   fechaInicio: string; // 'YYYY-MM-DD'
   fechaFin?: string; // opcional
   monto: number; // BigDecimal -> number
+  montoAlquiler: number;
+  montoAlicuota: number;
 }
 
 export interface ContratoUpdateInput {
   fechaInicio?: string;
   fechaFin?: string;
   monto?: number;
+  montoAlquiler?: number;
+  montoAlicuota?: number;
   idUnidad?: number;
   idResidente?: number; // Long en back
 }

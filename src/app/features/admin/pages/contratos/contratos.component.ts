@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, signal } from "@angular/core";
+import { Component, OnInit, computed, effect, signal, inject, Injector, runInInjectionContext } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { UtilsModule } from "../../../../utils/utils.module";
 import { SidebarComponent } from "../../../../utils/sidebar/sidebar.component";
@@ -23,6 +23,10 @@ import {
   DialogMode,
 } from "./components/contrato-dialog/contrato-dialog.component"; // Importamos DialogMode
 import { ToastService } from "../../../../core/services/toast.service";
+import { DashboardService } from "../../../../core/services/dashboard.service";
+import { CondominioContextService } from "../../../../core/services/condominio-context.service";
+import { forkJoin, of } from "rxjs";
+import { map, switchMap } from "rxjs/operators";
 
 type EstadoFiltro = "" | EstadoContrato;
 
@@ -44,7 +48,15 @@ type EstadoFiltro = "" | EstadoContrato;
   styleUrls: ["./contratos.component.css"],
 })
 export class ContratosComponent implements OnInit {
-  constructor(private contratosSrv: ContratoService, private toast: ToastService) {}
+  constructor(
+    private contratosSrv: ContratoService,
+    private toast: ToastService
+  ) {}
+
+  private dashboardSrv = inject(DashboardService);
+  private condCtx = inject(CondominioContextService);
+  private injector = inject(Injector);
+  readonly condominioId = computed(() => this.condCtx.state().condominioActualId ?? null);
 
   loading = signal(false);
   data = signal<ContratoResumen[]>([]);
@@ -69,12 +81,35 @@ export class ContratosComponent implements OnInit {
   dialogContrato = signal<ContratoResumen | null>(null);
 
   ngOnInit(): void {
-    this.loadData();
+    this.condCtx.ensureLoaded().subscribe(() => {
+      runInInjectionContext(this.injector, () =>
+        effect(
+          () => {
+            const id = this.condCtx.state().condominioActualId ?? null;
+            if (id) {
+              this.data.set([]);
+              this.loadData(id);
+            } else {
+              this.data.set([]);
+            }
+          },
+          { allowSignalWrites: true }
+        )
+      );
+    });
   }
 
-  loadData(): void {
+  private loadData(condominioId: number): void {
     this.loading.set(true);
-    this.contratosSrv.listAll().subscribe({
+    this.data.set([]);
+    this.dashboardSrv.getResidentesByCondominio(condominioId).pipe(
+      switchMap((residentes) => {
+        const ids = (residentes || []).map((r) => r.id).filter((id): id is number => id != null);
+        if (!ids.length) return of<ContratoResumen[]>([]);
+        const reqs = ids.map((id) => this.contratosSrv.listByResidente(id));
+        return (reqs.length === 1 ? reqs[0] : forkJoin(reqs).pipe(map((chunks) => chunks.flat())));
+      })
+    ).subscribe({
       next: (list) => {
         const ordenados = [...(list || [])].sort((a, b) => {
           const da = a.fechaInicio ? new Date(a.fechaInicio).getTime() : 0;
@@ -85,13 +120,15 @@ export class ContratosComponent implements OnInit {
       },
       error: () => {
         this.toast.error("No se pudieron cargar los contratos.");
+        this.data.set([]);
       },
       complete: () => this.loading.set(false),
     });
   }
 
   refrescar(): void {
-    this.loadData();
+    const id = this.condCtx.state().condominioActualId ?? null;
+    if (id) this.loadData(id);
   }
 
   onBuscarChange(value: string): void {
@@ -103,6 +140,10 @@ export class ContratosComponent implements OnInit {
   }
 
   abrirDetalle(): void {
+    if (!this.condominioId()) {
+      this.toast.error("Selecciona un condominio antes de crear un contrato.");
+      return;
+    }
     this.dialogContrato.set(null);
     this.dialogMode.set("create");
     this.dialogVisible.set(true);
@@ -120,7 +161,8 @@ export class ContratosComponent implements OnInit {
 
   onDialogSaved(_payload: any): void {
     this.dialogVisible.set(false);
-    this.loadData();
+    const id = this.condCtx.state().condominioActualId ?? null;
+    if (id) this.loadData(id);
   }
 
   confirmarRenovar(c: ContratoResumen): void {
@@ -131,7 +173,8 @@ export class ContratosComponent implements OnInit {
     this.contratosSrv.renovar(Number(c.id), payload).subscribe({
       next: () => {
         this.toast.success("Contrato renovado correctamente.");
-        this.loadData();
+        const id = this.condCtx.state().condominioActualId ?? null;
+        if (id) this.loadData(id);
       },
       error: () => {
         this.loading.set(false);
@@ -152,7 +195,8 @@ export class ContratosComponent implements OnInit {
     this.contratosSrv.rescindir(Number(c.id), payload).subscribe({
       next: () => {
         this.toast.success("Contrato rescindido correctamente.");
-        this.loadData();
+        const id = this.condCtx.state().condominioActualId ?? null;
+        if (id) this.loadData(id);
       },
       error: () => {
         this.loading.set(false);
@@ -172,7 +216,8 @@ export class ContratosComponent implements OnInit {
     this.contratosSrv.delete(Number(c.id)).subscribe({
       next: () => {
         this.toast.success("Contrato eliminado correctamente.");
-        this.loadData();
+        const id = this.condCtx.state().condominioActualId ?? null;
+        if (id) this.loadData(id);
       },
       error: () => {
         this.loading.set(false);

@@ -32,6 +32,10 @@ export class UsuariosComponent implements OnInit {
     const r = (this.auth.snapshot.role ?? '').toString().toUpperCase();
     return r === 'OWNER' || r === 'DUENO' || /^DUE.?O$/.test(r);
   });
+  readonly isAdmin = computed(() => {
+    const r = (this.auth.snapshot.role ?? '').toString().toUpperCase();
+    return r === 'ADMIN';
+  });
 
   readonly q = signal('');
   readonly rolFilter = signal<'todos' | Rol>('todos');

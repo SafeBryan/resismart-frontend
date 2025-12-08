@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError, throwError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CondominioResumenDTO, PageCondominioResumenDTO, CondominioCreateDTO, CondominioUpdateDTO } from '../models/condominio.model';
 import { UnidadDTO, UnidadCreateDTO, UnidadUpdateDTO } from '../models/unidad.model';
@@ -36,7 +36,10 @@ export class CondominiosService {
 
   // Variante simple: listar unidades por condominio
   unidadesPorCondominio(idCondominio: number): Observable<UnidadDTO[]> {
-    return this.http.get<UnidadDTO[]>(`${API}/Unidades/por-condominio/${idCondominio}`);
+    return this.http.get<UnidadDTO[]>(`${API}/Unidades/por-condominio/${idCondominio}`).pipe(
+      // Fallback a la ruta GET /Condominios/{id}/unidades si la anterior no existe
+      catchError(() => this.http.get<UnidadDTO[]>(`${API}/Condominios/${idCondominio}/unidades`))
+    );
   }
 
   agregarUnidad(idCondominio: number, dto: UnidadCreateDTO): Observable<any> {
@@ -49,5 +52,30 @@ export class CondominiosService {
 
   eliminarUnidad(idUnidad: number): Observable<any> {
     return this.http.delete(`${API}/Unidades/${idUnidad}`);
+  }
+
+  listarMisCondominios(): Observable<CondominioResumenDTO[]> {
+    return this.http.get<CondominioResumenDTO[]>(`${API}/Condominios/mis-condominios`).pipe(
+      catchError((err) => {
+        if (err?.status === 403) {
+          return of<CondominioResumenDTO[]>([]);
+        }
+        return throwError(() => err);
+      })
+    );
+  }
+
+  resumenOcupacion(idCondominio: number): Observable<any> {
+    return this.http.get<any>(`${API}/Condominios/${idCondominio}/resumen-ocupacion`);
+  }
+
+  uploadImages(condominioId: number, logo?: File | null, portada?: File | null): Observable<CondominioResumenDTO> {
+    const formData = new FormData();
+    if (logo) formData.append('logo', logo);
+    if (portada) formData.append('portada', portada);
+    if (!logo && !portada) {
+      return throwError(() => new Error('Debe seleccionar al menos una imagen'));
+    }
+    return this.http.post<CondominioResumenDTO>(`${API}/Condominios/${condominioId}/imagenes`, formData);
   }
 }

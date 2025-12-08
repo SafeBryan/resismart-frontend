@@ -5,6 +5,8 @@ export interface CondominioResumenDTO {
   telefono?: string;
   correo?: string;
   idDueno?: number;
+   logoUrl?: string;
+   portadaUrl?: string;
 }
 
 export interface PageCondominioResumenDTO {

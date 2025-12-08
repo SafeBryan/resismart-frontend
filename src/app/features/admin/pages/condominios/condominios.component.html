@@ -1,6 +1,7 @@
 <div class="layout">
   <app-sidebar></app-sidebar>
   <main class="content">
+
     <div class="header">
       <div>
         <h1>Gestión de Condominios</h1>
@@ -23,16 +24,7 @@
     </div>
 
     <section class="card">
-      <div class="filters">
-        <mat-form-field appearance="outline" class="estado">
-          <mat-label>Seleccionar condominio</mat-label>
-          <mat-select [value]="selectedId()" (valueChange)="onSelectCondo($event)">
-            <mat-option *ngFor="let c of condominios()" [value]="c.id">{{ c.nombre }}</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-
-      <ng-container *ngIf="condominios().length > 0; else noCondominios">
+      <ng-container *ngIf="selectedId(); else noCondominios">
         <div class="details">
           <div class="detail"><span>Nombre</span><b>{{ selected()?.nombre }}</b></div>
           <div class="detail"><span>Dirección</span><b>{{ selected()?.direccion }}</b></div>
@@ -42,7 +34,7 @@
 
         <div class="units-header">
           <h3>Unidades del Condominio</h3>
-          <button mat-raised-button color="primary" (click)="openAddUnidad()">
+          <button mat-raised-button color="primary" (click)="openAddUnidad()" [disabled]="!selectedId()">
             <mat-icon fontIcon="add"></mat-icon>
             Agregar Unidad
           </button>
@@ -85,7 +77,12 @@
       </ng-container>
 
       <ng-template #noCondominios>
-        <div class="empty large">No hay condominios registrados. Agrega uno para comenzar.</div>
+        <div class="empty large">
+          <ng-container *ngIf="!condominios().length; else selectMsg">
+            No hay condominios registrados. Agrega uno para comenzar.
+          </ng-container>
+          <ng-template #selectMsg>Selecciona un condominio para ver sus unidades.</ng-template>
+        </div>
       </ng-template>
     </section>
 

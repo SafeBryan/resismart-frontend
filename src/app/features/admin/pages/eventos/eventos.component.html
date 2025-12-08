@@ -2,6 +2,7 @@
   <app-sidebar></app-sidebar>
 
   <main class="content">
+
     <div class="content-inner">
       <header class="page-head">
         <div>
@@ -13,18 +14,7 @@
         </div>
       </header>
 
-      <section class="filters">
-        <label>
-          Condominio
-          <select [ngModel]="selectedCondominioId()" (ngModelChange)="onSelectCondominio($event)">
-            <option *ngFor="let cond of condominios()" [ngValue]="cond.id">
-              {{ cond.nombre || ('Condominio #' + cond.id) }}
-            </option>
-          </select>
-        </label>
-      </section>
-
-      <section class="card">
+      <section class="card" *ngIf="condominioId(); else noCondo">
         <div class="card-head">
           <h3>Listado de eventos</h3>
           <span class="muted">Total: {{ eventos().length }}</span>
@@ -84,6 +74,11 @@
           <p class="muted">Cargando eventos…</p>
         </ng-template>
       </section>
+      <ng-template #noCondo>
+        <section class="card placeholder">
+          <p class="muted">Selecciona un condominio en el selector superior para ver sus eventos.</p>
+        </section>
+      </ng-template>
     </div>
   </main>
 </div>
@@ -142,4 +137,3 @@
     </form>
   </div>
 </div>
-*** End Patch

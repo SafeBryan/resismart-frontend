@@ -1,0 +1,154 @@
+<div class="page">
+  <app-sidebar [nav]="residentNav"></app-sidebar>
+
+  <div class="content">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Tus finanzas</p>
+        <h1>Pagos del residente</h1>
+        <p class="subtitle">Revisa tus ordenes de pago y su estado.</p>
+      </div>
+      <div class="filters">
+        <label>
+          <span>Contrato</span>
+          <select [ngModel]="selectedContratoFilter()" (ngModelChange)="onChangeContrato($event)">
+            <option *ngFor="let opt of contratosOptions()" [value]="opt.id">{{ opt.label }}</option>
+          </select>
+        </label>
+        <label>
+          <span>Estado</span>
+          <select [ngModel]="selectedEstadoFilter()" (ngModelChange)="onChangeEstado($event)">
+            <option *ngFor="let opt of estadosOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </label>
+      </div>
+    </header>
+
+    <section class="summary-grid">
+      <article class="summary-card">
+        <div class="summary-icon info"><mat-icon>calendar_today</mat-icon></div>
+        <div>
+          <p class="summary-label">Orden del mes</p>
+          <p class="summary-value" *ngIf="ordenMesActual(); else sinMes">
+            {{ ordenMesActual()?.periodo || 'Mes actual' }} - {{ ordenMesActual()?.estado }}
+          </p>
+          <p class="muted" *ngIf="ordenMesActual()">Saldo {{ ordenMesActual()?.saldoPendiente }} - Mora {{ ordenMesActual()?.mora }}</p>
+          <ng-template #sinMes><p class="muted">Aún no tienes orden este mes.</p></ng-template>
+        </div>
+      </article>
+      <article class="summary-card">
+        <div class="summary-icon warning"><mat-icon>access_time</mat-icon></div>
+        <div>
+          <p class="summary-label">Próxima por vencer</p>
+          <p class="summary-value" *ngIf="ordenSiguienteVencimiento(); else sinVenc">
+            {{ ordenSiguienteVencimiento()?.periodo || 'Próxima' }} - {{ ordenSiguienteVencimiento()?.vence || 'sin fecha' }}
+          </p>
+          <p class="muted" *ngIf="ordenSiguienteVencimiento()">Estado: {{ ordenSiguienteVencimiento()?.estado }}</p>
+          <ng-template #sinVenc><p class="muted">Sin vencimientos próximos.</p></ng-template>
+        </div>
+      </article>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2>Ordenes de pago</h2>
+          <p class="muted">Solo ves ordenes de tus contratos vigentes.</p>
+        </div>
+        <div *ngIf="loading()" class="pill loading">Cargando...</div>
+      </div>
+
+      <div *ngIf="error()" class="error">{{ error() }}</div>
+
+      <div class="table" *ngIf="!loading() && !error()">
+        <div class="table-head">
+          <div>Contrato / Unidad</div>
+          <div>Periodo</div>
+          <div>Montos</div>
+          <div>Estado</div>
+          <div>Accion</div>
+        </div>
+        <div class="table-row" *ngFor="let orden of ordenesView()">
+          <div>
+            <div class="strong">{{ orden.contratoLabel }}</div>
+            <div class="muted">Orden #{{ orden.id }}</div>
+          </div>
+          <div>
+            <div class="strong">{{ orden.periodo }}</div>
+            <div class="muted" *ngIf="orden.vence">Vence: {{ orden.vence }}</div>
+          </div>
+          <div>
+            <div class="strong">{{ orden.monto }}</div>
+            <div class="muted tiny">Total c/mora: {{ orden.totalConMora }}</div>
+            <div class="muted tiny">Saldo: {{ orden.saldoPendiente }}</div>
+            <div class="muted tiny">Mora: {{ orden.mora }}</div>
+          </div>
+          <div>
+            <span class="badge" [class.paid]="orden.estadoRaw === 'PAGADA'" [class.danger]="orden.estadoRaw === 'EN_MORA' || orden.estadoRaw === 'VENCIDA'">
+              {{ orden.estado }}
+            </span>
+            <div class="muted" *ngIf="orden.ultimaTransaccion">Ultima transaccion: {{ orden.ultimaTransaccion }}</div>
+          </div>
+          <div>
+            <button class="btn primary" [disabled]="!orden.puedePagar" (click)="openModal(orden.id)">Registrar pago</button>
+          </div>
+        </div>
+        <div class="empty" *ngIf="ordenesView().length === 0">
+          No hay ordenes para mostrar con los filtros seleccionados.
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Modal pago -->
+<div class="modal-backdrop" *ngIf="showModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <p class="eyebrow">Registrar pago</p>
+        <h3>Orden #{{ selectedOrden()?.id }}</h3>
+        <p class="muted">
+          {{ formatPeriodo(selectedOrden()?.periodo) }}
+          <span *ngIf="selectedOrden()?.fechaVencimiento">- Vence {{ formatDate(selectedOrden()?.fechaVencimiento) }}</span>
+        </p>
+        <p class="muted tiny">
+          Monto base: {{ formatCurrency(montoBaseDetalle(selectedOrden()?.id)) }}
+          - Mora: {{ formatCurrency(moraDetalle(selectedOrden()?.id)) }}
+        </p>
+        <p class="muted tiny">
+          Total con mora: {{ formatCurrency(totalOrdenConMora(selectedOrden()?.id)) }}
+          - Saldo pendiente: {{ formatCurrency(saldoPendienteDetalle(selectedOrden()?.id)) }}
+        </p>
+      </div>
+      <button class="icon-button" (click)="closeModal()">&times;</button>
+    </div>
+
+    <form class="modal-body" (ngSubmit)="onSubmitPago()">
+      <div class="field">
+        <label>Monto pagado</label>
+        <input type="number" step="0.01" [(ngModel)]="pagoForm.monto" name="monto" required />
+      </div>
+      <div class="field">
+        <label>Metodo</label>
+        <select [(ngModel)]="pagoForm.metodo" name="metodo" required>
+          <option *ngFor="let opt of metodoOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Referencia</label>
+        <input type="text" [(ngModel)]="pagoForm.referencia" name="referencia" placeholder="Numero de operacion o nota" />
+      </div>
+      <div class="field">
+        <label>Comprobante (opcional)</label>
+        <input type="file" (change)="onFileChange($event)" />
+        <p class="muted" *ngIf="pagoForm.comprobante">Archivo: {{ pagoForm.comprobante.name }}</p>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="btn primary" [disabled]="saving()">Enviar pago</button>
+      </div>
+    </form>
+  </div>
+</div>

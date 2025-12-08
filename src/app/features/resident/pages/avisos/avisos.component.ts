@@ -1,10 +1,13 @@
-﻿import { Component, computed, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { UtilsModule } from '../../../../utils/utils.module';
 import { AvisoTipo } from '../../../../core/models/aviso.model';
 import { useAvisos, AvisoItem } from '../../../../core/services/avisos-store.service';
 import { RESIDENT_NAV } from '../../resident-nav';
+import { AvisosService } from '../../../../core/services/avisos.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 interface AvisoView {
   id: number;
@@ -16,17 +19,23 @@ interface AvisoView {
   responsable: string;
   etiqueta: string;
   leido: boolean;
+  senderId?: number | null;
   source: AvisoItem;
 }
 
 @Component({
   selector: 'app-resident-avisos',
   standalone: true,
-  imports: [CommonModule, RouterModule, UtilsModule],
+  imports: [CommonModule, RouterModule, FormsModule, UtilsModule],
   templateUrl: './avisos.component.html',
   styleUrl: './avisos.component.css',
 })
 export class ResidentAvisosComponent {
+  constructor(
+    private readonly avisosService: AvisosService,
+    private readonly toast: ToastService
+  ) {}
+
   readonly residentNav = RESIDENT_NAV;
   readonly avisosFacade = useAvisos();
 
@@ -42,6 +51,8 @@ export class ResidentAvisosComponent {
   readonly filtroSeleccionado = signal<string>('todos');
   readonly loading = this.avisosFacade.loading;
   readonly error = this.avisosFacade.error;
+  readonly replyingId = signal<number | null>(null);
+  readonly replyMessage = signal('');
 
   readonly avisos = computed<AvisoView[]>(() =>
     this.avisosFacade
@@ -71,6 +82,52 @@ export class ResidentAvisosComponent {
     this.avisosFacade.ack([aviso.id]);
   }
 
+  puedeResponder(aviso: AvisoView): boolean {
+    // Permite responder si conocemos un sender (se asume ADMIN/DUEÑO en backend)
+    return !!aviso.senderId;
+  }
+
+  abrirRespuesta(aviso: AvisoView): void {
+    if (!this.puedeResponder(aviso)) {
+      this.toast.error('No puedes responder este aviso.');
+      return;
+    }
+    this.replyingId.set(aviso.id);
+    this.replyMessage.set('');
+  }
+
+  cancelarRespuesta(): void {
+    this.replyingId.set(null);
+    this.replyMessage.set('');
+  }
+
+  enviarRespuesta(aviso: AvisoView): void {
+    if (!this.puedeResponder(aviso)) {
+      this.toast.error('No puedes responder este aviso.');
+      return;
+    }
+    const msg = this.replyMessage().trim();
+    if (!msg) {
+      this.toast.error('Escribe un mensaje para responder.');
+      return;
+    }
+    const req = {
+      tipo: 'ALERTA_GENERAL' as AvisoTipo,
+      mensaje: msg,
+    };
+    this.avisosService.responder(aviso.id, req as any).subscribe({
+      next: () => {
+        this.toast.success('Respuesta enviada.');
+        this.cancelarRespuesta();
+        this.avisosFacade.refresh();
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error('No se pudo enviar la respuesta.');
+      },
+    });
+  }
+
   private mapAviso(aviso: AvisoItem): AvisoView {
     return {
       id: aviso.id,
@@ -82,6 +139,7 @@ export class ResidentAvisosComponent {
       responsable: this.resolveResponsable(aviso),
       etiqueta: this.resolveEtiqueta(aviso.tipo),
       leido: !!aviso.leido,
+      senderId: (aviso as any).senderId ?? (aviso as any).sender_id ?? null,
       source: aviso,
     };
   }
@@ -143,3 +201,4 @@ export class ResidentAvisosComponent {
     return lower.charAt(0).toUpperCase() + lower.slice(1);
   }
 }
+
