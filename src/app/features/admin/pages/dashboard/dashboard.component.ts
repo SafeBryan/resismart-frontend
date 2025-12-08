@@ -2,6 +2,7 @@ import { Component, OnDestroy, computed, effect, inject, signal } from '@angular
 import { CommonModule } from '@angular/common';
 import { UtilsModule } from '../../../../utils/utils.module';
 import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
+import { MatIconModule } from '@angular/material/icon';
 import { ChartData, ChartOptions } from 'chart.js';
 import { CondominioContextService } from '../../../../core/services/condominio-context.service';
 import { CondominiosService } from '../../../../core/services/condominios.service';
@@ -17,7 +18,7 @@ import { environment } from '../../../../../environments/environment';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, UtilsModule, BaseChartDirective],
+  imports: [CommonModule, UtilsModule, BaseChartDirective, MatIconModule],
   providers: [provideCharts(withDefaultRegisterables())],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
@@ -255,6 +256,7 @@ export class DashboardComponent implements OnDestroy {
   }
 
   trackByPago = (_: number, o: DashboardOrden) => o.id;
+  trackByContrato = (_: number, c: ContratoResumen) => c.id;
 
   private orderDate(o: DashboardOrden): number {
     const d = o.fechaEmision || o.fechaVencimiento;

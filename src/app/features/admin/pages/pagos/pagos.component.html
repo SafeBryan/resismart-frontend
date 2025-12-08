@@ -2,190 +2,120 @@
   <app-sidebar></app-sidebar>
 
   <main class="content">
-<<<<<<< HEAD
     <header class="page-header">
       <div>
         <p class="eyebrow">Finanzas</p>
         <h1>Pagos</h1>
-        <p class="muted">Revisa &oacute;rdenes de pago, pagos registrados y estado de morosidad por condominio.</p>
+        <p class="muted">Revisa y gestiona las &oacute;rdenes de pago del condominio.</p>
       </div>
       <div class="actions">
-        <button class="btn ghost" (click)="onRefresh()">Actualizar</button>
+        <button class="btn ghost" type="button" (click)="reintentarCarga()">Refrescar</button>
+        <button class="btn primary" type="button" (click)="exportarCSV()">Exportar CSV</button>
       </div>
     </header>
 
-    <section class="kpi-grid">
-      <article class="kpi-card">
-        <div class="kpi-icon success"><mat-icon>layers</mat-icon></div>
-        <div>
-          <p class="kpi-label">&Oacute;rdenes mes actual</p>
-          <p class="kpi-value">{{ kpiMesTotal() }}</p>
-        </div>
-      </article>
-      <article class="kpi-card">
-        <div class="kpi-icon warning"><mat-icon>schedule</mat-icon></div>
-        <div>
-          <p class="kpi-label">Pendiente mes</p>
-          <p class="kpi-value">{{ formatCurrency(kpiMesPendiente()) }}</p>
-        </div>
-      </article>
-      <article class="kpi-card">
-        <div class="kpi-icon info"><mat-icon>payments</mat-icon></div>
-        <div>
-          <p class="kpi-label">Cobrado mes</p>
-          <p class="kpi-value">{{ formatCurrency(kpiMesCobrado()) }}</p>
-        </div>
-      </article>
-      <article class="kpi-card">
-        <div class="kpi-icon danger"><mat-icon>warning_amber</mat-icon></div>
-        <div>
-          <p class="kpi-label">&Oacute;rdenes en mora</p>
-          <p class="kpi-value">{{ kpiEnMora() }}</p>
-        </div>
-      </article>
-    </section>
-
-    <section class="card table-card">
-      <div class="section-header">
-        <div>
-          <p class="eyebrow">Mes actual</p>
-          <h2>&Oacute;rdenes de pago de este mes</h2>
-        </div>
-        <div class="section-actions">
-          <span *ngIf="loadingOrdenes()" class="pill">Cargando...</span>
-        </div>
+    <div *ngIf="error()" class="error">
+      {{ error() }}
+      <div class="actions" style="margin-top: 8px">
+        <button class="btn ghost" type="button" (click)="reintentarCarga()">Reintentar</button>
       </div>
-      <div class="table" *ngIf="!loadingOrdenes()">
-        <div class="table-head">
-          <div>Inquilino</div>
-          <div>Unidad</div>
-          <div>Periodo</div>
-          <div>Monto base</div>
-          <div>Mora</div>
-          <div>Total c/mora</div>
-          <div>Saldo</div>
-          <div>Estado</div>
-          <div>Acciones</div>
-        </div>
-        <div class="table-row" *ngFor="let orden of ordenesMesView()">
-          <div>
-            <div class="strong">{{ orden.inquilino || 'Sin inquilino' }}</div>
-            <div class="muted small">Contrato #{{ orden.contratoId }}</div>
-          </div>
-          <div>
-            <div class="strong">{{ orden.unidad || 'Sin unidad' }}</div>
-            <div class="muted small">{{ orden.condominio || '-' }}</div>
-          </div>
-          <div>
-            <div class="strong">{{ formatPeriodo(orden.periodo) }}</div>
-            <div class="muted small">Vence {{ orden.fechaVencimiento ? formatDate(orden.fechaVencimiento) : 'N/D' }}</div>
-          </div>
-          <div>
-            <div class="strong">{{ formatCurrency(orden.montoBase ?? orden.monto ?? 0) }}</div>
-            <div class="muted tiny">Base</div>
-          </div>
-          <div class="strong">{{ formatCurrency(orden.mora ?? 0) }}</div>
-          <div class="strong">{{ formatCurrency(orden.totalConMora ?? (orden.monto ?? 0)) }}</div>
-          <div>{{ saldoPendienteLabel(orden) }}</div>
-          <div>
-            <span [class]="estadoClase(orden.estado)">{{ orden.estado || 'N/D' }}</span>
-          </div>
-          <div class="actions">
-            <button class="btn ghost" (click)="openDetalle(orden.id)">Ver detalle</button>
-          </div>
-        </div>
-        <div class="empty" *ngIf="ordenesMesView().length === 0">No hay &oacute;rdenes para este mes.</div>
-      </div>
-    </section>
+    </div>
 
     <section class="card filters-card">
       <div class="filters-grid">
         <div class="filter-item">
-          <label>Inquilino</label>
-          <select [ngModel]="inquilinoFilter()" (ngModelChange)="onInquilinoChange($event)">
-            <option *ngFor="let opt of inquilinosOptions()" [ngValue]="opt.value">{{ opt.label }}</option>
-          </select>
-        </div>
-        <div class="filter-item">
-          <label>Estado de la orden</label>
-          <select [ngModel]="estadoFilter()" (ngModelChange)="onEstadoChange($event)">
+          <label>Estado</label>
+          <select [ngModel]="estadoFilter()" (ngModelChange)="estadoFilter.set($event); onFilterChange()">
             <option value="ALL">Todos</option>
             <option value="PENDIENTE">Pendiente</option>
             <option value="PAGADA">Pagada</option>
             <option value="VENCIDA">Vencida</option>
             <option value="EN_MORA">En mora</option>
+            <option value="RECHAZADA">Rechazada</option>
           </select>
         </div>
         <div class="filter-item">
           <label>Desde</label>
-          <input type="date" [ngModel]="fromFilter()" (ngModelChange)="fromFilter.set($event); onFechaChange()" />
+          <input type="date" [ngModel]="fromFilter()" (ngModelChange)="fromFilter.set($event); onFilterChange()" />
         </div>
         <div class="filter-item">
           <label>Hasta</label>
-          <input type="date" [ngModel]="toFilter()" (ngModelChange)="toFilter.set($event); onFechaChange()" />
+          <input type="date" [ngModel]="toFilter()" (ngModelChange)="toFilter.set($event); onFilterChange()" />
         </div>
       </div>
       <div class="filter-actions">
-        <button class="btn ghost" (click)="limpiarFiltros()">Limpiar filtros</button>
-        <button class="btn primary" (click)="aplicarFiltros()">Aplicar filtros</button>
+        <button class="btn ghost" type="button" (click)="onClearFilters()">Limpiar filtros</button>
       </div>
     </section>
 
     <section class="card table-card">
       <div class="section-header">
         <div>
-          <p class="eyebrow">Hist&oacute;rico</p>
-          <h2>Hist&oacute;rico de &oacute;rdenes</h2>
+          <p class="eyebrow">Listado</p>
+          <h2>&Oacute;rdenes de pago</h2>
         </div>
         <div class="section-actions">
           <span *ngIf="loadingOrdenes()" class="pill">Cargando...</span>
         </div>
       </div>
-      <div *ngIf="error()" class="error">{{ error() }}</div>
-      <div class="table" *ngIf="!loadingOrdenes()">
+
+      <div class="table" *ngIf="!loadingOrdenes(); else loadingTable">
         <div class="table-head">
           <div>Inquilino</div>
           <div>Unidad</div>
           <div>Periodo</div>
           <div>Monto base</div>
           <div>Mora</div>
-          <div>Total c/mora</div>
-          <div>Pagado</div>
+          <div>Total</div>
           <div>Saldo</div>
           <div>Estado</div>
           <div>Acciones</div>
         </div>
-        <div class="table-row" *ngFor="let orden of ordenesView()">
+
+        <div class="table-row" *ngFor="let orden of ordenes(); trackBy: trackById">
           <div>
             <div class="strong">{{ orden.inquilino || 'Sin inquilino' }}</div>
-            <div class="muted small">Contrato #{{ orden.contratoId }}</div>
+            <div class="muted small">Contrato #{{ orden.idContrato }}</div>
           </div>
           <div>
             <div class="strong">{{ orden.unidad || 'Sin unidad' }}</div>
             <div class="muted small">{{ orden.condominio || '-' }}</div>
           </div>
           <div>
-            <div class="strong">{{ formatPeriodo(orden.periodo) }}</div>
-            <div class="muted small">Vence {{ orden.fechaVencimiento ? formatDate(orden.fechaVencimiento) : 'N/D' }}</div>
+            <div class="strong">{{ orden.periodo || 'N/D' }}</div>
+            <div class="muted small">Vence {{ formatearFecha(orden.fechaVencimiento) }}</div>
           </div>
           <div>
-            <div class="strong">{{ formatCurrency(orden.montoBase ?? orden.monto ?? 0) }}</div>
+            <div class="strong">{{ formatearMonto(orden.montoBase ?? orden.monto) }}</div>
             <div class="muted tiny">Base</div>
           </div>
-          <div class="strong">{{ formatCurrency(orden.mora ?? 0) }}</div>
-          <div class="strong">{{ formatCurrency(orden.totalConMora ?? (orden.monto ?? 0)) }}</div>
-          <div>{{ pagadoLabel(orden) }}</div>
-          <div>{{ saldoPendienteLabel(orden) }}</div>
+          <div class="strong">{{ formatearMonto(orden.mora ?? 0) }}</div>
+          <div class="strong">{{ formatearMonto(orden.monto + (orden.mora ?? 0)) }}</div>
           <div>
-            <span [class]="estadoClase(orden.estado)">{{ orden.estado || 'N/D' }}</span>
-            <div class="muted small" *ngIf="orden.ultimaTransaccionEstado">Tx: {{ orden.ultimaTransaccionEstado }}</div>
+            <span class="badge" [ngClass]="saldoColor(orden)">{{ formatearMonto(orden.saldoPendiente ?? 0) }}</span>
+          </div>
+          <div>
+            <span class="badge" [ngClass]="getEstadoBadge(orden.estado)">{{ orden.estado || 'N/D' }}</span>
+            <div class="muted tiny" *ngIf="orden.ultimaTransaccionEstado">Tx: {{ orden.ultimaTransaccionEstado }}</div>
           </div>
           <div class="actions">
-            <button class="btn ghost" (click)="openDetalle(orden.id)">Ver detalle</button>
+            <button class="btn ghost" type="button" (click)="openDetalle(orden.id)">Ver detalle</button>
+            <button
+              class="btn success"
+              type="button"
+              *ngIf="(orden.estado || '').toUpperCase() !== 'PAGADA'"
+              (click)="marcarPagada(orden.id)"
+            >
+              Marcar pagada
+            </button>
           </div>
         </div>
-        <div class="empty" *ngIf="ordenesView().length === 0">No hay &oacute;rdenes con los filtros seleccionados.</div>
+
+        <div class="empty" *ngIf="ordenes().length === 0">No hay &oacute;rdenes con los filtros seleccionados.</div>
       </div>
+      <ng-template #loadingTable>
+        <div class="loading-row">Cargando &oacute;rdenes...</div>
+      </ng-template>
     </section>
   </main>
 </div>
@@ -198,29 +128,29 @@
         <h3>{{ detalle()?.inquilinoNombre || 'Detalle de orden' }}</h3>
         <p class="muted">Contrato #{{ detalle()?.contratoId || 'N/D' }} &bull; Unidad {{ detalle()?.unidad || 'N/D' }}</p>
       </div>
-      <button class="icon-button" (click)="closeDetalle()">&times;</button>
+      <button class="icon-button" type="button" (click)="closeDetalle()">&times;</button>
     </div>
 
     <div *ngIf="detalleError()" class="error">{{ detalleError() }}</div>
     <div *ngIf="loadingDetalle()" class="loading-row">Cargando detalle...</div>
 
-    <div class="drawer-body" *ngIf="detalle()">
+    <div class="drawer-body" *ngIf="!loadingDetalle() && detalle()">
       <div class="drawer-kpis">
         <div class="mini-card">
           <p class="label">Monto total</p>
-          <p class="value">{{ formatCurrency(detalle()?.total ?? detalle()?.montoBase) }}</p>
+          <p class="value">{{ formatearMonto(detalle()?.total ?? detalle()?.montoBase) }}</p>
           <p class="muted tiny">Incluye mora</p>
         </div>
         <div class="mini-card">
           <p class="label">Saldo pendiente</p>
-          <p class="value">{{ formatCurrency(saldoDetalleConMora(detalle()) ?? 0) }}</p>
-          <span [class]="estadoClase(detalle()?.estado)" class="badge-inline">{{ detalle()?.estado }}</span>
-          <p class="muted tiny">Mora: {{ formatCurrency(detalle()?.mora ?? 0) }}</p>
+          <p class="value">{{ formatearMonto(detalle()?.saldoPendiente ?? 0) }}</p>
+          <span class="badge" [ngClass]="(detalle()?.saldoPendiente ?? 0) <= 0 ? 'success' : 'warning'">{{ detalle()?.estado }}</span>
+          <p class="muted tiny">Mora: {{ formatearMonto(detalle()?.mora ?? 0) }}</p>
         </div>
         <div class="mini-card">
           <p class="label">Periodo</p>
-          <p class="value">{{ formatPeriodo(detalle()?.periodo) }}</p>
-          <p class="muted small">Vence {{ formatDate(detalle()?.fechaVencimiento) }}</p>
+          <p class="value">{{ detalle()?.periodo || 'N/D' }}</p>
+          <p class="muted small">Vence {{ formatearFecha(detalle()?.fechaVencimiento) }}</p>
         </div>
       </div>
 
@@ -247,15 +177,15 @@
       <div class="meta-grid">
         <div>
           <p class="muted small">Monto base</p>
-          <p class="strong">{{ formatCurrency(detalle()?.montoBase ?? 0) }}</p>
+          <p class="strong">{{ formatearMonto(detalle()?.montoBase ?? 0) }}</p>
         </div>
         <div>
           <p class="muted small">Mora</p>
-          <p class="strong">{{ formatCurrency(detalle()?.mora ?? 0) }}</p>
+          <p class="strong">{{ formatearMonto(detalle()?.mora ?? 0) }}</p>
         </div>
         <div>
-          <p class="muted small">Total c/mora</p>
-          <p class="strong">{{ formatCurrency(detalle()?.total ?? 0) }}</p>
+          <p class="muted small">Total</p>
+          <p class="strong">{{ formatearMonto(detalle()?.total ?? 0) }}</p>
         </div>
       </div>
 
@@ -263,33 +193,32 @@
         <div class="transactions-head">
           <h4>Transacciones</h4>
         </div>
-        <div class="tx-row" *ngFor="let tx of detalle()?.transacciones || []">
+        <div class="tx-row" *ngFor="let tx of detalle()?.transacciones || []; trackBy: trackByTxId">
           <div>
-            <p class="strong">{{ formatCurrency(tx.monto) }}</p>
-            <p class="muted tiny">{{ formatDate(tx.fechaPago) }}</p>
+            <p class="strong">{{ formatearMonto(tx.monto) }}</p>
+            <p class="muted tiny">{{ formatearFecha(tx.fechaPago) }}</p>
           </div>
           <div>
             <p class="muted small">{{ tx.metodoPago || 'N/D' }}</p>
             <p class="muted tiny">Ref: {{ tx.referencia || '-' }}</p>
           </div>
           <div>
-            <span [class]="txClase(tx.estado)">{{ tx.estado }}</span>
+            <span class="badge" [ngClass]="{ success: tx.estado === 'APROBADO', warning: tx.estado === 'PENDIENTE', danger: isPagoRechazado(tx) }">
+              {{ tx.estado }}
+            </span>
             <p class="muted tiny" *ngIf="tx.motivoRechazo">Motivo: {{ tx.motivoRechazo }}</p>
           </div>
           <div>
-            <ng-container *ngIf="comprobanteUrls(tx).length; else noComp">
-              <a class="link pill-link" *ngFor="let url of comprobanteUrls(tx); let i = index" [href]="url" target="_blank" rel="noreferrer">
-                Comprobante {{ comprobanteUrls(tx).length > 1 ? i + 1 : '' }}
-              </a>
-            </ng-container>
+            <a
+              class="link pill-link"
+              *ngIf="linkComprobante(tx); else noComp"
+              [href]="linkComprobante(tx)"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Comprobante
+            </a>
             <ng-template #noComp><span class="muted tiny">Sin comprobante</span></ng-template>
-          </div>
-          <div class="tx-actions" *ngIf="puedeAprobar">
-            <ng-container *ngIf="tx.estado === 'PENDIENTE'; else noTxActions">
-              <button class="btn success" (click)="openAprobar(tx)">Aprobar</button>
-              <button class="btn danger" (click)="openRechazar(tx)">Rechazar</button>
-            </ng-container>
-            <ng-template #noTxActions><span class="muted tiny">Sin acciones</span></ng-template>
           </div>
         </div>
         <div class="empty" *ngIf="!detalle()?.transacciones?.length">Sin transacciones.</div>
@@ -297,290 +226,3 @@
     </div>
   </div>
 </div>
-
-<app-ui-modal
-  [open]="!!modalAccion().tx"
-  [title]="modalAccion().modo === 'APROBAR' ? 'Aprobar pago' : 'Rechazar pago'"
-  size="sm"
-  (closed)="closeModal()"
->
-  <p class="muted">
-    Transacci&oacute;n #{{ modalAccion().tx?.id }} &bull; Orden #{{ modalAccion().tx?.ordenPago?.id ?? detalle()?.id }} &bull;
-    {{ formatCurrency(modalAccion().tx?.monto) }}
-  </p>
-
-  <div *ngIf="modalAccion().modo === 'RECHAZAR'" class="field">
-    <label>Motivo</label>
-    <textarea rows="3" [ngModel]="rechazoMotivo()" (ngModelChange)="rechazoMotivo.set($event)" placeholder="Describe el motivo del rechazo"></textarea>
-  </div>
-
-  <div modal-footer class="modal-actions">
-    <app-ui-button variant="outline" (clicked)="closeModal()">Cancelar</app-ui-button>
-    <app-ui-button variant="primary" *ngIf="modalAccion().modo === 'APROBAR'" (clicked)="confirmarAccion()">Confirmar</app-ui-button>
-    <app-ui-button variant="danger" *ngIf="modalAccion().modo === 'RECHAZAR'" (clicked)="confirmarAccion()">Rechazar</app-ui-button>
-  </div>
-</app-ui-modal>
-=======
-    <div class="content-inner">
-      <!-- =======================
-           HEADER
-      ======================== -->
-      <header class="content-header">
-        <h2>Órdenes de Pago</h2>
-        <p class="subtitle">Consulta general, KPIs, generación y pagos</p>
-      </header>
-
-      <!-- =======================
-           FILTROS
-      ======================== -->
-      <section class="card filtros">
-        <h3>Filtros</h3>
-
-        <div class="filtros-grid">
-          <!-- ID CONTRATO -->
-          <div class="field">
-            <label>ID Contrato</label>
-            <input
-              type="number"
-              [(ngModel)]="filtros.contratoId"
-              placeholder="Ej: 12"
-            />
-          </div>
-
-          <!-- ESTADO -->
-          <div class="field">
-            <label>Estado</label>
-            <select [(ngModel)]="filtros.estado">
-              <option value="">Todos</option>
-              <option *ngFor="let est of estados" [value]="est">
-                {{ est }}
-              </option>
-            </select>
-          </div>
-
-          <!-- FECHA DESDE -->
-          <div class="field">
-            <label>Desde (fecha emisión)</label>
-            <input type="date" [(ngModel)]="filtros.from" />
-          </div>
-
-          <!-- FECHA HASTA -->
-          <div class="field">
-            <label>Hasta (fecha emisión)</label>
-            <input type="date" [(ngModel)]="filtros.to" />
-          </div>
-
-          <!-- ORDENAR POR -->
-          <div class="field">
-            <label>Ordenar por</label>
-            <select [(ngModel)]="filtros.sortBy">
-              <option value="fechaEmision">Fecha emisión</option>
-              <option value="fechaVencimiento">Fecha vencimiento</option>
-              <option value="periodo">Periodo</option>
-              <option value="id">ID</option>
-            </select>
-          </div>
-
-          <!-- DIRECCIÓN -->
-          <div class="field">
-            <label>Dirección</label>
-            <select [(ngModel)]="filtros.sortDir">
-              <option value="DESC">Descendente</option>
-              <option value="ASC">Ascendente</option>
-            </select>
-          </div>
-
-          <!-- ITEMS POR PÁGINA -->
-          <div class="field">
-            <label>Items por página</label>
-            <select [(ngModel)]="filtros.size">
-              <option *ngFor="let size of pageSizeOptions" [ngValue]="size">
-                {{ size }}
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <div class="filtros-actions">
-          <button (click)="aplicarFiltros()">Aplicar</button>
-          <button class="secondary" (click)="limpiarFiltros()">Limpiar</button>
-        </div>
-      </section>
-
-      <!-- =======================
-           KPIs
-      ======================== -->
-      <section class="kpi-grid">
-        <article class="card kpi" *ngFor="let est of estados">
-          <h4>{{ est }}</h4>
-          <p class="kpi-value">{{ resumenEstados[est] ?? 0 }}</p>
-        </article>
-      </section>
-
-      <!-- =======================
-           GENERAR ÓRDENES
-      ======================== -->
-      <section class="card generar">
-        <h3>Generar órdenes del mes</h3>
-        <p class="generar-subtitle">
-          Se crean órdenes para todos los contratos activos en el mes
-          seleccionado.
-        </p>
-
-        <div class="generar-grid">
-          <div class="field">
-            <label>Año</label>
-            <select [(ngModel)]="anioGenerar">
-              <option *ngFor="let y of aniosDisponibles" [ngValue]="y">
-                {{ y }}
-              </option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label>Mes</label>
-            <select [(ngModel)]="mesGenerar">
-              <option *ngFor="let m of meses" [ngValue]="m.value">
-                {{ m.label }}
-              </option>
-            </select>
-          </div>
-
-          <div class="field generar-accion">
-            <button (click)="generarMes()">Generar órdenes</button>
-          </div>
-        </div>
-
-        <p class="msg msg-error" *ngIf="generacionError">
-          {{ generacionError }}
-        </p>
-
-        <p class="msg msg-ok" *ngIf="generacionResultado">
-          Órdenes creadas:
-          <strong>{{ generacionResultado.creadas }}</strong> · Ya existentes:
-          <strong>{{ generacionResultado.existentes }}</strong>
-        </p>
-      </section>
-
-      <!-- =======================
-           INGRESOS
-      ======================== -->
-      <section class="card ingresos">
-        <h3>Ingresos Mensuales (Pagadas)</h3>
-
-        <table *ngIf="ingresos.length > 0" class="tabla-simple">
-          <thead>
-            <tr>
-              <th>Mes</th>
-              <th>Monto Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of ingresos">
-              <td>{{ item.mes }}</td>
-              <td>{{ item.montoTotal | currency : "USD" }}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <p *ngIf="ingresos.length === 0" class="no-data">
-          Sin datos de ingresos
-        </p>
-      </section>
-
-      <!-- =======================
-           TABLA PRINCIPAL
-      ======================== -->
-      <section class="card tabla">
-        <div class="tabla-header">
-          <h3>Listado de órdenes</h3>
-          <p *ngIf="pageInfo" class="tabla-subtitle">
-            Total: {{ pageInfo.total }} registros
-          </p>
-        </div>
-
-        <p *ngIf="loading">Cargando...</p>
-
-        <table *ngIf="ordenes.length > 0" class="tabla-simple">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Contrato</th>
-              <th>Periodo</th>
-              <th>Monto</th>
-              <th>Estado</th>
-              <th>Emisión</th>
-              <th>Vencimiento</th>
-              <th style="width: 140px">Acciones</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr *ngFor="let o of ordenes">
-              <td>{{ o.id }}</td>
-              <td>{{ o.idContrato }}</td>
-              <td>{{ o.periodo }}</td>
-              <td>{{ o.monto | currency : "USD" }}</td>
-
-              <td>
-                <span class="badge" [ngClass]="o.estado.toLowerCase()">
-                  {{ o.estado }}
-                </span>
-              </td>
-
-              <td>{{ o.fechaEmision }}</td>
-              <td>{{ o.fechaVencimiento }}</td>
-
-              <td class="acciones">
-                <button
-                  (click)="marcarPagada(o.id)"
-                  [disabled]="o.estado === 'PAGADA'"
-                >
-                  ✔
-                </button>
-
-                <button class="secondary" (click)="mostrarQR(o)">QR</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <p *ngIf="!loading && ordenes.length === 0" class="no-data">
-          No hay registros
-        </p>
-
-        <!-- Paginación -->
-        <div class="paginacion" *ngIf="pageInfo">
-          <button (click)="paginaAnterior()" [disabled]="pageInfo.first">
-            ◀ Anterior
-          </button>
-
-          <span
-            >Página {{ pageInfo.page + 1 }} de {{ pageInfo.totalPages }}</span
-          >
-
-          <button (click)="paginaSiguiente()" [disabled]="pageInfo.last">
-            Siguiente ▶
-          </button>
-        </div>
-      </section>
-    </div>
-  </main>
-</div>
-
-<!-- =======================
-     MODAL QR
-======================== -->
-<div class="modal-backdrop" *ngIf="qrVisible">
-  <div class="modal">
-    <h3>QR de Orden #{{ qrOrdenId }}</h3>
-
-    <qrcode [qrdata]="qrData" [width]="220" [errorCorrectionLevel]="'M'">
-    </qrcode>
-
-    <pre class="qr-info">{{ qrData }}</pre>
-
-    <button class="close-btn" (click)="cerrarQR()">Cerrar</button>
-  </div>
-</div>
->>>>>>> 98f67ccd7c00017fca0cf5be3e50f83cf390309a

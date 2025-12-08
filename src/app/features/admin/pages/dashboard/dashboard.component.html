@@ -1,221 +1,177 @@
 <div class="layout">
   <app-sidebar></app-sidebar>
 
-  <main class="content">
+  <div class="content">
     <div class="content-inner">
-
-<<<<<<< HEAD
-      <ng-container *ngIf="condominioId(); else emptyState">
-        <header class="hero hero-with-cover">
-          <div class="hero-cover" [style.background-image]="'url(' + getPortadaUrl() + ')'"></div>
-          <div class="hero-body">
-            <div class="logo-badge">
-              <img [src]="getLogoUrl()" alt="Logo del condominio" />
+      <section class="hero hero-with-cover" *ngIf="condominio(); else sinCondominio">
+        <div class="hero-cover" [style.background-image]="'url(' + getPortadaUrl() + ')'"></div>
+        <div class="hero-body">
+          <div class="logo-badge">
+            <img [src]="getLogoUrl()" alt="Logo condominio" />
+          </div>
+          <div class="hero-text">
+            <p class="eyebrow">Dashboard</p>
+            <h1>{{ condominio()?.nombre }}</h1>
+            <div class="hero-meta">
+              <span class="badge muted">Unidades: {{ unidades().total }}</span>
+              <span class="badge muted">Ocupadas: {{ unidades().ocupadas }}</span>
+              <span class="badge muted">Libres: {{ unidades().libres }}</span>
             </div>
-            <div class="hero-text">
-              <p class="eyebrow">Condominio seleccionado</p>
-              <h1>{{ condominio()?.nombre || 'Condominio' }}</h1>
-              <p class="muted">{{ condominio()?.direccion || 'Sin dirección registrada' }}</p>
-              <div class="hero-meta">
-                <span><mat-icon aria-hidden="true">mail</mat-icon>{{ condominio()?.correo || 'Sin correo' }}</span>
-                <span><mat-icon aria-hidden="true">call</mat-icon>{{ condominio()?.telefono || 'Sin teléfono' }}</span>
-              </div>
-            </div>
-=======
-        <div class="actions">
-          <app-button
-            label="Refrescar"
-            variant="secondary"
-            (click)="refrescar()"
-          ></app-button>
-          <app-avisos-bell class="bell-anchor"></app-avisos-bell>
-        </div>
-
-        <div *ngIf="loading()" class="muted loading-hint">
-          Cargando datos...
-        </div>
-      </header>
-
-      <!-- KPIs (con colores) -->
-      <section class="grid kpis">
-        <div class="box kpi info">
-          <div class="title">Total Órdenes</div>
-          <div class="value">{{ kpis().totalOrdenes }}</div>
-        </div>
-        <div class="box kpi warn">
-          <div class="title">Pagos Pendientes</div>
-          <div class="value">{{ kpis().pendientes }}</div>
-        </div>
-        <div class="box kpi success">
-          <div class="title">Pagadas</div>
-          <div class="value">{{ kpis().pagadas }}</div>
-        </div>
-        <div class="box kpi indigo">
-          <div class="title">Con Comprobante</div>
-          <div class="value">{{ kpis().conComprobante }}</div>
+          </div>
+          <div class="actions">
+            <button class="badge" type="button" (click)="refrescar()">Refrescar</button>
+          </div>
         </div>
       </section>
+      <ng-template #sinCondominio>
+        <div class="panel">
+          <p class="muted">Selecciona un condominio para ver el resumen.</p>
+          <button class="badge" type="button" (click)="refrescar()">Intentar de nuevo</button>
+        </div>
+      </ng-template>
 
-      <!-- Panels -->
-      <section class="grid panels">
-        <!-- Estado de Pagos (donut pequeño) -->
+      <section class="kpi-grid compact">
+        <article class="kpi-card tone-green">
+          <div class="kpi-meta">
+            <mat-icon>payments</mat-icon>
+            <span>Ingresos del mes</span>
+          </div>
+          <p class="kpi-value">{{ kpis().ingresosMes | currency : 'USD' : 'symbol' : '1.0-0' }}</p>
+          <p class="kpi-hint">Pagos registrados en el mes</p>
+        </article>
+        <article class="kpi-card tone-rose">
+          <div class="kpi-meta">
+            <mat-icon>warning_amber</mat-icon>
+            <span>Deuda total</span>
+          </div>
+          <p class="kpi-value">{{ kpis().deuda | currency : 'USD' : 'symbol' : '1.0-0' }}</p>
+          <p class="kpi-hint">Pendiente por cobrar</p>
+        </article>
+        <article class="kpi-card tone-blue">
+          <div class="kpi-meta">
+            <mat-icon>home_work</mat-icon>
+            <span>Ocupaci&oacute;n</span>
+          </div>
+          <p class="kpi-value">{{ unidades().ocupadas }} / {{ unidades().total }}</p>
+          <p class="kpi-hint">{{ unidades().libres }} libres</p>
+          <div class="occupancy">
+            <div class="progress">
+              <div
+                class="progress-fill"
+                [style.width.%]="unidades().total ? (unidades().ocupadas / unidades().total) * 100 : 0"
+              ></div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <div class="grid-two">
+        <div class="panel chart-card chart-md">
+          <div class="panel-head">
+            <h3>Ingresos mensuales</h3>
+            <span class="muted tiny" *ngIf="!ingresosMensuales().length">Sin pagos registrados</span>
+          </div>
+          <canvas
+            baseChart
+            [data]="ingresosData"
+            [options]="ingresosOpts"
+            chartType="bar"
+          ></canvas>
+        </div>
+
+        <div class="panel chart-card chart-sm">
+          <div class="panel-head">
+            <h3>Estado de &oacute;rdenes</h3>
+          </div>
+          <canvas
+            baseChart
+            [data]="estadosData"
+            [options]="estadosOpts"
+            chartType="doughnut"
+          ></canvas>
+        </div>
+      </div>
+
+      <div class="grid-two">
         <div class="panel">
           <div class="panel-head">
-            <h3>Estado de Pagos</h3>
-            <span class="chip">Resumen</span>
->>>>>>> 98f67ccd7c00017fca0cf5be3e50f83cf390309a
+            <h3>Pr&oacute;ximos vencimientos</h3>
           </div>
-        </header>
-
-        <section class="section">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow">KPIs</p>
-              <h2>Salud del mes</h2>
-            </div>
-            <span *ngIf="loading()" class="badge muted">Cargando...</span>
+          <div class="table-wrap" *ngIf="proximosPagos().length; else sinProximos">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Orden</th>
+                  <th>Vence</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let o of proximosPagos(); trackBy: trackByPago">
+                  <td>#{{ o.id }}</td>
+                  <td>{{ o.fechaVencimiento | date: 'dd MMM' }}</td>
+                  <td>{{ o.total | currency : 'USD' : 'symbol' : '1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <div class="kpi-grid">
-            <article class="kpi-card tone-slate">
-              <div class="kpi-meta"><mat-icon aria-hidden="true">home_work</mat-icon><span>Unidades</span></div>
-              <div class="kpi-value">{{ unidades().total }}</div>
-              <p class="kpi-hint">{{ unidades().ocupadas }} ocupadas / {{ unidades().libres }} libres</p>
-            </article>
-            <article class="kpi-card tone-blue">
-              <div class="kpi-meta"><mat-icon aria-hidden="true">payments</mat-icon><span>Ingresos del mes</span></div>
-              <div class="kpi-value">{{ kpis().ingresosMes | currency : 'USD' : 'symbol' : '1.0-0' }}</div>
-              <p class="kpi-hint">Basado en pagos completados</p>
-            </article>
-            <article class="kpi-card tone-rose">
-              <div class="kpi-meta"><mat-icon aria-hidden="true">warning_amber</mat-icon><span>Deuda pendiente</span></div>
-              <div class="kpi-value">{{ kpis().deuda | currency : 'USD' : 'symbol' : '1.0-0' }}</div>
-              <p class="kpi-hint">Pendientes, vencidas y en mora</p>
-            </article>
-          </div>
-        </section>
-
-        <section class="section grid-two">
-          <article class="panel">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Próximos pagos</p>
-                <h3>Órdenes por vencer</h3>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table class="table">
-                <thead>
-                  <tr><th>Orden</th><th>Monto</th><th>Vence</th><th>Estado</th></tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let pago of proximosPagos(); trackBy: trackByPago">
-                    <td>#{{ pago.numero || pago.id }}</td>
-                    <td>{{ (pago.total || 0) | currency : 'USD' : 'symbol' : '1.0-0' }}</td>
-                    <td>{{ pago.fechaVencimiento | date : 'dd MMM' }}</td>
-                    <td><span class="pill warn">Pendiente</span></td>
-                  </tr>
-                  <tr *ngIf="!proximosPagos().length">
-                    <td colspan="4" class="muted empty">No hay pagos próximos.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </article>
-
-          <article class="panel">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Pagos recientes</p>
-                <h3>Últimas transacciones</h3>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table class="table">
-                <thead>
-                  <tr><th>Orden</th><th>Monto</th><th>Fecha</th><th>Estado</th></tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let pago of pagosRecientes(); trackBy: trackByPago">
-                    <td>#{{ pago.numero || pago.id }}</td>
-                    <td>{{ (pago.total || 0) | currency : 'USD' : 'symbol' : '1.0-0' }}</td>
-                    <td>{{ (pago.fechaEmision || pago.fechaVencimiento) | date : 'dd MMM' }}</td>
-                    <td><span class="pill ok">Pagada</span></td>
-                  </tr>
-                  <tr *ngIf="!pagosRecientes().length">
-                    <td colspan="4" class="muted empty">Sin pagos registrados.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </article>
-        </section>
-
-        <section class="section grid-two">
-          <article class="panel chart-card">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Ingresos mensuales</p>
-                <h3>Evolución</h3>
-              </div>
-              <span class="badge muted">USD</span>
-            </div>
-            <div class="chart-md">
-              <canvas
-                baseChart
-                [data]="ingresosData"
-                [options]="ingresosOpts"
-                [type]="'bar'"
-              ></canvas>
-            </div>
-            <p class="muted tiny-note">Serie basada en órdenes pagadas.</p>
-          </article>
-
-          <article class="panel chart-card">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Estado de pagos</p>
-                <h3>Distribución</h3>
-              </div>
-            </div>
-            <div class="chart-sm">
-              <canvas
-                baseChart
-                [data]="estadosData"
-                [options]="estadosOpts"
-                [type]="'doughnut'"
-              ></canvas>
-            </div>
-            <ul class="stat-list compact">
-              <li>
-                <span>Total</span><strong>{{ (estadosData.datasets[0].data[0] || 0) + (estadosData.datasets[0].data[1] || 0) + (estadosData.datasets[0].data[2] || 0) + (estadosData.datasets[0].data[3] || 0) }}</strong>
-              </li>
-              <li>
-                <span class="pill warn">Pendientes</span><strong>{{ estadosData.datasets[0].data[0] || 0 }}</strong>
-              </li>
-              <li>
-                <span class="pill ok">Pagadas</span><strong>{{ estadosData.datasets[0].data[1] || 0 }}</strong>
-              </li>
-              <li>
-                <span class="pill danger">Vencidas</span><strong>{{ estadosData.datasets[0].data[2] || 0 }}</strong>
-              </li>
-              <li>
-                <span class="pill danger">En Mora</span><strong>{{ estadosData.datasets[0].data[3] || 0 }}</strong>
-              </li>
-            </ul>
-          </article>
-        </section>
-      </ng-container>
-
-      <ng-template #emptyState>
-        <div class="panel empty-state">
-          <p class="eyebrow">Sin condominio</p>
-          <h3>Selecciona un condominio para ver el resumen</h3>
+          <ng-template #sinProximos><p class="muted empty">No hay &oacute;rdenes pendientes.</p></ng-template>
         </div>
-<<<<<<< HEAD
-      </ng-template>
-=======
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Pagos recientes</h3>
+          </div>
+          <div class="table-wrap" *ngIf="pagosRecientes().length; else sinPagos">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Orden</th>
+                  <th>Pagada</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let o of pagosRecientes(); trackBy: trackByPago">
+                  <td>#{{ o.id }}</td>
+                  <td>{{ (o.fechaEmision || o.fechaVencimiento) | date: 'dd MMM' }}</td>
+                  <td>{{ o.total | currency : 'USD' : 'symbol' : '1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #sinPagos><p class="muted empty">A&uacute;n no hay pagos registrados.</p></ng-template>
+        </div>
+      </div>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h3>Contratos recientes</h3>
+        </div>
+        <div class="table-wrap" *ngIf="contratosRecientes().length; else sinContratos">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Unidad</th>
+                <th>Inquilino</th>
+                <th>Inicio</th>
+                <th>Fin</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of contratosRecientes(); trackBy: trackByContrato">
+                <td>#{{ c.id }}</td>
+                <td>{{ c.numeroUnidad || c.idUnidad }}</td>
+                <td>{{ c.nombreResidente || 'N/D' }}</td>
+                <td>{{ c.fechaInicio | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ c.fechaFin ? (c.fechaFin | date: 'dd/MM/yyyy') : '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #sinContratos><p class="muted empty">No hay contratos cargados.</p></ng-template>
       </section>
->>>>>>> 98f67ccd7c00017fca0cf5be3e50f83cf390309a
     </div>
-  </main>
+  </div>
 </div>
