@@ -17,7 +17,10 @@ import {
   ContratoResumen,
 } from "../../../../core/models/contrato.model";
 import { OrdenPagoResumenDTO } from "../../../../core/models/orden-pago.model";
-import { DocumentoDetalleDTO } from "../../../../core/models/documento.model";
+import {
+  DocumentoDetalleDTO,
+  DocumentoListItem,
+} from "../../../../core/models/documento.model";
 import { ContratoDetalleComponent } from "./components/contrato-detalle/contrato-detalle.component";
 import { MatIconModule } from "@angular/material/icon";
 
@@ -59,7 +62,7 @@ interface DocumentoView {
     MatIconModule,
   ],
   templateUrl: "./contratos.component.html",
-  styleUrls: ["./contratos.component.css"], // <- CORREGIDO
+  styleUrls: ["./contratos.component.css"],
 })
 export class ResidentContratosComponent {
   // Servicios
@@ -79,7 +82,9 @@ export class ResidentContratosComponent {
   private readonly contratosRaw = signal<ContratoResumen[]>([]);
   private readonly contratoDetalle = signal<ContratoDetalle | null>(null);
   private readonly ordenesRaw = signal<OrdenPagoResumenDTO[]>([]);
-  private readonly documentosRaw = signal<DocumentoDetalleDTO[]>([]);
+  private readonly documentosRaw = signal<
+    (DocumentoDetalleDTO | DocumentoListItem)[]
+  >([]);
 
   // ViewModels
   readonly contratoActual = computed<ContratoActualView | null>(() => {
@@ -143,25 +148,16 @@ export class ResidentContratosComponent {
   );
 
   readonly documentos = computed<DocumentoView[]>(() =>
-    this.documentosRaw()
-      .sort((a, b) => (b.fechaSubida || "").localeCompare(a.fechaSubida || ""))
-      .map((doc) => ({
-        id: doc.idDocumento,
-        nombre: doc.nombreOriginal ?? `Documento #${doc.idDocumento}`,
-        tipo: doc.tipo ?? "PDF",
-        fecha: this.formatDate(doc.fechaSubida),
-        accion: "Descargar",
-      }))
-      .slice(0, 5)
+    this.mapDocumentos(this.documentosRaw())
   );
 
   // Tips fijos
   readonly tips = [
     {
       icon: "check_circle",
-      titulo: "Verifica tu informacion",
+      titulo: "Verifica tu información",
       descripcion:
-        'Manten tus datos personales actualizados en la seccion "Mis Datos".',
+        'Mantén tus datos personales actualizados en la sección "Mis Datos".',
     },
     {
       icon: "cloud_upload",
@@ -171,9 +167,9 @@ export class ResidentContratosComponent {
     },
     {
       icon: "support_agent",
-      titulo: "Contacta a administracion",
+      titulo: "Contacta a administración",
       descripcion:
-        "Si necesitas renegociar los terminos, agenda una cita con soporte.",
+        "Si necesitas renegociar los términos, agenda una cita con soporte.",
     },
   ];
 
@@ -285,11 +281,12 @@ export class ResidentContratosComponent {
         sortBy: "fechaSubida",
         sortDir: "DESC",
         flat: true,
+        withLinks: true,
       })
       .pipe(
         catchError((err) => {
           console.warn("[ResidentContratos] documentos error", err);
-          return of<DocumentoDetalleDTO[]>([]);
+          return of<(DocumentoDetalleDTO | DocumentoListItem)[]>([]);
         })
       );
 
@@ -353,6 +350,39 @@ export class ResidentContratosComponent {
     });
   }
 
+  // ===== Map de documentos (DetalleDTO | ListItem) → DocumentoView =====
+  private mapDocumentos(
+    list: (DocumentoDetalleDTO | DocumentoListItem)[]
+  ): DocumentoView[] {
+    return [...(list ?? [])]
+      .sort((a, b) => {
+        const fechaA =
+          "idDocumento" in a ? a.fechaSubida ?? "" : a.creadoEn ?? "";
+        const fechaB =
+          "idDocumento" in b ? b.fechaSubida ?? "" : b.creadoEn ?? "";
+        return fechaB.localeCompare(fechaA);
+      })
+      .map((doc) => {
+        const isDetalle = "idDocumento" in doc;
+
+        const id = isDetalle ? doc.idDocumento : doc.id;
+        const nombre = isDetalle
+          ? doc.nombreOriginal ?? `Documento #${id}`
+          : doc.nombre ?? `Documento #${id}`;
+        const tipoRaw = (doc as any).tipo ?? "OTRO";
+        const fecha = isDetalle ? doc.fechaSubida : doc.creadoEn;
+
+        return {
+          id,
+          nombre,
+          tipo: String(tipoRaw),
+          fecha: this.formatDate(fecha as any),
+          accion: "Descargar",
+        };
+      })
+      .slice(0, 5);
+  }
+
   // ===== Helpers de formato =====
   statusClass(value: string): string {
     const normalized = value
@@ -365,7 +395,7 @@ export class ResidentContratosComponent {
 
   private formatRango(inicio: string, fin?: string | null): string {
     const inicioFmt = this.formatDate(inicio);
-    const finFmt = fin ? this.formatDate(fin) : "sin fecha de termino";
+    const finFmt = fin ? this.formatDate(fin) : "sin fecha de término";
     return `${inicioFmt} - ${finFmt}`;
   }
 
@@ -405,6 +435,7 @@ export class ResidentContratosComponent {
     return lower.charAt(0).toUpperCase() + lower.slice(1);
   }
 
+  // Modal de detalle
   showDetalle = signal(false);
   detalleId = signal<number | null>(null);
 
@@ -412,6 +443,7 @@ export class ResidentContratosComponent {
     this.detalleId.set(contratoId);
     this.showDetalle.set(true);
   }
+
   onCerrarDetalle() {
     this.showDetalle.set(false);
     this.detalleId.set(null);

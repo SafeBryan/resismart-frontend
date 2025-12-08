@@ -4,6 +4,7 @@
   <main class="content">
     <div class="content-inner">
 
+<<<<<<< HEAD
       <ng-container *ngIf="condominioId(); else emptyState">
         <header class="hero hero-with-cover">
           <div class="hero-cover" [style.background-image]="'url(' + getPortadaUrl() + ')'"></div>
@@ -20,6 +21,49 @@
                 <span><mat-icon aria-hidden="true">call</mat-icon>{{ condominio()?.telefono || 'Sin teléfono' }}</span>
               </div>
             </div>
+=======
+        <div class="actions">
+          <app-button
+            label="Refrescar"
+            variant="secondary"
+            (click)="refrescar()"
+          ></app-button>
+          <app-avisos-bell class="bell-anchor"></app-avisos-bell>
+        </div>
+
+        <div *ngIf="loading()" class="muted loading-hint">
+          Cargando datos...
+        </div>
+      </header>
+
+      <!-- KPIs (con colores) -->
+      <section class="grid kpis">
+        <div class="box kpi info">
+          <div class="title">Total Órdenes</div>
+          <div class="value">{{ kpis().totalOrdenes }}</div>
+        </div>
+        <div class="box kpi warn">
+          <div class="title">Pagos Pendientes</div>
+          <div class="value">{{ kpis().pendientes }}</div>
+        </div>
+        <div class="box kpi success">
+          <div class="title">Pagadas</div>
+          <div class="value">{{ kpis().pagadas }}</div>
+        </div>
+        <div class="box kpi indigo">
+          <div class="title">Con Comprobante</div>
+          <div class="value">{{ kpis().conComprobante }}</div>
+        </div>
+      </section>
+
+      <!-- Panels -->
+      <section class="grid panels">
+        <!-- Estado de Pagos (donut pequeño) -->
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Estado de Pagos</h3>
+            <span class="chip">Resumen</span>
+>>>>>>> 98f67ccd7c00017fca0cf5be3e50f83cf390309a
           </div>
         </header>
 
@@ -167,7 +211,11 @@
           <p class="eyebrow">Sin condominio</p>
           <h3>Selecciona un condominio para ver el resumen</h3>
         </div>
+<<<<<<< HEAD
       </ng-template>
+=======
+      </section>
+>>>>>>> 98f67ccd7c00017fca0cf5be3e50f83cf390309a
     </div>
   </main>
 </div>

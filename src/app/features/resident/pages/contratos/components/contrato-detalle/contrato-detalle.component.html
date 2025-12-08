@@ -2,6 +2,7 @@
   <div class="alert error" *ngIf="error()">{{ error() }}</div>
 
   <ng-container *ngIf="contrato() as c; else noData">
+    <!-- HEADER -->
     <header class="page-head">
       <div>
         <h2>Contrato #{{ c.id }}</h2>
@@ -17,12 +18,14 @@
         <app-button
           label="Solicitar renovación"
           variant="secondary"
-          (click)="solicitarRenovacion()"
+          (clicked)="solicitarRenovacion()"
         ></app-button>
       </div>
     </header>
 
+    <!-- GRID -->
     <section class="grid main">
+      <!-- INFORMACION GENERAL -->
       <article class="card">
         <h3>Información general</h3>
         <ul class="kv">
@@ -31,12 +34,10 @@
             <strong>{{ rango(c.fechaInicio, c.fechaFin) }}</strong>
           </li>
           <li>
-            <span>Monto mensual</span>
-            <strong>{{ money(c.monto) }}</strong>
+            <span>Monto mensual</span> <strong>{{ money(c.monto) }}</strong>
           </li>
           <li>
-            <span>Unidad</span>
-            <strong>{{ c.numeroUnidad || "—" }}</strong>
+            <span>Unidad</span> <strong>{{ c.numeroUnidad || "—" }}</strong>
           </li>
           <li>
             <span>Residente</span>
@@ -46,8 +47,10 @@
         <p class="muted">ID Unidad: {{ c.idUnidad }}</p>
       </article>
 
+      <!-- ORDENES -->
       <article class="card">
         <h3>Órdenes de pago</h3>
+
         <div *ngIf="ordenes().length; else noOrdenes">
           <table class="table">
             <thead>
@@ -58,6 +61,7 @@
                 <th class="right">Monto</th>
               </tr>
             </thead>
+
             <tbody>
               <tr *ngFor="let o of ordenes()">
                 <td>{{ periodo(o.periodo) }}</td>
@@ -72,37 +76,33 @@
             </tbody>
           </table>
         </div>
+
         <ng-template #noOrdenes>
           <p class="muted">Sin órdenes registradas.</p>
         </ng-template>
       </article>
 
+      <!-- DOCUMENTOS -->
       <article class="card">
         <h3>Documentos</h3>
+
         <div *ngIf="documentos().length; else noDocs">
           <ul class="docs-list">
             <li *ngFor="let d of documentos()">
               <div>
-                <strong>{{
-                  d.nombreOriginal || "Documento #" + d.idDocumento
-                }}</strong>
-                <span class="muted">
-                  Tipo: {{ d.tipo || "PDF" }} — {{ date(d.fechaSubida) }}
-                </span>
+                <strong>{{ d.nombre }}</strong>
+                <span class="muted"> Tipo: {{ d.tipo }} — {{ d.fecha }} </span>
               </div>
+
               <app-button
                 label="Descargar"
                 variant="secondary"
-                (click)="
-                  descargarDoc(
-                    d.idDocumento,
-                    d.nombreOriginal || 'documento-' + d.idDocumento + '.pdf'
-                  )
-                "
+                (clicked)="descargarDoc(d.id, d.nombre)"
               ></app-button>
             </li>
           </ul>
         </div>
+
         <ng-template #noDocs>
           <p class="muted">Aún no hay documentos.</p>
         </ng-template>

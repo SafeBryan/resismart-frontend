@@ -16,8 +16,11 @@ import { OrdenesPagoService } from "../../../../../../core/services/ordenes-pago
 import { DocumentosService } from "../../../../../../core/services/documentos.service";
 
 import { ContratoDetalle } from "../../../../../../core/models/contrato.model";
+import {
+  DocumentoDetalleDTO,
+  DocumentoListItem,
+} from "../../../../../../core/models/documento.model";
 import { OrdenPagoResumenDTO } from "../../../../../../core/models/orden-pago.model";
-import { DocumentoDetalleDTO } from "../../../../../../core/models/documento.model";
 
 @Component({
   selector: "app-contrato-detalle",
@@ -38,7 +41,21 @@ export class ContratoDetalleComponent implements OnChanges {
 
   readonly contrato = signal<ContratoDetalle | null>(null);
   readonly ordenes = signal<OrdenPagoResumenDTO[]>([]);
-  readonly documentos = signal<DocumentoDetalleDTO[]>([]);
+
+  // 🔥 Ahora acepta ambos tipos
+  readonly documentosRaw = signal<(DocumentoDetalleDTO | DocumentoListItem)[]>(
+    []
+  );
+
+  // 🔥 ViewModel normalizado
+  readonly documentos = signal<
+    {
+      id: number;
+      nombre: string;
+      fecha: string;
+      tipo: string;
+    }[]
+  >([]);
 
   ngOnChanges(changes: SimpleChanges): void {
     if ("contratoId" in changes && this.contratoId != null) {
@@ -51,19 +68,15 @@ export class ContratoDetalleComponent implements OnChanges {
     this.error.set(null);
 
     const detalle$ = this.contratoSrv.getById(id).pipe(
-      // ⚠️ Normalizamos aquí por si el backend aún envía unidadNumero/residenteNombre
       catchError((err) => {
         console.error("[ContratoDetalle] detalle error", err);
         return of<ContratoDetalle | null>(null);
       })
     );
 
-    const ordenes$ = this.ordenesSrv.listByContrato(id).pipe(
-      catchError((err) => {
-        console.warn("[ContratoDetalle] ordenes error", err);
-        return of<OrdenPagoResumenDTO[]>([]);
-      })
-    );
+    const ordenes$ = this.ordenesSrv
+      .listByContrato(id)
+      .pipe(catchError(() => of<OrdenPagoResumenDTO[]>([])));
 
     const docs$ = this.docsSrv
       .list({
@@ -72,38 +85,27 @@ export class ContratoDetalleComponent implements OnChanges {
         sortBy: "fechaSubida",
         sortDir: "DESC",
         flat: true,
+        withLinks: true,
       })
       .pipe(
-        catchError((err) => {
-          console.warn("[ContratoDetalle] documentos error", err);
-          return of<DocumentoDetalleDTO[]>([]);
-        })
+        catchError(() => of<(DocumentoDetalleDTO | DocumentoListItem)[]>([]))
       );
 
     forkJoin([detalle$, ordenes$, docs$]).subscribe({
       next: ([detalle, ordenes, docs]) => {
-        // 🔧 Normalización de campos del detalle (compatibilidad A/B)
-        const fixed = detalle
-          ? ({
-              ...detalle,
-              // si el backend ya envía numeroUnidad/nombreResidente, se mantienen
-              numeroUnidad:
-                (detalle as any).numeroUnidad ??
-                (detalle as any).unidadNumero ??
-                null,
-              nombreResidente:
-                (detalle as any).nombreResidente ??
-                (detalle as any).residenteNombre ??
-                null,
-            } as ContratoDetalle)
-          : null;
+        this.contrato.set(detalle);
 
-        this.contrato.set(fixed);
         this.ordenes.set(ordenes ?? []);
-        this.documentos.set(docs ?? []);
-        if (!fixed) {
+
+        this.documentosRaw.set(docs ?? []);
+
+        // 🔥 Normalizamos aquí
+        this.documentos.set(this.mapDocumentos(docs ?? []));
+
+        if (!detalle) {
           this.error.set("No se pudo cargar el detalle del contrato.");
         }
+
         this.loading.set(false);
       },
       error: () => {
@@ -113,20 +115,55 @@ export class ContratoDetalleComponent implements OnChanges {
     });
   }
 
-  descargarContratoPdf(): void {
-    const doc =
-      this.documentos().find((d) =>
-        (d.nombreOriginal || "").toLowerCase().includes("contrato")
-      ) || this.documentos()[0];
+  // ===========================================
+  // 🔥 Normalizador de Documentos
+  // ===========================================
+  private mapDocumentos(
+    docs: (DocumentoDetalleDTO | DocumentoListItem)[]
+  ): { id: number; nombre: string; fecha: string; tipo: string }[] {
+    return docs
+      .map((doc) => {
+        const isDetalle = "idDocumento" in doc;
 
-    if (!doc) {
+        return {
+          id: isDetalle ? doc.idDocumento : doc.id,
+          nombre: isDetalle
+            ? doc.nombreOriginal ?? `Documento #${doc.idDocumento}`
+            : doc.nombre ?? `Documento #${doc.id}`,
+          fecha: this.date(isDetalle ? doc.fechaSubida : doc.creadoEn),
+          tipo: (doc as any).tipo ?? "OTRO",
+        };
+      })
+      .sort((a, b) => b.fecha.localeCompare(a.fecha));
+  }
+
+  // ===========================================
+  // DESCARGA
+  // ===========================================
+
+  descargarContratoPdf(): void {
+    const docs = this.documentosRaw();
+
+    const candidato =
+      docs.find((d) =>
+        ("nombreOriginal" in d ? d.nombreOriginal : d.nombre)
+          ?.toLowerCase()
+          .includes("contrato")
+      ) || docs[0];
+
+    if (!candidato) {
       this.error.set("No hay documentos para descargar.");
       return;
     }
-    this.descargarDoc(
-      doc.idDocumento,
-      doc.nombreOriginal || `documento-${doc.idDocumento}.pdf`
-    );
+
+    const id =
+      "idDocumento" in candidato ? candidato.idDocumento : candidato.id;
+    const nombre =
+      ("nombreOriginal" in candidato
+        ? candidato.nombreOriginal
+        : candidato.nombre) || `documento-${id}.pdf`;
+
+    this.descargarDoc(id, nombre);
   }
 
   descargarDoc(idDocumento: number, nombre: string): void {
@@ -136,7 +173,7 @@ export class ContratoDetalleComponent implements OnChanges {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = nombre || `documento-${idDocumento}.pdf`;
+        a.download = nombre;
         a.click();
         URL.revokeObjectURL(url);
         this.loading.set(false);
@@ -148,30 +185,17 @@ export class ContratoDetalleComponent implements OnChanges {
     });
   }
 
-  solicitarRenovacion(): void {
-    const id = this.contratoId;
-    const nueva = prompt("Nueva fecha de fin (YYYY-MM-DD):");
-    if (!nueva) return;
-    this.loading.set(true);
-    this.contratoSrv.renovar(id, { nuevaFechaFin: nueva }).subscribe({
-      next: () => {
-        this.loadAll(id);
-      },
-      error: () => {
-        this.error.set("No se pudo solicitar la renovación.");
-        this.loading.set(false);
-      },
-    });
-  }
-
-  // ===== Helpers de formato =====
+  // ===========================================
+  // Helpers
+  // ===========================================
   statusClass(value?: string): string {
-    const v = (value || "")
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, "-");
-    return v || "pendiente";
+    return (
+      (value || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, "-") || "pendiente"
+    );
   }
 
   sentence(value?: string | null): string {
@@ -192,7 +216,7 @@ export class ContratoDetalleComponent implements OnChanges {
     if (!value) return "—";
     const d = new Date(value);
     return isNaN(d.getTime())
-      ? (value as string)
+      ? value
       : new Intl.DateTimeFormat("es-EC", {
           day: "2-digit",
           month: "short",
@@ -216,5 +240,25 @@ export class ContratoDetalleComponent implements OnChanges {
     return `${this.date(inicio)} - ${
       fin ? this.date(fin) : "sin fecha de término"
     }`;
+  }
+
+  solicitarRenovacion(): void {
+    const id = this.contratoId;
+
+    const nueva = prompt("Nueva fecha de fin (YYYY-MM-DD):");
+    if (!nueva) return;
+
+    this.loading.set(true);
+    this.error.set(null);
+
+    this.contratoSrv.renovar(id, { nuevaFechaFin: nueva }).subscribe({
+      next: () => {
+        this.loadAll(id); // vuelve a cargar datos del contrato
+      },
+      error: () => {
+        this.error.set("No se pudo solicitar la renovación.");
+        this.loading.set(false);
+      },
+    });
   }
 }
