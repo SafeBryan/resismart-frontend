@@ -1,4 +1,4 @@
-export type Role = 'ADMIN' | 'DUE\u00D1O' | 'RESIDENTE' | string;
+export type Role = 'ADMIN' | 'DUEÑO' | 'RESIDENTE' | string;
 
 export interface LoginResponse {
   token: string;
